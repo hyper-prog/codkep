@@ -8,10 +8,23 @@
 
 Install:
 ===================================================================
-In CodKep root directory:
+Note: The github repository contains the "sys" directory.
 
- ln -s sys/index.php index.php
+Step-1:
+    The CodKep needs a php enabled webserver to run.
 
+Step-2:
+    Create a CodKep installation in webserver root's sys:
+
+    /var/www/html$ git clone https://github.com/hyper-prog/codkep.git sys
+
+Step-3:
+    Make a symlink to sys/index.php
+
+    /var/www/html$ ln -s sys/index.php index.php
+
+In case the php is enabled you shoud see the CodKep's open page in your browser.
+The documentation is also available there.
 
 
 Note for webserver config with cleanurl support:
