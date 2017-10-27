@@ -1,0 +1,506 @@
+#to_table#
+= Query formatter =
+
+The automatic query formatter is part of "forms" module which depends on "core" and "sql" modules.
+
+== Automatic output generator for sql queries ==
+
+
+You can pass the result of the ***sql_exec_fetchAll()*** function to the ***to_table()*** function.
+The ***to_table()*** will generate a html table to show the data.
+.
+@@@to_table($dataobj, array $options=array(), array &$results = NULL)@@@
+<br/>
+
+~~~php
+//Example - Raw output without any modifier
+$data = sql_exec_fetchAll('SELECT pid,name,city FROM people;');
+print to_table($data);
+~~~
+{file:totableraw1.png|css: border: 0;}
+
+
+
+== Input of to_table() ==
+
+
+
+The ***$dataobj*** parameter of ***to_table()*** function can be:
+# Two dimensional array
+# Executed sql object
+
+**The to_table function is designed to work same way both cases.**
+.
+*Example with case 1a:*
+~~~php
+$data = sql_exec_fetchAll('SELECT pid,name,city FROM people;');
+print to_table($data);
+~~~
+*Example with case 1b:*
+~~~php
+$data = [['Red'   ,'Apple' ,'One'   ],
+         ['Yellow','Banana','Two'   ],
+         ['Brown' ,'Nut'   ,'Three' ]];
+print to_table($data);
+~~~
+*Example with case 2:*
+~~~php
+$data = sql_exec('SELECT pid,name,city FROM people;');
+print to_table($data);
+~~~
+
+
+
+== Options affects the whole table ==
+
+
+
+We can pass an ***$options*** array to the second parameter of the ***to_table()*** which tells
+some formatting instruction to the table generator.
+.
+__Options affects the whole table tag:__
+- ***#tableopts***
+ - ***border*** - Set the border of the table
+ - ***style*** - CSS style for table tag
+ - ***class*** - CSS class of the table tag
+- ***#lineoptions_callback*** - Callback function which can feed the
+\ [HtmlTable's nrow()|url:doc/codkep/tablegen#html_table_methods] function.
+ - This callback function will called on every row creation in table and the returned array will pass to the HtmlTable's
+ \ nrow() function. So you can set style and classes of the html tr element depending on query values.
+ - The callback receive same parameters as ***valuecallback***'s function below. (All sql fields and other fields
+ \ like ***&#95;&#95;rownumber&#95;&#95;*** or ***&#95;&#95;external&#95;&#95;***)
+- ***#callback&#95;array&#95;external*** - Arbitrary array or object passed to the internal callback functions.
+ - The variable's value is passed to the callback functions defined under ***#lineoptions_callback*** and ***valuecallback***.
+ \ These callback functions will receive the array under their parameter's ***&#95;&#95;external&#95;&#95;*** field name.
+- ***#before*** - You can set function name/callback here which outputs (print) will displayed before the table
+- ***#after*** - You can set function name/callback here which outputs (print) will displayed after the table
+
+Let's see an example of using this options above:
+~~~php
+$c = [
+   '#tableopts' => [
+       'border' => '1',
+       'style' => 'background-color: lightgray; border-collapse: collapse;']
+ ];
+.
+$data = sql_exec_fetchAll('SELECT pid,name,city FROM people;');
+print to_table($data,$c);
+~~~
+<table class="invisible"><tr>
+ <td>From</td>
+ <td>{file:totableraw1.png|css: border: 0;}</td>
+ <td>to</td>
+<td>{file:totable2.png|css: border: 0;}</td></tr></table>
+
+Using of ***#lineoptions_callback***:
+
+~~~php
+$c = [
+    '#tableopts' => [
+        'border' => '1',
+        'style' => 'border-collapse: collapse;'],
+    '#lineoptions_callback' => function($r) {
+        if($r['__rownumber__']%3 == 2)
+            return ['style' => 'background-color: #aaaaaa;'];
+        if($r['__rownumber__']%3 == 1)
+            return ['style' => 'background-color: #bbbbbb;'];
+        return ['style' => 'background-color: #cccccc;'];
+    },
+ ];
+.
+$data = sql_exec_fetchAll('SELECT pid,name,city FROM people;');
+print to_table($data,$c);
+~~~
+<table class="invisible"><tr>
+ <td>From</td>
+ <td>{file:totableraw1.png|css: border: 0;}</td>
+ <td>to</td>
+<td>{file:totable2-2.png|css: border: 0;}</td></tr></table>
+
+
+== Change the number or/and the order of the fields ==
+
+
+
+You can change the number or/and the order of the rows by set ***#fields*** value.
+<br/>
+In case the ***#fields*** value is set, it overwrites the field orders.
+You can safety change orders or skip some
+fields here. You can even add fields which doesn't exists in the original query. (See later examples)
+.
+Let's see the using of ***#fields*** here:
+~~~php
+$c = [
+   '#tableopts' => [
+       'border' => '1',
+       'style' => 'background-color: lightgray; border-collapse: collapse;'],
+   '#fields' => ['city','name'],
+ ];
+.
+$data = sql_exec_fetchAll('SELECT pid,name,city FROM people;');
+print to_table($data,$c);
+~~~
+<table class="invisible"><tr>
+ <td>From</td>
+ <td>{file:totableraw1.png|css: border: 0;}</td>
+ <td>to</td>
+<td>{file:totable3.png|css: border: 0;}</td></tr></table>
+
+
+== Customize of fields ==
+
+
+You can customize the displayed fields and headers of the fields by the options array.
+<br/>
+Every top level index of the array which does not start with ***#*** sign is assigned to a field
+matched to the original query field name or a virtual field which only exists in ***#fields*** array.
+.
+Fields definitions can receive the following options
+- ***headertext*** - Sets the text of the table header of this field
+- ***headeropts*** - Options affects of the table header of this field
+ - ***style*** - CSS style for the header tag
+ - ***class*** - CSS class of the header tag
+- ***cellprefix*** - Print this string immediately before the cell's value
+- ***cellsuffix*** - Print this string immediately after the cell's value
+- ***cellopts*** - Options affects of the cell
+ - ***style*** - CSS style for the cell
+ - ***class*** - CSS class of the cell
+- ***valuecallback*** - Value callback (See the next chapter)
+
+Let's see an example using of this options:
+
+~~~php
+$c = [
+    '#tableopts' => [
+        'border' => '1',
+        'style' => 'background-color: lightgray; border-collapse: collapse;'],
+    '#fields' => ['name','city'],
+    'name' => [
+        'headertext' => 'The name',
+        'headeropts' => ['style' => 'background-color: yellow;'],
+    ],
+    'city' => [
+        'headertext' => 'Works in',
+        'headeropts' => ['style' => 'background-color: brown;'],
+        'cellprefix' => '<i>',
+        'cellsuffix' => '</i>',
+        'cellopts' => ['style' => 'background-color: lightgrey;'],
+    ],
+ ];
+.
+$data = sql_exec_fetchAll('SELECT pid,name,city FROM people;');
+print to_table($data,$c);
+~~~
+
+<table class="invisible"><tr>
+ <td>From</td>
+ <td>{file:totableraw1.png|css: border: 0;}</td>
+ <td>to</td>
+<td>{file:totable4.png|css: border: 0;}</td></tr></table>
+
+
+== Modify the value of the fields ==
+
+
+You can change the value of a field by a callback function. The callback function is receive all fields value so can
+provide derived data from other fields.
+(You have to provide this callback in case the field is virtual thus not exists in original query)
+.
+You can set callback function by set ***valuecallback*** option.
+The return value of the callback will be displayed in the cell.
+.
+_The callback function receive an array as parameter. This array contains all sql fields found in the sql query and_
+_a ***&#95;&#95;rownumber&#95;&#95;*** named element which contains a row number sequence. The array also contains_
+_an ***&#95;&#95;external&#95;&#95;*** field which is an array received in ***to&#95;table()*** ***$options*** parameter_
+_under the ***#callback&#95;array&#95;external*** index name._
+~~~php
+$c = [
+    '#tableopts' => [
+        'border' => '1',
+        'style' => 'background-color: lightgray; border-collapse: collapse;'],
+    '#fields' => ['name','city'],
+    'name' => [
+        'headertext' => 'The name',
+        'headeropts' => ['style' => 'background-color: yellow;'],
+        'valuecallback' => function($r) {
+            return l($r['name'],'useredit',[],['id' => $r['pid']]);
+        },
+    ],
+ ];
+.
+$data = sql_exec_fetchAll('SELECT pid,name,city FROM people;');
+print to_table($data,$c);
+~~~
+
+<table class="invisible"><tr>
+ <td>From</td>
+ <td>{file:totableraw1.png|css: border: 0;}</td>
+ <td>to</td>
+<td>{file:totable5.png|css: border: 0;}</td></tr></table>
+
+
+== Using virtual fields ==
+
+
+With the ***valuecallback*** option you can create fields which not presents in original query.
+Let's see an example where the "selector" field is virtual:
+
+~~~php
+$c = [
+    '#tableopts' => [
+        'border' => '1',
+        'style' => 'background-color: lightgray; border-collapse: collapse;'],
+    '#fields' => ['name','city','selector'],
+    'name' => [
+        'headertext' => 'The name',
+        'headeropts' => ['style' => 'background-color: yellow;'],
+        'valuecallback' => function($r) {
+            return l($r['name'],'useredit',[],['id' => $r['pid']]);
+        },
+    ],
+    'selector' => [
+        'headertext' => '-',
+        'headeropts' => ['style' => 'background-color: red;'],
+        'valuecallback' => function($r) {
+            return l('Select...','edit',[],['id' => $r['pid']]);
+        },
+    ],
+ ];.
+$data = sql_exec_fetchAll('SELECT pid,name,city FROM people;');
+print to_table($data,$c);
+~~~
+
+<table class="invisible"><tr>
+ <td>From</td>
+ <td>{file:totableraw1.png|css: border: 0;}</td>
+ <td>to</td>
+<td>{file:totable6.png|css: border: 0;}</td></tr></table>
+
+
+#fieldrepository#
+== Using field repository ==
+
+
+You can see many field settings in the examples above. In a complex code many case this field options is repeating.
+You can reuse this field options by using field repository: You can add field options/settings to the field repository
+and can apply this settings to an arbitrary query's field.
+.
+You can add field definitions to the field repository by implementing
+***HOOK_field_repository*** [hook|url:doc/codkep/hooks].
+The ***HOOK_field_repository*** hook have to return an array with the defined field names.
+The defined field names will presents in the field repository with ***#*** prefix.
+<br/>
+Every time you put a ***#*** prefixed field in the ***#fields*** array or
+pass an sql query containing ***#*** prefixed column names the field repository
+will be used to the appropriate field.
+.
+You can use every field option in the field repository and some additional options:
+- ***skip*** - If this option is ***true*** the field will be completely skipped from the output table.
+\ (But can used in other field's value callback function)
+- ***sqlname*** - A string value, specifies a redefined field/sql name. Can used for two reasons:
+ - If the repository name is matched to the query's field name (R2 example)
+  - The field will be available with this name in the parameter array of an another field's value callback function.
+ - If the repository name is different to the query's field name (R1 example)
+  - You can assign the repository field to the original query's field name.
+  \ Usually the repository name is not same as the value's name coming from the query itself.
+  \ You can tells to the repository object which field's value should use.
+.
+
+Example of adding fields to the field repository:
+
+~~~php
+function hook_mymodule_tables_field_repository()
+{
+    $c = [
+.
+        //This field is invisible, but available for other fields as 'pid'
+        'pidfield' => [
+            'skip' => true,
+            'sqlname' => 'pid',
+        ],
+        'name_decorated' => [
+            'headertext' => 'The name',
+            'headeropts' => ['style' => 'background-color: lightgreen;'],
+            'sqlname' => 'name',
+            'cellopts' => ['style' => 'background-color: lightgray;'],
+            'valuecallback' => function($r) {
+                return l($r['name'],'useredit',[],['id' => $r['pid']]);
+            },
+        ],
+        'city_decorated' => [
+            'headertext' => 'Works in',
+            'headeropts' => ['style' => 'background-color: lightblue;'],
+            'cellprefix' => '<i>',
+            'cellsuffix' => '</i>',
+            'cellopts' => ['style' => 'background-color: lightgrey;'],
+            'sqlname' => 'city',
+        ],
+    ];
+    return $c;
+}
+~~~
+
+After this hook field repository contains the following fields:
+- ***#pidfield***
+- ***#name_decorated***
+- ***#city_decorated***
+
+Using of field repository:
+
+~~~php
+// R1 example
+$c = [
+    '#tableopts' => [
+        'border' => '1',
+        'style' => 'background-color: lightgray; border-collapse: collapse;'],
+    '#fields' => ['#name_decorated','#city_decorated'],
+ ];
+.
+$data = sql_exec_fetchAll('SELECT pid,name,city FROM people;');
+print to_table($data,$c);
+~~~
+
+<table class="invisible"><tr>
+ <td>From</td>
+ <td>{file:totableraw1.png|css: border: 0;}</td>
+ <td>to</td>
+<td>{file:totable7.png|css: border: 0;}</td></tr></table>
+
+
+== Using field repository directly from SQL ==
+
+
+Using of field repository (set in the previous example) is possible directly from SQL query:
+
+~~~php
+// R2 example
+$data = sql_exec_fetchAll(
+  "SELECT pid as '#pidfield',name as '#name_decorated',city as '#city_decorated' FROM people;");
+print to_table($data);
+~~~
+<table class="invisible"><tr>
+ <td>From</td>
+ <td>{file:totableraw2.png|css: border: 0;}</td>
+ <td>to</td>
+<td>{file:totable8.png|css: border: 0;}</td></tr></table>
+
+---
+
+You can mix the SQL activated field repository options with the possibilities of options array:
+
+~~~php
+$c = [
+    '#tableopts' => [
+        'border' => '1',
+        'style' => 'background-color: lightgray; border-collapse: collapse;'],
+    '#fields' => ['#city_decorated','#name_decorated'],
+ ];
+.
+$data = sql_exec_fetchAll(
+  "SELECT pid as '#pidfield',name as '#name_decorated',city as '#city_decorated' FROM people;");
+print to_table($data,$c);
+~~~
+
+<table class="invisible"><tr>
+ <td>From</td>
+ <td>{file:totableraw2.png|css: border: 0;}</td>
+ <td>to</td>
+<td>{file:totable9.png|css: border: 0;}</td></tr></table>
+
+
+#totablebackend#
+== Backend of to_table() ==
+
+
+Useful to know that ***to_table()*** uses the [HtmlTable class|url:doc/codkep/tablegen#html_table_generator]
+in background to generate tables. Most options placed in ***headeropts*** or ***cellopts*** are passed
+to HtmlTable's ***cell()*** and ***head()*** methods.
+.
+As the [documentation of HtmlTable|url:doc/codkep/tablegen] says the HtmlTable class can receive translated options
+from [ExcelXmlDocument class|url:doc/codkep/tablegen#excelxml] which is similar
+as HtmlTable but generate Excel XML documents.
+.
+The result of this that we can write ***to_table()*** field definitions which usable to generate
+both HTML tables and Excel XML files same way!
+With the appropriate options the ***to_table()*** function can automatically translate the options using the
+[***table_options_translator()***|url:doc/codkep/tablegen#optionsconverter] function.
+
+
+== Generate HTML and Excel tables with same way ==
+
+
+Because the ***to_table()*** passes the ***headeropts*** and ***cellopts*** to ***HtmlTable*** class
+which can automatically convert options from options of ***ExcelXmlDocument*** we can write queries which
+can used to generate both html tables and excel xml tables.
+.
+We only have to do the following things:
+# Put the ***"type" => "uni"*** key-value pair in all ***headeropts*** and ***cellopts*** options array.
+ - (Read [this|url:doc/codkep/tablegen#autoconv] to understand why)
+# Use the [style options|url:doc/codkep/tablegen#exmlstyleopts] of ***ExcelXmlDocument*** in
+\ ***headeropts*** and ***cellopts*** instead of direct css styles.
+# Set the ***"#output_object"*** toplevel index to ***"excelxml"*** or ***"table"***
+ - ***"excelxml"*** - The ***to_table()*** will generate Excel XML table.
+ - ***"table"*** - The ***to_table()*** will generate html table.
+
+A complex example which generate both output with same code:
+
+~~~php
+function hook_mymodule_defineroute()
+{
+    $r = [];
+    $r[] = [
+        'path'=> 'mytableexcel', // Excel XML file output path
+        'callback' => 'mytablegen_x',
+        'type' => 'raw', //This path will generate Microsoft Office XML, not HTML
+    ];
+    $r[] = [
+        'path'=> 'mytablehtml', // Page path shows html table
+        'callback' => 'mytablegen_h',
+    ];
+    return $r;
+}
+.
+function mytablegen_h() { return mytablegen_xh(true); }
+function mytablegen_x() { return mytablegen_xh(false); }
+.
+function mytablegen_xh($html_excel)
+{
+    $c = [
+        '#tableopts' => ['style' => 'border-collapse: collapse;'],
+        '#output_object' => 'table',
+        'name' => [
+            'headertext' => 'Student name',
+            'headeropts' => ['type' => 'uni',
+                             'background-color' => '#333333',
+                             'color'=>'#ffffff',
+                             'strong' => 'yes',
+                             'border' => 'all'],
+            'cellopts' => ['type' => 'uni',
+                           'width' => 80,
+                           'background-color' => '#ffff00',
+                           'border' => ['bottom','top','left']],
+        ],
+        'code' => [
+            'headertext' => 'Code',
+            'headeropts' => ['type' => 'uni',
+                             'background-color' => '#333333',
+                             'color'=>'#ffffff',
+                             'strong' => 'yes',
+                             'border' => 'all'],
+            'cellopts' => ['type' => 'uni',
+                           'background-color' => '#99ff99',
+                           'border' => ['bottom','top','left']],
+        ],
+    ];
+.
+    if(!$html_excel)
+    {
+        $c['#output_object'] = 'excelxml';
+        header('Content-Type:application/xml');
+        header('Content-Disposition: attachment; filename="mytablesample.xml"');
+    }
+.
+    $data = sql_exec("SELECT name,code FROM student ORDER BY name");
+    return to_table($data,$c);
+}
+~~~

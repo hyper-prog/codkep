@@ -1,0 +1,408 @@
+= Themes =
+
+Themes allow you to change the look and feel of your CodKep site.
+The html structure of the site, the headings, sidebars blocks, footers
+are built by the current theme. You can associate your generated contents to this part of sites.
+
+
+#themeunrelated#
+== Functions unrelated to themes ==
+
+
+There is many helper functions to change the style and the behaviour of the site which independent of themes.
+You can always use this functions in every code to modify/set the things below.
+.
+#add_style#
+@@@add_style($text)@@@
+<br/>
+This function adds an arbitrary css code to the page. The ***$text*** parameter have to contains the css code
+which will insert into the html head between ***style*** tag. (Embedded into the html file)
+~~~php
+//Draws a 100x50 pixel sized red box
+print '<div class="redbox"></div>';
+add_style("div.redbox { display: block; width: 100px; height:50px; background-color: #ff6666; }");
+~~~
+.
+#add_header#
+@@@add_header($text)@@@
+<br/>
+Add an arbitrary text to the html head part.
+~~~php
+//Set the page automatically refreshed in every 10 sec
+add_header('<meta http-equiv=”refresh” content=”10" />');
+~~~
+.
+
+#add_css_file#
+@@@add_css_file($loc)@@@
+<br/>
+Adds a css file reference to the html header. The ***$loc*** parameter contains the location of css file.<br/>
+The ***$loc*** parameter will passed to the [***url()***|url:doc/codkep/routes#urlfunc] inside.
+
+~~~php
+add_css_file('/site/mycss.css');
+//It will generate a <link rel="stylesheet" href="/site/mycss.css"> tag to the header.
+~~~
+.
+#add_js_file#
+@@@add_js_file($loc)@@@
+<br/>
+Adds a javascript file reference to the html header. The ***$loc*** parameter contains
+the location of javascript file.<br/>
+The ***$loc*** parameter will passed to the [***url()***|url:doc/codkep/routes#urlfunc] inside.
+
+~~~php
+add_js_file('/site/myfuncs.js');
+//It will generate a <script type="text/javascript" src="/site/myfuncs.js"></script> tag to the header.
+~~~
+.
+#set_title#
+@@@set_title($text)@@@
+<br/>
+Sets the (html) title of the current page.
+.
+#set_icon#
+@@@set_icon($iconurl)@@@
+<br/>
+Sets the icon of the current page.<br/>
+It will generate the ***shortcut icon*** header tag for the current page.
+The ***$iconurl*** parameter will passed to the [***url()***|url:doc/codkep/routes#urlfunc] inside.
+.
+_Note: It should used "ico" format file for compatibility reasons._
+.
+#add_author_data#
+@@@add_author_data($author)@@@
+<br/>
+Adds the author html header metadata to the page. The parameter passed author string will be the metadata value.
+.
+#add_seo_data#
+@@@add_seo_data($description,$keywords,$revisitafter)@@@
+<br/>
+Adds some SEO data to the page, the page description, the search keywords and the revisit after value.
+(Example for revisit after value: "2 days")
+
+~~~php
+add_seo_data("Page for booking rooms in Sunshine hotel",
+             "hotel booking vacation sunshine",
+             "2 days");
+~~~
+.
+#get_startpage#
+@@@get_startpage()@@@
+<br/>
+It returns the currently set start page location.
+.
+
+#usingthemes#
+== Using of themes ==
+
+.
+Bigger changes of the style or structural changes can achieved by themes.
+.
+You can set the default theme in your [site settings|url:doc/codkep/modules#site_settings] by
+set ***$site_config->default_theme_name*** variable to the desired theme name.
+Although usually the default theme is used the [internal locations|url:doc/codkep/routes]
+can [override|url:doc/codkep/routes#routedefarray] this default theme and can use different theme.
+.
+Every theme has an unique name which identify the theme.
+By default two built in theme present in CodKep:
+- ***base_page*** - A simple page without any visual block and style element.
+\ It is often used for error handling pages, login pages and other locations where the users shouldn't see
+\ any more disturbing information.
+- ***flex*** - More powerful responsive theme with a lot of page area and style element.
+\ (The default if not set in ***_settings.php***)
+
+The page areas usable in ***flex*** theme:
+.
+{file:flex_areas.png|css: border: 0;}
+.
+
+- Logo image area. You can set the logo image by ***$site_config->logo_img_url*** setting.
+\ By default no logo is set for the site.
+- The site name and slogan. You can set the site name and slogan by ***$site_config->site_name***
+\ and  ***$site_config->site_slogan*** settings.
+- ***header*** area. You can set arbitrary content here by ***sitearea_header*** hook.
+- ***sidebar_left*** area. You can set arbitrary content here by ***sitearea_sidebar_left*** hook.
+- ***sidebar_right*** area. You can set arbitrary content here by ***sitearea_sidebar_right*** hook.
+- ***pagetop*** area. You can set arbitrary content here by ***sitearea_pagetop*** hook.
+- ***highlighted*** area. You can set arbitrary content here by ***sitearea_highlighted*** hook.
+- ***footer*** area. You can set arbitrary content here by ***sitearea_footer*** hook.
+
+=== Place your own content to a site area ===
+
+The themes can have site areas which is usable to place your contents. This site areas are defined by themes itself,
+and can be different in every theme.
+.
+You can assign your content with a site area with the ***sitearea_XYZ*** [hook|url:doc/codkep/hooks]
+where the ***XYZ*** is the name of the area where your content should located.
+<br/>
+The ***sitearea_XYZ*** hook have to return an array of associated arrays which specify the contents to be show:
+
+ - ***"name" = name_string***
+  - The name of the block to show. This name won't be show on the page,
+  \ but usable to reach the content in some hooks like ***alter_sitearea***.
+ - ***"index" = integer***
+  - And index value which specify the orders of the block if more assigned to same area.
+ - ***"callback" = php_function_name***
+  - The function callback to generate the content of the block to assign.
+ - ***"file" = filename***
+  - This value is works as ***"callback"*** but this way the CodKep will execute
+  \ the specified php file instead of callback function.
+
+Example of put some content to right sidebar:
+~~~php
+function hook_mym_sitearea_sidebar_right()
+{
+    $def = [];
+.
+    $def[] = [
+        'name' => 'MySidebarBlock',
+        'index' => 1,
+        'callback' => 'my_custom_block_cb',
+    ];
+    return $def;
+}
+.
+function my_custom_block_cb()
+{
+    ob_start();
+    print '<div class="content">';
+    print "Something text here.";
+    print '</div>';
+    return ob_get_clean();
+}
+
+~~~
+
+
+#flexsettings#
+=== Settings of flex theme ===
+
+
+The flex theme have some settings which can set [in site settings|url:doc/codkep/modules#site_settings].
+.
+*Note: You have to put ***global $flex*** before modify any settings.*
+.
+
+| name                                                     | default                             | description |
+|---                                                       |--                                   | ---                              |---          |
+|<small> ***$flex->mainmenu_pos***                </small> |<small> BETWEEN_LOGO_HEADER  </small>|Controls the location of main menu. Possible values are ABOVE_LOGO, BETWEEN_LOGO_HEADER and BELOW_HEADER |
+|<small> ***$flex->sidebar_blocks_have_border***  </small> |<small> false                </small>|Sets wheter the sidebar boxes have borders.|
+|<small> ***$flex->disable_builtin_flexcss***     </small> |<small> false                </small>|The true value disables the loading of flex css file. It makes possible to change the default css to a new one. |
+|<small> ***$flex->disable_builtin_colorcss***    </small> |<small> false                </small>|The true value disables the loading of color flex css file. It makes possible to change the default colors to a new. |
+|<small> ***$flex->allow_empty_footer***          </small> |<small> false                </small>|Set true to allow footer show without any content. |
+|<small> ***$flex->disable_logo_link***           </small> |<small> false                </small>|If this option is true the logo image top of the header will be a simple img without html link. |
+|<small> ***$flex->size_of_left_sidebar_desktop***  </small>|<small> 4                   </small>|The width of the left sidebar in desktop mode. (Means that width > 768px) If the value is ***n*** the width is will be n/20 percent of the full page. |
+|<small> ***$flex->size_of_centerarea_desktop***    </small>|<small> 11                  </small>|The width of the center area between sidebars in desktop mode. (Means that width > 768px) If the value is ***n*** the width is will be n/20 percent of the full page. |
+|<small> ***$flex->size_of_right_sidebar_desktop*** </small>|<small> 5                   </small>|The width of the right sidebar in desktop mode. (Means that width > 768px) If the value is ***n*** the width is will be n/20 percent of the full page. |
+|<small> ***$flex->size_of_left_sidebar_mobile***   </small>|<small> 4                   </small>|The width of the left sidebar in mobile mode. (Means that width < 768px) If the value is ***n*** the width is will be n/20 percent of the full page. |
+|<small> ***$flex->size_of_centerarea_mobile***     </small>|<small> 11                  </small>|The width of the center area between sidebars in mobile mode. (Means that width < 768px) If the value is ***n*** the width is will be n/20 percent of the full page. |
+|<small> ***$flex->size_of_right_sidebar_mobile***  </small>|<small> 20                  </small>|The width of the right sidebar in mobile mode. (Means that width < 768px) If the value is ***n*** the width is will be n/20 percent of the full page. |
+|<small> ***$flex->mainmenu_stay_fixed_scrolldown*** </small>|<small> 0                  </small>|If this value is larger than zero the mainmenu will stay on to of the page after scrolled down with this value. |
+|<small> ***$flex->logoimage_parallax_scrolling***  </small>|<small> false               </small>|If this settings is true the logo image is stay fix position and the content is scrolled on it with "parallax srolling". You have to set ***$flex->logoimage_parallax_height*** to use this. |
+|<small> ***$flex->logoimage_parallax_height***     </small>|<small> 200                 </small>|The height of the logo image in case of "parallax scrolling". (Other way the image size is used.)|
+|<small> ***$flex->mainmenu_structure_prefix***   </small>  |<small> ''                   </small>|Prints this text before the generated mainmenu structure. |
+|<small> ***$flex->mainmenu_structure_suffix***   </small>  |<small> ''                   </small>|Prints this text after the generated mainmenu structure. |
+
+*Note for ***size_of...***  settings: The sum of left, right and center values should not be more than 20*
+*because the values means the 1/20 percent of full page. These values can be recalculated by CodKep*
+*if some sidebar does not present. The missing sidebar values are added to center the area's value.*
+
+
+== Create own themes ==
+
+
+You can create your own themes in CodKep.
+This themes can change the whole site structure/design and can completely rewrite the whole generation content.<br/>
+Now I tell you how to do this:
+.
+The CodKep themes are simple modules. (See [modules chapter|url:doc/codkep/modules#modules] to learn
+how to create own modules.) To create a new theme you have to use the ***theme*** [hook|url:doc/codkep/hooks].
+.
+The ***theme*** hook have to return an array of associated arrays which defines the themes.
+
+- ***"name_string" =***
+ - An associative array which defined the properties of new theme.
+ \ The ***name_string*** is the unique name of the new theme. There is two mandatory element of this array:
+  - ***"pageparts" =***
+   - An array of strings where the strings items will be the page part names defined by the theme.
+  - ***"generators"***
+   - An associative array which specify 4 callback function of the theme
+    - ***"runonce" => "php_function_name_1"***
+     - It runs every time when a page generated with this theme.
+     \ The ***php_function_name_1*** function will receive the ***$content*** parameter and the return value is dropped.
+     \ You can use the [styling functions|url:#themeunrelated] to set some header, css or javascript files here.
+    - ***"htmlstart" => "php_function_name_2"***
+     - It should generate the html starter string without the html ***head*** part.
+     \ The ***head*** section will be generated by CodKep. The ***php_function_name_2*** function will receive
+     \ the ***$route*** parameter.
+    - ***"htmlend" => "php_function_name_3"***
+     - It should generate the html end string after the html ***body*** close tag.
+     \ The ***php_function_name_3*** function will receive the ***$route*** parameter.
+    - ***"body" => "php_function_name_4"***
+     - It should generate the whole page html content from the ***body*** open tag to ***body*** close tag.
+     \ The ***php_function_name_4*** function will receive the ***$content*** and the ***$route*** parameters.
+     \ The generated page content will available in ***$content->generated*** and the generated page parts are
+     \ in ***$content->pageparts['PAGEPARTNAME']*** array.
+
+Let's see and example of theme definition:
+~~~php
+// Let's define the "fancy" theme in "mydesign" module
+function hook_mydesign_theme()
+{
+    $def = array();
+    $def['fancy'] = [
+                "pageparts" => [
+                    "header",
+                    "sidebar_left",
+                    "sidebar_right",
+                    "footer",
+                ],
+                "generators" => [
+                    "runonce"   => "fancy_runonce",
+                    "htmlstart" => "fancy_htmlstart",
+                    "htmlend"   => "fancy_htmlend",
+                    "body"      => "fancy_body",
+                ],
+        ];
+    return $def;
+}
+.
+function fancy_runonce($content)
+{
+    ...
+    //Add headers css,javascript files, etc.
+}
+.
+function fancy_htmlstart($route)
+{
+    ob_start();
+    ...
+    // Prints html starter content
+    return ob_get_celan();
+}
+.
+function fancy_htmlend($route)
+{
+    ob_start();
+    ...
+    // Prints html end content
+    return ob_get_celan();
+}
+.
+function fancy_body($content,$route)
+{
+    ob_start();
+    ...
+    /*  Prints the content of the site between htmlstart and htmlend.
+        You can find the generated content in $content->generated;
+        The codes of the defined page parts are located in $content->pageparts['PAGEPARTNAME']
+    */
+    ...
+    print generate_menu_structure(); // main menu
+    ...
+    print $content->pageparts['header'];
+    ...
+    print $content->generated;
+    ...
+    print $content->pageparts['footer'];
+    ...
+    return ob_get_celan();
+}
+
+~~~
+
+
+#menu#
+== Menu system ==
+
+
+Most site have a main menu, which helps to navigate on the site.
+The CodKep also support using of this kind of menu.
+There are two way to add elements to the main menu.
+
+ # Add menu array structure to ***$site_config->mainmenu*** variable.
+   - *You can do this in ***_settings.php*** or other places before the content generation.*
+   - *The menu definition array is an associated array where the index will be the name in the menu,*
+   \ *the value is an internal location to reference. (Passed to [***url()***|url:doc/codkep/routes#urlfunc] inside)*
+   - *The value can be an another array will be handled as submenu*
+ # Add ***#mainmenu*** [tag|url:doc/codkep/routes#tags] to [locations|url:doc/codkep/routes] or pages.
+   - *By default the CodKep will append this items to the main menu if*
+   \ *the ***$site_config->mainmenu_append_tag_mainmenu*** variable is ***true*** in ***_settings.php*** (default)*
+
+An example of main menu structure in ***_settings.php***
+~~~php
+
+$site_config->mainmenu["Start"] = "start";
+$site_config->mainmenu["News"]  = "news";
+$site_config->mainmenu["Actions"]=[
+        'Post someting' => 'postcontent',
+        'Search something' => 'searchitem',
+      ];
+$site_config->mainmenu["Settings"] ="user_settings";
+$site_config->mainmenu["Contact"] ="contactsite";
+~~~
+
+*Note: The main menu can be modified by ***alter_mainmenu($obj)*** [hook|url:doc/codkep/hooks] *
+*immediately before the generation.*
+.
+In case your default theme is the "flex" the main manu can located different positions.
+You can specify the desired position by set the ***$flex->mainmenu_pos*** variable in site settings.
+The possible values are:
+
+ - ***ABOVE_LOGO*** - The main menu will nr shown on page top above the logo picture (if exists).
+ - ***BETWEEN_LOGO_HEADER*** (default) - The main menu will be shown between the logo and the site header.
+ - ***BELOW_HEADER*** - The main menu will be shown under the header and above the page content.
+
+=== Custom themes and menu generation ===
+
+In case a custom theme is used, the theme have to place the main menu to the appropriate place.
+The CodKep core has a helper function to generate the html structure of the main menu according
+to the settings seen above.
+.
+@@@generate_menu_structure($pad='')@@@
+<br/>
+This function generate the html structure of the main menu according to
+the ***$site_config->mainmenu*** variable and the ***#mainmenu*** tags if exists.
+In order to place main menu to your custom theme, you should print the return value of this function
+and add the necessary CSS to show this as menu.
+.
+The ***generate_menu_structure*** will generate the following html structure from code above
+in the main menu settings example:
+~~~code
+<ul class="menu">
+  <li class="first leaf "><a href="start">Start</a></li>
+  <li class="leaf "><a href="news">News</a></li>
+  <li class="expanded "><a href="">Actions</a>
+    <ul class="menu">
+      <li class="first leaf "><a href="postcontent">Post someting</a></li>
+      <li class="last leaf "><a href="searchitem">Search something</a></li>
+    </ul>
+  </li>
+  <li class="leaf "><a href="user_settings">Settings</a></li>
+  <li class="last leaf "><a href="contactsite">Contact</a></li>
+</ul>
+~~~
+.
+You can use the html structure generator functionality of ***generate_menu_structure*** for different kind of menus,
+like user menu, or drop down menus by the following function:
+.
+@@@menu_expand(array $m,$pad='')@@@
+<br/>
+This function will generate a html ***ul-li-ul-etc*** structure from a menu array explained at main menu.
+The ***generate_menu_structure*** function also use this function to generate the content.
+- Parameter ***$m*** is the array which describe the menu to generate.
+- Parameter ***$pad*** is a padding string to prefix every line in generated code.
+.
+
+
+== Hooks ==
+
+The following [hooks|url:doc/codkep/hooks] can be implement related to themes.
+| Hook                     | Description |
+| ---                      | ---         |
+| HOOK_sitearea_SITENAME() | You can assign your content callbacks with the appropriate site areas.        |
+| HOOK_theme()             | Hook to define new themes.                                                    |
+| HOOK_alter_sitearea($areaname,$name,$obj)  | Hook to alter the generated content of site areas.          |
+| HOOK_flex_runonce()      | Invoked by the flex theme if used. It runs once before the content generation |
+| HOOK_alter_mainmenu($obj)| This hook can modify the main menu array structure immediately before the generation |

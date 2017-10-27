@@ -1,0 +1,57 @@
+= CodKep introduction =
+=== What is CodKep ===
+
+CodKep is a lightweight web framework written in [PHP|url:https://php.net/].
+It heavy inspired by the Api of Drupal CMS.
+It tries to be as robust as Drupal when coding without the bloatness of GUI.
+.
+CodKep is designed to build very database active sites where the design is not the primary goal,
+but the other side lots of database functions forms and queries are used.
+To achieve this the CodKep have rich set of form generation api.
+
+.
+__Design drictives of CodKep__
+
+- Try to be simple and fast.
+- Be portable. Easy moving from one server to another, from development site to live, etc.
+- Modular build. The modules can extend or change the site behavior by "hooks".
+ - The site builder can do their modifications by own modules.
+ - Many of the main modules are detachable. (Even the SQL!)
+- Does not store anything site structure info and site settings in SQL.
+ - Test, live and development site settings/configurations can easily maintained by GIT
+ \ or other version control system, because all webmaster settings is stored in files.
+ - The database is only used for site contents or user settings.
+ - Sql schema info are also stored in files.
+ \ The framework can check the current database schema and fix the changes.
+- Be secure. All parameters which came from the user side are strictly checked by the framework
+- Rapid automatized building of forms and queries of various element types.
+- Rich set of debugging tools
+- Try to use minimal set of third party apps/libs to minimize dependencies
+- Easy upgrade by design. The framework and the site data are stored separated places.
+
+.
+
+#toc#
+=== The main chapters of this document ===
+ - [Installing CodKep|url:doc/codkep/modules#installing]
+ - [Directories|url:doc/codkep/modules#directories]/[Site configuration|url:doc/codkep/modules#site_settings]
+ - [Modules|url:doc/codkep/modules#modules]
+ - [Hook system|url:doc/codkep/hooks]
+ - [Locations/Routes/Urls|url:doc/codkep/routes]
+ - [Parameters/Security checks|url:doc/codkep/parameters]
+ - [Style and javascript and headers modifications|url:doc/codkep/structure#themeunrelated]
+ - [Menus|url:doc/codkep/structure#menu]
+ - [Themes|url:doc/codkep/structure]
+ - [Ajax framework|url:doc/codkep/ajax]
+ - [Sql module|url:doc/codkep/sql]
+ - [User module|url:doc/codkep/user]
+ - [Html table|url:doc/codkep/tablegen] and [Form generation framework|url:doc/codkep/forms]
+ - [Autoformatted sql queries|url:doc/codkep/totable]
+ - [Excel xml document generator|url:doc/codkep/tablegen#excelxml]
+ - [Nodes|url:doc/codkep/node]
+ - [Files (Upload/Store/Read/Delete)|url:doc/codkep/file]
+ - [Pages|url:doc/codkep/page] editable with CKeditor
+ - [Debugging/coding helpers|url:doc/codkep/debug]
+
+=== Author, License ===
+The CodKep is written by [Péter Deák|url:http://www.hyperprog.com] (hyper80@gmail.com) under GPLv2 license.

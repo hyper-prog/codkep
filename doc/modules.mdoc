@@ -1,0 +1,234 @@
+= Installing, Modules =
+
+#installing#
+=== Installing codkep ===
+
+Before you start, make sure your web server is running and php enabled.
+<br/>
+__The CodKep requires at least PHP 5.4.0 version.__
+.
+To install the CodKep you only need to do is download the CodKep sources and extract to your webserver's root.
+~~~code
+# In case the webserver's root is /var/www/html
+$sudo tar xzvf codkep-XYZ.tar.gz -C /var/www/html
+~~~
+If the php is enabled on your web server, you can reach your website.
+You should see the start page of CodKep.
+.
+{file:startpage.png|css:border: 2px solid #999;|title:CodKep start page after fresh install}
+.
+On the start page the CodKep will check some dependencies and prerequisites.
+Please install/do the necessary things to your system to correctly use the framework.
+.
+In order to create your own site with CodKep you have to create the following two files,
+which holds the settings of the new site.
+
+| path/name                | role |
+| ---                      | ---  |
+| ***site/_settings.php*** | <small>The global settings of your site is done here.<br/>(This settings are expandable by modules)</small> |
+| ***site/_modules.php***  | <small>The modules of your site. You can enable disable your own modules in this file.</small> |
+
+See the [Site settings, configuration|url:doc/codkep/modules#site_settings] chapter
+to learn how to create ***_settings.php***. Thereafter read the [modules|url:doc/codkep/modules#modules] chapter
+to create ***_modules.php***.
+
+#directories#
+== Directories ==
+
+The following files and directories are exist in CodKep (webserver root after installing).
+| name | purpose | in case of upgrade |
+|---   |---      |---                 |
+| ___**data**___ | Contains the file data of the site executed by the framework | _Does not need to touch this directory_ |
+| ___**site**___ | Contains your site settings, and custom modules written by the site builders. | _Does not need to touch this directory_ |
+| ___**sys**___  | CodKep core files with core modules. <br/>No need to change anything here when build your own site. | _This directory should fully overwrite_ |
+| ___index.php___ | Symbolic link to ___sys/index.php___<br/>This is the entry point of the site. | _Does not need to touch this link_ <br/>_because the real file is ugraded in sys directory_ |
+
+**CodKep upgrade:** All CodKep core files are located under ***sys*** directory, so in case of upgrade you only
+need to rewrtite the whole ***sys*** with the upgraded version and leave other directories untouched.
+
+
+#site_settings#
+== Site settings, configuration ==
+
+
+Every settings and modules belongs to your site is located in ___site___ directory.
+<br/>
+The is two special file located in ___site___ which contains important settings of your site.
+- ***site/_settings.php*** Holds your site configuration
+- ***site/_modules.php*** Holds the enabled modules of your site
+
+Let's see an example of ***site/_settings.php*** contains some important info to set.
+This code can be used as start template for new site.
+
+~~~php
+<?php
+global $site_config;
+.
+//Change this in case if CodKep does not installed to webserver root
+$site_config->base_path = '';
+ // $site_config->base_path = '/mysite';
+ // $site_config->base_path = '/~paul/web';
+.
+//Specify the internal location started when non requested (startpage)
+$site_config->startpage_location = 'start';
+.
+//Specify your own page theme if you have one.
+//$site_config->default_theme_name = 'flex';
+.
+$site_config->site_name    = "CodKep site";
+$site_config->site_slogan  = NULL;
+.
+//Your site's favorite icon
+//$site_config->site_icon = '/data/images/siteicon.ico';
+.
+//Default locale of the site
+//$site_config->lang = '';
+.
+//Enable or disable page generation time below the generated content.
+$site_config->show_generation_time = true;
+.
+//Enable clean urls.
+// (Example: http://example.com/index.php?q=doc/codkep  ->  http://example.com/doc/codkep )
+//Need some further settings in webserver to enable this. See clean url section in doc.
+//By default it is false.
+$site_config->clean_urls = false;
+.
+//Enable/disable your site hook table info.
+//$site_config->enable_hook_table_info = true;
+.
+~~~
+
+The sql database settings of the site is also come here:
+
+~~~php
+global $db;
+.
+//Settings of the sql database
+$db->servertype = "mysql";
+$db->host       = "127.0.0.1";
+$db->name       = "databasename";
+$db->user       = "username";
+$db->password   = "secretpassword";
+.
+//You can specify a password for sql schema editor page here.
+//The editor can reached with this password in case no admin user logged in.
+//You can disable this by set empty password.
+$db->schema_editor_password = "VerySecretPassword";
+.
+global $site_config;
+.
+//Some debug functionality. Prints all sql command to the page end.
+//$site_config->show_sql_commands_executed = true;
+~~~
+.
+
+The system modules have many settings can be set this way.
+I won't list all of then, but let see some important here:
+
+| name                                                              | module   | default                          | description |
+|---                                                                |---       | ---                              |---          |
+|<small> ***$site_config->base_path***                      </small>|core      |<small> ''                        </small>|Installed location relative to the root of webserver. Leave empty if installed to domain's root. Start with "/" sign if specified. For example: "/mysite"|
+|<small> ***$site_config->base_path_nonexfiles***           </small>|core      |<small> NULL                      </small>|Overrided location of static files like images, documents etc.|
+|<small> ***$site_config->startpage_location***             </small>|core      |<small> 'not_configured_startpage'</small>|Default start location of the page|
+|<small> ***$site_config->startpage_location_byhost***      </small>|core      |<small> array()                   </small>|Default start location of pages for different domain names. Associative array of domain names and locations |
+|<small> ***$site_config->default_theme_name***             </small>|core      |<small> 'flex'                    </small>|The default page theme (style) name of the site. The internal locations can override this. |
+|<small> ***$site_config->site_icon***                      </small>|core      |<small> 'sys/images/cklogo.ico'   </small>|The default favicon of the site. The sub-locations can override this. |
+|<small> ***$site_config->notfound_location***              </small>|core      |<small> 'notfound'                </small>|The "page not found" location of the page. If a non existent location is requested it will be redirected to here.|
+|<small> ***$site_config->lang***                           </small>|core      |<small> 'en'                      </small>|The default language locale of the site|
+|<small> ***$site_config->site_name***                      </small>|core      |<small> NULL                      </small>|The name of the site. (NULL if not defined) |
+|<small> ***$site_config->site_slogan***                    </small>|core      |<small> NULL                      </small>|The slogan of the site. (NULL if not defined) |
+|<small> ***$site_config->logo_img_url***                   </small>|core      |<small> NULL                      </small>|The url of the logo image displayed on page top. (NULL if not defined) |
+|<small> ***$site_config->mainmenu***                       </small>|core      |<small> array()                   </small>|The main menu structure of the site. It contains "menu item name"=>"menu item location" pairs. And also can contains sub-arrays. The ***generate_menu_structure()*** will generate the output according to this value. |
+|<small> ***$site_config->mainmenu_append_tag_mainmenu***   </small>|core      |<small> true                      </small>|If this value is true the CodKep will append all route with ***#mainmenu*** tag to the ***$site_config->mainmenu*** array with the appropriate hash value as menu name.|
+|<small> ***$site_config->cookie_domain***                  </small>|core      |<small> NULL                      </small>|Set the domain of session cookie name. You can enable cross site login with specify this name to same value. |
+|<small> ***$site_config->authcookie_name_salt***           </small>|core      |<small> random value              </small>|A random salt value to generate authcookie name. The security is improved, when changed to some random data. |
+|<small> ***$site_config->show_generation_time***           </small>|core      |<small> true                      </small>|Enable or disable page generation time info. (Bottom of the page)|
+|<small> ***$site_config->main_script***                    </small>|core      |<small> 'index.php'               </small>|Main "entry point" of the codkep system. This used when a local url generated|
+|<small> ***$site_config->clean_urls***                     </small>|core      |<small> false                     </small>|Enable clean URL-s (Need furher settings to do)|
+|<small> ***$site_config->parameter_autodefine***           </small>|core      |<small> false                     </small>|Enable using POST and GET parameter without explicit define them. Not recommended because security reasons.|
+|<small> ***$site_config->enable_hook_table_info***         </small>|debug     |<small> false                     </small>|Enable hook info pages located ***/hooks*** and ***/hookcalls*** |
+|<small> ***$site_config->show_sql_commands_executed***     </small>|debug     |<small> false                     </small>|Show every sql command on bottom of the page|
+|<small> ***$db->servertype***                              </small>|sql       |<small> 'none'                    </small>|Type of sql server ***mysql*** ***pgsql*** ***none***|
+|<small> ***$db->host***                                    </small>|sql       |<small> ''                        </small>|Hostname of the sql server|
+|<small> ***$db->name***                                    </small>|sql       |<small> ''                        </small>|Database name on the sql server|
+|<small> ***$db->user***                                    </small>|sql       |<small> ''                        </small>|Username of the sql server|
+|<small> ***$db->password***                                </small>|sql       |<small> ''                        </small>|Password for the sql server|
+|<small> ***$db->auto_error_page***                         </small>|sql       |<small> true                      </small>|Should the sql executer functions automatically redirects to error page when something wrong during an sql operation. (Some kind of automatic error handling)|
+|<small> ***$db->schema_editor_password***                  </small>|sql       |<small> ''                        </small>|You can specify a password for sql schema editor page here. The editor can reached with this password in case no admin user logged in. (Empty means disabled)|
+|<small> ***$db->schema_editor_allowed_for_admin***         </small>|sql       |<small> true                      </small>|Should sql schema editor allowed to use for administrator users without special schema editor password|
+|<small> ***$site_config->enable_speeformbuilder***         </small>|sfbuilder |<small> false                     </small>|Enable to use speedformbuilder page: [Speedformbuilder|url:speedformbuilder] |
+|<small> ***$site_config->enable_speeformbuilder_preview*** </small>|sfbuilder |<small> false                     </small>|Enable speedformbuilder to use CodKep server side to generate form preview |
+|<small> ***$site_config->enable_speeformbuilder_load_definitions*** </small>|sfbuilder |<small> false            </small>|Enable speedformbuilder to query/load existing node definition to the builder |
+|<small> ***$site_config->node_unauth_triggers_login***     </small>|node      |<small> false                     </small>||
+|<small> ***$site_config->public_file_path***               </small>|file      |<small> 'data'                    </small>||
+|<small> ***$site_config->public_file_url***                </small>|file      |<small> '/data'                   </small>||
+|<small> ***$site_config->secure_file_path***               </small>|file      |<small> 'data/secure'             </small>||
+|<small> ***$site_config->secure_file_url***                </small>|file      |<small> '/data/secure'            </small>||
+|<small> ***$site_config->disable_system_doc_target***      </small>|doc       |<small> false                     </small>|Disable the documentation location of the system: ___doc/*___ <br/>You can reuse this location this way.|
+|<small> ***$flex->mainmenu_pos***                          </small>|flex      |<small> BETWEEN_LOGO_HEADER       </small>|Properties of flex theme. Controls the location of main menu. |
+|<small> ***$flex->sidebar_blocks_have_border***            </small>|flex      |<small> false                     </small>|Properties of flex theme. Sets wheter the sidebar boxes have borders.|
+
+
+Every module can extend this settings with their own by using ___boot___ [hook|url:doc/codkep/hooks].
+For example if the "mymodule" should have an "amount" value with default value 10 the boot hook looks like this way:
+~~~code
+//mymodule.php
+.
+function hook_mymodule_boot()
+{
+    global $site_config;
+    $site_config->amount = 10;
+}
+~~~
+This way the "amount" value can be changed in ***site/_settings.php*** file
+and can be reach in every module with the default or set value.
+
+
+
+#modules#
+= Modules =
+
+
+
+A codkep module is a php file or files containing some functionality and is written in PHP.
+The module code executes within the context of the site,
+it can use all the functions and access all variables and structures of CodKep core.
+.
+You can build and customize your own site by writing modules to CodKep,
+so that a site building should start by write your own module and extend the core.
+
+ - The CodKep modules are php files.
+ - The active modules have to be listed in ***site/_modules.php*** file.
+
+The third party and own modules (not system) are located under ***site*** directory.
+.
+
+The ***site/_modules.php*** contains the ***$site_modules*** global associative array
+which contains the _name_ and _path_ of the loadable modules.
+
+.
+An example ***site/_modules.php***
+~~~php
+<?php
+.
+global $site_modules;
+.
+$site_modules =
+ [
+    "mymodule" => "mymodule.php",
+    "anotherlib" => "anotherlib.php",
+ ];
+~~~
+In the example above
+ - The "mymodule" is the name of the module. (The hook names will contains this string)
+ - The "mymodule.php" is the path of the php file relative to ***site*** directory
+
+You can enable or disable modules by commention out the line of the desired modules in ***_modules.php***.
+The modules can modify or extend the CodKep functionalities by hooks.
+It means that writing own modules named "xyz" is starting with the following steps:
+ # Create an empty xyz.php file in ***site*** directory.
+ # Add ***"xyz" => "xyz.php"*** line to the ***$site_modules*** array in ***_modules.php*** file.
+ # Write functions to xyz.php with special names to implement some hooks
+
+_The CodKep core's functionality can changed by [hooks|url:doc/codkep/hooks] within the modules._
+

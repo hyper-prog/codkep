@@ -1,0 +1,59 @@
+/* CSS file for CodKep flex theme colors.
+   Peter Deak (C) hyper80@gmail.com */
+
+/* To change the colors of your site set $flex->disable_builtin_colorcss = true in your site settings
+ * and add your own copy of this file by flex_runonce hook
+ */
+body { background-color: #ffffff; }
+
+.logobgcolor { background-color: #dddddd; }
+
+.pagebgcolor { background-color: #f5f5f5; }
+
+.pageout { background-color: #ffffff; }
+
+.headerbgcolor
+{ background-color: #c0c0c0;
+  background: -moz-linear-gradient(top, #c0c0c0 0%, #e9e9e9 100%); /* FF3.6-15 */
+  background: -webkit-linear-gradient(top, #c0c0c0 0%,#e9e9e9 100%); /* Chrome10-25,Safari5.1-6 */
+  background: linear-gradient(to bottom, #c0c0c0 0%,#e9e9e9 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#c0c0c0', endColorstr='#e9e9e9',GradientType=0 ); /* IE6-9 */
+}
+
+#site-name,#site-name a:link, #site-name a:visited, #site-name a:hover,
+#site-slogan,#site-slogan a:link, #site-slogan a:visited, #site-slogan a:hover
+{ color: #212121; }
+
+.footerbgcolor
+{ background: #e9e9e9;
+    background: -moz-linear-gradient(top, #e9e9e9 0%, #c0c0c0 100%); /* FF3.6-15 */
+    background: -webkit-linear-gradient(top, #e9e9e9 0%,#c0c0c0 100%); /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(to bottom, #e9e9e9 0%,#c0c0c0 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e9e9e9', endColorstr='#c0c0c0',GradientType=0 ); /* IE6-9 */
+}
+
+.sidebar .block { background-color: #dbdbdb; }
+
+table tr.validation_highlighted td{
+    border: 4px solid #ff2222 !important;
+}
+
+/* Colors of main dropdown menu */
+
+.mmenubgcolor { background-color: #ddddcc; }
+#mainmenu-show-area li ul
+{
+    border-left:1px solid #ddddcc;
+    border-bottom:1px solid #ddddcc;
+}
+#mainmenu-show-area li a:link, #mainmenu-show-area li a:visited, #mainmenu-show-area li a:hover
+{ background-color: #ddddcc; color: #020202; }
+#mainmenu-show-area li a:hover, #mainmenu-show-area ul li.active a
+{ background-color: #bbbb99; color: #030303; }
+#mainmenu-show-area li li a:link, #mainmenu-show-area li li a:visited
+{ background-color: #ddddcc; color: #020202; }
+#mainmenu-show-area li li a:hover
+{ background-color: #bbbb99; color: #030303; }
+
+
+/* End */

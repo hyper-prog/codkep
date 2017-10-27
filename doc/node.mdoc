@@ -1,0 +1,796 @@
+= Node =
+
+Node is an universal container class provided by CodKep to make it easy for managing
+different kind of data objects same way. The programmer can specify node types
+which identified by a "nodetype" string. Once the node type is registered in CodKep the node module
+provides interfaces for add delete edit or view this typed nodes.
+.
+Every *node has a **n**ode **id**entifier* ***nid*** which unique between nodes and can used to access the node.
+.
+The CodKep provides internal [routes|url:doc/codkep/routes] to manage nodes
+- ***node/{nid}*** - View/display node
+- ***node/{nid}/view*** - View/display node
+- ***node/{nid}/edit*** - Edit the node
+- ***node/{nid}/delete*** - Delete the node
+- ***node/{nodetype}/add*** - Add a new node with the ***nodetype*** type
+.
+- ***nodeintype/{nodetype}/{joinid}*** - View/display node by the type and the type specific identifier
+- ***nodeintype/{nodetype}/{joinid}/view*** - View/display node by the type and the type specific identifier
+- ***nodeintype/{nodetype}/{joinid}/edit*** - Edit the node by the type and the type specific identifier
+- ***nodeintype/{nodetype}/{joinid}/delete*** - Delete the node by the type and the type specific identifier
+
+.
+Examine the CodKep users as example, because the CodKep users are also nodes with node type: ***user***
+<br/>
+Accordingly we can create a new users on the following url: [node/user/add|url:node/user/add]
+<br/>
+The admin user usually got the ***nid*** = ***1*** value.
+If so you can edit the admin user data on the following url: [node/1/edit|url:node/1/edit]
+.
+The programmers side the nodes are objects (with Node or Node subclass type) which can be load/save/remove uniform way and the fields of the
+defined node type are accessible as object properties. You can get or set these object properties freely.
+The changed properties can be stored into database by single ***save()*** or ***insert()*** method.
+You can read about the [database appearance later|url:#databaseappear].
+.
+_Every node can contains data fields which are specified by the type of node. You can set and read this_
+_fields as object properties of node._
+.
+Create a new user with password from php codes:
+~~~php
+$n = node_create('user');
+$n->name = 'Sample Sam'; //set the node's name field
+$n->login = 'sam';       //set the node's login field
+$n->password = scatter_string_local('secret1');
+$n->insert();
+~~~
+
+
+#nodeproperties#
+=== Fixed properties(fields) of the Node ===
+
+
+Every field which defined in the specified node type are accessible as object properties of the node object.
+Beside this user defined properties the node has same built-in properties which are available in all typed node.
+.
+**Built-in properties of node object:**
+<br>(The ***$node*** is only a sample object variable here))
+- @@@node_nid@@@  - (Use: ***$node->node_nid***)
+ - The ***NID*** (**N**ode **ID**entifier) of the node.
+ \ This value is unique in all node and identifies the node without the node type.
+- @@@node_type@@@  - (Use: ***$node->node_type***)
+ - The node type. (string)
+- @@@node_join_id@@@  -  (Use: ***$node->node_join_id***)
+ - The primary identifier of the type specific sql table.
+ \ This value is unique in the specified node type and identifies the node together with the node type.
+- @@@node_creator@@@  -  (Use: ***$node->node_creator***)
+ - The login name of the user who creates the node
+- @@@node_created@@@  -  (Use: ***$node->node_created***)
+ - The timestamp contains the creating time of the node
+- @@@node_loaded@@@  -  (Use: ***$node->node_loaded***)
+ - This property is ***true*** if the node is loaded otherwise ***false***.
+- @@@node_preferred_theme@@@  -  (Use: ***$node->node_preferred_theme***)
+ - Hold the preferred theme name of the node.
+
+
+#nodemethods#
+=== Methods of Node class ===
+
+Constructor:
+- @@@Node($type = 'node')@@@ - The constructor (***__construct***) of Node
+ - If you do not specify the ***$type*** parameter or give the ***'node'*** value, the node will be uninitialised.
+ \ It is recommended to use ***node_create()***, ***node_load()***, ***node_load_intype()*** or
+ \ use ***Node::getNodeInstanceByType($type)*** static function to create a node instance instead of
+ \ directly call this constructor.
+
+Static methods:
+- @@@Node::load($nid = NULL,$trunk = false)@@@
+ - Load the node from database by NID.
+ - Static method, returns an appropriate Node or Node descendant if success.
+- @@@Node::load_intype($join_id,$type)@@@
+ - Load the node from database by TPYE and JOIN_ID.
+ - Static method, returns an appropriate Node or Node descendant if success.
+- @@@Node::getNodeInstanceByType($type)@@@
+ - Creates a Node (or Node descendant) object according to the $type parameter.
+ - Static method, returns an appropriate Node or Node descendant if success.
+
+Methods:
+- @@@save()@@@
+ - Save the node to the database.
+- @@@insert()@@@
+ - Insert this node to the database.
+ - Returns the NID of the created node.
+- @@@remove()@@@
+ - Remove the node from the database.
+- @@@getform($mode = '')@@@
+ - Generate a HtmlFrom object
+- @@@view()@@@
+ - Generated html codes to view the node.
+ - Returns html codes.
+- @@@definedFields()@@@
+ - Returns an array containing the names of defined fields.
+- @@@get_display_value($fieldname)@@@
+ - Returns the display value of a specified field. You can always get the value of a field by the field name as property
+ \ but some fields (like the txtselect, numselect, sqlchoose) holds a key value not the display value referenced by the key.
+ \ You can get the desired display value with this function. Most cases (like field type smalltext and largetext) this function
+ \ directly pass the value.
+- @@@get_speedform_object()@@@
+ - Returns the backend SpeedForm object of the node.
+- @@@&get_definition_root()@@@
+ - Returns a reference to the data definition array root of the node.
+- @@@&get_definition_field($sqlname)@@@
+ - Returns a reference to the data definition array's appropriate field definition.
+
+#mmethods#
+Methods which does nothing (or do a minimal basic operations) in Node class.
+They can redefined in subclasses to achieve some special functions.
+See [custom node object chapter|url:#customnodeobject]:
+- @@@m_after_loaded()@@@
+ - Called immediately after node loaded from the database.
+- @@@m_before_insert()@@@
+ - Called immediately before node inserted to the database.
+- @@@m_after_insert()@@@
+ - Called immediately after node inserted to the database.
+- @@@m_before_save()@@@
+ - Called immediately before node saved/updated in the database.
+- @@@m_after_save()@@@
+ - Called immediately after node saved/updated in the database.
+- @@@m_before_delete()@@@
+ - Called immediately before node deleted from the database.
+- @@@m_before_form($op)@@@
+ - Called immediately before node's from generated.
+ - The returned text will be prepend to the node view/create/edit/delete form.
+- @@@m_after_form($op)@@@
+ - Called immediately after node's from generated.
+ - The returned text will be append to the node view/create/edit/delete form.
+- @@@m_form_code_generation($form,$ro)@@@
+ - Generates the html codes from the (previously generated) ***$form*** object
+ \ with the appropriate ***$ro*** (readonly) mode.
+ \ (By default it does: ***return $form->get($ro);***)
+
+
+#nodehelpers#
+=== Helper functions of node class ===
+
+
+.
+@@@node_create($type)@@@
+<br/>
+Create and return an "empty" node with a specified node type.
+The returned node can be inserted to the database after the properties is set.
+~~~php
+// Create an empty node and filled with values
+$n = node_create("task");
+$n->description = "Do something";
+$n->cost = 22;
+$n->deadline = "2017-02-11";
+.
+//Saved to the database and prints a node view link
+$nid = $n->insert();
+print "The task is saved, see:" . l('View','node/'.$nid);
+~~~
+.
+@@@node_load($nid)@@@
+<br/>
+Load and return the node from the database by NID
+~~~php
+//Loads a node by NID
+$n = node_load($nid);
+//Increase the "value" by 10
+$n->value = $n->value + 10;
+//Save to the database
+$n->save();
+~~~
+.
+@@@node_load_intype($join_id,$type)@@@
+<br/>
+Load and return the node from the database by NODETYPE and JOIN_ID
+~~~php
+//Print the name of the user $uid
+$u = node_load_intype($uid,'user');
+print "The name of the user is " . $u->name;
+~~~
+.
+@@@node_delete($nid)@@@
+<br/>
+Delete the specified node.
+.
+@@@sql_table_of_nodetype($type)@@@
+<br/>
+Returns the sql table creation string of the node (CREATE TABLE)
+.
+
+
+#definenode#
+== Defining a node ==
+
+
+CodKep modules can define node types by ***HOOK_nodetype*** [hook|url:doc/codkep/hooks].
+In case you intent to define a new node type, you have to implement ***HOOK_nodetype*** in your module and return
+a SpeedForm's [data definition structure array|url:doc/codkep/forms#speedformdatadef]
+with the index name of the defined node type string.
+.
+*Note: You can also use the [SpeedForm builder|url:speedformbuilder] to assemble this node definition array.*
+.
+An example, which define the "sampletype" node type in "mymodule" module:
+~~~php
+function hook_mymodule_nodetype()
+{
+  $d['sampletype'] =  [
+                "name" => "samplenode",
+                "table" => "sample",
+                "show" => "table",
+                "fields" => [
+                        10 => [
+                            "sql" => "id",
+                            "type" => "keyn",
+                            "hide" => true,
+                        ],
+                        20 => [
+                            "sql" => "name",
+                            "text" => "Name",
+                            "type" => "smalltext",
+                            "check_noempty" => "Cannot leave empty",
+                            "color" => "#ddddff",
+                        ],
+                        100 => [
+                            "sql" => "add_btn",
+                            "default" => 'Add',
+                            "type" => "submit",
+                            "in_mode" => "insert",
+                            "centered" => "yes",
+
+                        ],
+                ],
+            ];
+  return $d;
+}
+~~~
+
+The detailed documentation of data definition structure array is located [here|url:doc/codkep/forms#speedformdatadef].
+.
+The index number of the fields are influence the sort of the fields.
+(The fields are sorted ascending before using)
+.
+*Note: A defined node is automatically registers the necessary sql schema requirements,*
+*so after defining a node type or alter something it is strongly recommended*
+*to revisit the CodKep's [sql schema check page|url:sqlschema] to meet the possible new requirements. *
+*The schema editor page [in documentation|url:doc/codkep/sql#schemeedit].*
+.
+*Note2: After you created a new node type you also have to specify the permissions of users on this node type.*
+*See [this chapter|url:#nodeaccess]*
+
+
+#dynamicdefine#
+=== Dynamic node definition ===
+
+Your site may use many node types, which uses a lots of resources to load.
+Usually a page load does not use all node types defined by your modules.
+To save loading time the node module has a dynamic node type loading
+method, which only loads the necessary definitions. You can put each node type definition to separated files, and the CodKep only loads the necessary file if the
+specific node type is used. This subsystem uses php [spl_autoload_register|url:http://php.net/manual/en/function.spl-autoload-register.php]
+function.
+.
+How to define nodetypes dynamically:
+ - Write the data definition structure of the node type in a separate file as a static property of an arbitrary
+ \ class with name "definition"
+ - Use ***HOOK_objectnodetype*** hook to specify the class name and the file where the node type is defined.
+  - The ***HOOK_objectnodetype*** hook has to return an associative array where the key is the name of the node type
+  \ and the value is an another associative array with two key-value pair:
+   - ***"defineclass" = CLASSNAME*** - The CLASSNAME where the definition is located in the ***$definition*** static property.
+   - ***"file" = FILENAME*** - The FILENAME where the class definition is located.
+
+In case the Node module requires the definition of the node type it loads the class from the specified file.
+.
+Let's see the dynamic definition example of "tool" node type:
+~~~code
+function hook_mymodule_objectnodetype()
+{
+    $r = [];
+    $r['tool'] = [
+            'defineclass' => 'ToolNode',
+            'file' => 'site/definitions/ToolNode.php'
+    ];
+    return $r;
+}
+~~~
+The ***site/definitions/ToolNode.php*** file (part):
+~~~php
+// This class can be a sublcass of any class, it does not matter in case of definition.
+class ToolNode
+{
+     public static $definition =
+        [
+            "name" => "tool_def",
+            "table" => "tools",
+            "show" => "table",
+...
+    ];
+}
+~~~
+
+*Node: The ***HOOK_nodetype_alter_NODENAME*** hook cannot modify the definition of node type which specified dynamically.*
+*The reason is that the node definitions are not loaded only if used. Don't worry about this,*
+*all built-in node type defined standard way (not dynamic).*
+
+
+
+#alternode#
+=== Modify existing node types ===
+
+
+
+The node module provides the ***HOOK_nodetype_alter_NODENAME($obj)*** [hook|url:doc/codkep/hooks]
+which can alter the already defined node types.
+You have to substitute the desired node type with NODENAME word in hook name.
+This hook receives an object which contains a reference to the data definition structure modifiable way.
+.
+Let's see an example code where we add an email field to the CodKep's built in ***user*** node type:
+~~~php
+function hook_mymodule_nodetype_alter_user($p)
+{
+    $p->def['fields'][55] = [
+        'sql' => 'email',
+        'text' => 'E-mail',
+        'type' => 'smalltext',
+        'par_sec' => 'text5',
+    ];
+}
+~~~
+
+*Note: After implementing this hook you have to visit*
+*the [sql schema check page|url:sqlschema] to meet the new sql requirements. *
+
+
+
+#databaseappear#
+== Database appearance of nodes ==
+
+
+The nodes are represented by two separate sql tables in the sql database.
+One of them is the common "***node***" table which holds the common properties of nodes and the required data
+to join to the second table which is depends on node type and holds the data of the fields.
+The second table name is specified by the data definition structure and different in every node type.
+.
+The primary key of the type specific SQL table is located in the ***join_id*** field of the ***node*** table:
+
+~~~code
+mysql> select * from node;
++-----+----------------+---------+--------+-------------------+---------------------+
+| nid | type           | join_id | ptempl | creator           | created             |
++-----+----------------+---------+--------+-------------------+---------------------+
+|   1 | user           | 1       | NULL   | <unauthenticated> | 2017-01-24 09:34:27 |
+|   2 | user           | 2       | NULL   | admin             | 2017-01-24 09:35:22 |
+|   3 | task           | 1       | NULL   | dave              | 2017-01-24 09:41:07 |
+|   4 | task           | 2       | NULL   | dave              | 2017-01-24 09:42:21 |
++-----+----------------+---------+--------+-------------------+---------------------+
+4 rows in set (0.00 sec)
+~~~
+
+It means that there is two way to identify a node:
+- by NID
+ - Node can load with ***$node = node_load($nid);***
+- by JOIN_ID and TYPE where the JOIN_ID is the primary identifier of the table.
+ - Node can load with ***$node = node_load_intype($id,$type);***
+
+
+#nodeaccess#
+== Node access control ==
+
+
+You can control the access of the nodes by implementing [hooks|url:doc/codkep/hooks].
+.
+The ***HOOK_node_access($node,$op,$account)*** can control of the access of any type of node while
+the ***HOOK_node_access_NODETYPE($node,$op,$account)*** only controls the access of a specified node type.
+.
+Both hook receives same three parameters:
+ # ***$node*** The examined node object. The system queries the permissions for this node.
+ # ***$op*** The system queries the permission for this operation. Possible values are:
+  - ***"create"***
+  - ***"delete"***
+  - ***"update"***
+  - ***"view"***
+ # ***$account*** Determine the permission of this account (user node)
+
+ The hook have to return one value of these defines:
+  - ***NODE_ACCESS_IGNORE*** - Ignore the answer
+  - ***NODE_ACCESS_ALLOW*** - Allow the operation specified by parameters
+  - ***NODE_ACCESS_DENY*** - Deny the operation specified by parameters
+
+In case **there is no any permission set hook** in the system or received only the NODE_ACCESS_IGNORE value
+the system will deny every request except the following **default allow**ed:
+# Allows everything for admin users.
+# Allows to view for everyone. (It can disabled anytime by sending NODE_ACCESS_DENY from a node_access hook.)
+.
+*Note1: The NODE_ACCESS_DENY is always stronger than NODE_ACCESS_ALLOW,*
+*if both received the result will NODE_ACCESS_DENY*
+.
+*Node2: The node permissions are only checked when the users access nodes by the Node module's UI.*
+*There is no permission check if a node accessed from program code!*
+.
+Samples:
+~~~code
+ //Allow everything on every node type for administrator
+ function hook_mymodule_node_access($node,$op,$account)
+ {
+    if($acc->auth && $acc->role == ROLE_ADMIN)
+        return NODE_ACCESS_ALLOW;
+    return NODE_ACCESS_IGNORE;
+ }
+.
+ //Allow add/edit/delete of "news" node for editors but view only for others
+ function hook_mymodule_node_access_news($node,$op,$acc)
+ {
+     if($op == 'view')
+         return NODE_ACCESS_ALLOW;
+     if($acc->auth && $acc->role >= ROLE_EDITOR)
+         return NODE_ACCESS_ALLOW;
+     return NODE_ACCESS_DENY;
+ }
+~~~
+.
+
+==== The node_access function ====
+
+@@@node_access($node,$op,$account)@@@
+<br/>
+Calculate the permission of the operation on the node of the parameter passed account.
+(It's call the ***HOOK_node_access*** in background.)
+ - ***$node*** Determine the permission on this node
+ - ***$op*** Determine the permission for this operation. Possible values are:
+  - ***"create"***
+  - ***"delete"***
+  - ***"update"***
+  - ***"view"***
+ - ***$account*** Determine the permission of this account (user node)
+
+ The return value of this function can be:
+  - ***NODE_ACCESS_IGNORE***
+  - ***NODE_ACCESS_ALLOW***
+  - ***NODE_ACCESS_DENY***
+.
+
+
+= A complete example =
+
+
+In this example we will create a "task" node type and an additional interface with some customisation.
+So the example will do:
+# Define a 'task' node type. [Go to the code...|url:#compex5]
+# Specify the permissions of the 'task' nodes. [Go to the code...|url:#compex3]
+# Create a listing interface of 'task' nodes. [Go to the code...|url:#compex2]
+# Extend the node interface of the 'task' node. [Go to the code...|url:#compex4]
+# Set some redirection after operations (Add,Modify,Delete) [Go to the code...|url:#compex6]
+.
+<table class="invisible verticaltop"><tr>
+<td>
+(3) The list of tasks:<br/>{file:nodesample2.png}
+</td>
+.
+<td>
+(1,3) View/modify of a task:<br/>{file:nodesample1.png}
+</td>
+</tr></table>
+.
+This code define the 'tasks' url and place it to the main menu:<br/>
+(See [routes|url:doc/codkep/routes] and [menu|url:doc/codkep/structure#menu])
+#compex1#
+~~~php
+function hook_mymodule_defineroute()
+{
+    $r = [];
+    $r[] = [
+        'path' => 'tasks',
+        'callback' => 'tasks',
+    ];
+    return $r;
+}
+.
+function hook_mymodule_before_start()
+{
+    global $site_config;
+    $site_config->mainmenu["Tasks"] = "tasks";
+}
+~~~
+
+Under the 'tasks' url a callback generates the list of task and an 'Add', 'Edit' and 'Delete' links:<br/>
+(See [query formatter|url:doc/codkep/totable])
+#compex2#
+~~~php
+function tasks()
+{
+    global $user;
+    ob_start();
+.
+    print l("Add task","node/task/add");
+    print '<br/>';
+.
+    $c = [
+        '#tableopts' => ['border' => '1'],
+        '#fields' => ['descr','mod','del'],
+        'descr' => ['headertext' => 'Description',],
+        'mod' => [
+            'headertext' => 'Modify',
+            'valuecallback' => function($r) {
+                return l('Modify','node/'.$r['nid'].'/edit');
+            }
+        ],
+        'del' => [
+            'headertext' => 'Delete',
+            'valuecallback' => function($r) {
+                return l('Delete','node/'.$r['nid'].'/delete');
+            }
+        ],
+    ];
+.
+    $r = sql_exec(
+        "SELECT tid,nid,descr,task.type,task.created ".
+        "FROM task INNER JOIN node ON node.join_id=task.tid AND node.type='task' ".
+        "ORDER BY task.created");
+.
+    print to_table($r,$c);
+    return ob_get_clean();
+}
+~~~
+
+The following codes specifies the permissions of the task node: All authenticated user can create/edit/delete them.
+#compex3#
+~~~php
+function hook_mymodule_node_access_task($node,$op,$account)
+{
+    if($account->auth)
+        return NODE_ACCESS_ALLOW;
+    return NODE_ACCESS_DENY;
+}
+~~~
+
+The 'task' node type contains an 'imgshow' static field which shows the uploaded photo embed in editor table if exists.
+This hook will hide this image field on insert and shows the photo image in other cases if exists.
+(Note that the 'img' field contains the file reference while the 'imgshow' is only
+a static text which displayed to the user.)
+#compex4#
+~~~php
+function hook_mymodule_node_before_action($node,$op,$acc)
+{
+    if($node->node_type == 'task')
+    {
+        if($op == 'add')
+        {
+            $node->get_definition_field('imgshow')['hide'] = true;
+        }
+        else
+        {
+            $ufi = $node->img;
+            if($ufi == '' || $ufi == NULL)
+            {
+                $node->imgshow = 'No uploaded photo';
+                return;
+            }
+            $f = file_load($ufi,true);
+            $imagepart = '<img style="max-width: 110px; height: auto;" src="'.
+                            url($file->url). '" border="0"/>';
+            $node->imgshow = $imagepart;
+        }
+    }
+}
+~~~
+
+By implementing the ***HOOK_operation_done*** we can show the task list after add or modify or delete a tasks.
+#compex6#
+~~~php
+function hook_mymodule_operation_done($type,$op,$nid)
+{
+    if($type == 'task')
+        goto_loc('tasks');
+}
+~~~
+
+Creation of the 'task' node type:
+#compex5#
+~~~php
+function hook_mymodule_nodetype()
+{
+    $r = array();
+    $r['task'] =
+        [
+            "name" => "task",
+            "table" => "task",
+            "show" => "table",
+            "color" => "#ddeedd",
+            "fields" => [
+                10 => [
+                    "sql" => "tid",
+                    "text" => "Identifier",
+                    "type" => "keyn",
+                    "color" => "#ffcccc",
+                ],
+                20 => [
+                    "sql" => "descr",
+                    "text" => "Description",
+                    "type" => "largetext",
+                    "row" => 5,
+                    "col" => 40,
+                ],
+                30 => [
+                    "sql" => "urgent",
+                    "text" => "Urgent",
+                    "type" => "check",
+                    "color" => "#ffaaaa",
+                ],
+                40 => [
+                    "sql" => "deadline",
+                    "text" => "Deadline",
+                    "type" => "dateu",
+                ],
+                50 => [
+                    "sql" => "type",
+                    "text" => "Place",
+                    "type" => "txtradio",
+                    "values" => [
+                        "h" => "Home",
+                        "w" => "Work",
+                    ],
+                ],
+                60 => [
+                    "sql" => "cost",
+                    "text" => "Estimated cost",
+                    "type" => "float",
+                ],
+                70 => [
+                    "sql" => "part",
+                    "text" => "Participants",
+                    "type" => "numselect_intrange",
+                    "start" => 1,
+                    "end" => 10,
+                ],
+                80 => [
+                    "sql" => "img",
+                    "text" => "Image",
+                    "type" => "file",
+                    "container" => "secure",
+                    "subdir" => "taskimg",
+                ],
+                81 => [
+                    "sql" => "imgshow",
+                    "text" => "Image",
+                    "type" => "static",
+                    "default" => "",
+                ],
+                90 => [
+                    "sql" => "created",
+                    "text" => "Create time",
+                    "type" => "timestamp_create",
+                ],
+                100 => [
+                    "sql" => "modtime",
+                    "text" => "Modified",
+                    "type" => "timestamp_mod",
+                ],
+                110 => [
+                    "sql" => "muser",
+                    "text" => "Modifier",
+                    "type" => "modifier_user",
+                    "userdata" => "fullname",
+                ],
+                120 => [
+                    "sql" => "sadd",
+                    "type" => "submit",
+                    "default" => "Add",
+                    "in_mode" => "insert",
+                    "centered" => true,
+                ],
+                130 => [
+                    "sql" => "smod",
+                    "type" => "submit",
+                    "default" => "Modify",
+                    "in_mode" => "update",
+                    "centered" => true,
+                ],
+                140 => [
+                    "sql" => "sdel",
+                    "type" => "submit",
+                    "in_mode" => "delete",
+                    "centered" => true,
+                    "default" => "Delete",
+                ],
+            ],
+        ];
+    return $r;
+
+}
+~~~
+
+#customnodeobject#
+== Custom Node objects ==
+
+You **can specify** that Node module **work with special Node subclasses** for a node-type instead of Node class.
+In case you set the ***"classname"*** option in the
+[data definition structure array's toplevel options |url:doc/codkep/forms#ddeftoplevel] the node module creates the node
+objects with the given classname. The ***node_create***, ***node_load***, ***node_load_intype*** functions are also
+returns the specified Node subclass.
+.
+Because the specified class is a subclass of Node, all node operations works same way.
+In the other hands by using of custom class you can achieve many customisations of your node.
+.
+
+~~~php
+//Definig task node type (part)
+function hook_mymodule_nodetype()
+{
+    $r = array();
+    $r['task'] = [
+            "name" => "task",
+            "table" => "task",
+            "show" => "table",
+            "classname" => "TaskNode", //Tells to use "TaskNode" object instead of "Node"
+ ...
+   ]
+   return $r;
+}
+.
+//Defining TaskNode
+class TaskNode extends Node
+{
+    //Do not define constructor. (It uses the Node's constructor)
+.
+    //Sample method which prints a title on node create page
+    public function m_before_form($op)
+    {
+        if($op == 'add')
+            return '<h1>Creating a task</h1>';
+        return '';
+    }
+}
+~~~
+
+You can redefine some Node methods in the created Node subclass to do special operations in a specified node type.
+See [the "m_" prefixed methods|url:#mmethods] in Node class. By sub-classing Node class you have the possibility to
+do very special nodes by redefining protected methods ***load_data,save_data,insert_data,remove_data*** which do the
+data table manipulations. (See the original codes of this methods to understand what they do)
+
+#nodesettings#
+== Settings of the nodes ==
+
+
+
+The node settings which can set [in site settings|url:doc/codkep/modules#site_settings].
+.
+
+| name                                                     | default                             | description |
+|---                                                       |--                                   | ---                              |---          |
+|<small> ***$site_config->node_unauth_triggers_login*** </small> |<small> false  </small> | In case of this option is ***true*** and an unauthenticated user try to access a node which needs authenticated user to access the CodKep automatically redirects to the login page. |
+
+
+
+
+#nodehooks#
+== Hooks ==
+
+The following [hooks|url:doc/codkep/hooks] can be implement to interact with node module.
+.
+*Note: Many of this hooks has an ***$obj*** parameter which is a container object holding references to the*
+*object and other data structures which are modifiable by the hook.*
+
+| Hook                         | Description |
+| ---                          | ---         |
+| HOOK_nodetype()                      | Define one or more node type. |
+| HOOK_objectnodetype()                | Define one or more node type with dynamic loaded classes. |
+| HOOK_load_nodedefclass($obj)         | Invoked before the Node module loads a node-type class from the specified file. |
+| HOOK_nodetype_alter_NODETYPE($obj)   | You can change the definition of the specified node type by this hook. |
+| HOOK_node_loaded($pass,$nid,$type,$join_id) | Runs immediately after a node is loaded |
+| HOOK_node_form_before($node,$op)     | This hook can put some content before the node add/edit/view/delete forms ($op: view,edit,add,delete) |
+| HOOK_node_form_after($node,$op)      | This hook can put some content after the node add/edit/view/delete forms |
+| HOOK_node_access($node,$op,$account) | This hook controls the access to a node |
+| HOOK_node_access_NODETYPE($node,$op,$account) | This hook controls the access to a node which type is NODETYPE |
+
+| HOOK_node_will_update($node)         | This hook runs immediately before a node is updated. If you do redirect in this hook, the operation will be cancelled. |
+| HOOK_node_before_save($obj)          | Runs before the node is saved |
+| HOOK_node_saved($obj)                | Runs immediately after a node is saved |
+
+| HOOK_node_will_delete($node)         | This hook runs immediately before a node is deleted. If you do redirect in this hook, the operation will be cancelled. |
+| HOOK_node_deleted($nid,$type,$join_id) | Runs immediately after a node is deleted |
+
+| HOOK_node_before_insert($obj)        | Runs before the node is inserted |
+| HOOK_node_inserted($obj)             | Runs immediately after a node is inserted |
+
+| HOOK_node_before_action($node,$op,$user) | Runs on node view/add/edit/delete before the form is generated. |
+| HOOK_node_operation_done($type,$op,$nid) | This hook runs after an operation is done on some node. This hook is useful to do some redirection. |

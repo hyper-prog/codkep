@@ -1,0 +1,464 @@
+= Routes =
+
+In CodKep, a location is the unique end portion part of the URL for a specific function or piece of content.
+For instance, for a page whose full URL is ***http://example.com/?q=node/7***, the location is ***node/7***.
+If your site is using clean URLs, the full URL in this example would be ***http://example.com/node/7*** the path
+would still be ***node/7***. Also URL aliases can completely replace what visitors see as the URL,
+so the locations discussed here are sometimes called internal URLs or internal paths.
+.
+Locations are important because many configuration screens or admin area refer to them.
+
+Here are some examples of locations you might find in a CodKep site:
+
+- ***hooks***
+- ***sqlschema***
+- ***speedformbuilder***
+- ***node/7***
+- ***user/login***
+- ***user/3***
+
+The URL you find could have several forms:
+.
+~~~code
+ http://example.com/index.php?q=[something]
+  or
+ http://example.com/?q=[something]
+~~~
+
+ In this case, the [something] after ***?q=*** is the location. For example,
+ if the URL is ***http://example.com/?q=node/7***, the route is ***node/7***.
+ Under the hood the index.php of the CodKep will receive this ***node/7*** location
+ and do a routing process to find the corresponding page to display.
+
+~~~code
+ http://example.com/[something]
+  or
+ //In case the CodKep installed in a subdirectory of the web server
+ http://example.com/[your CodKep subdirectory]/[something]
+~~~
+ .
+ In this case, the [something] after the base path of your site is the location. For example,
+ your URL could be ***http://example.com/node/7*** or ***http://example.com/mysubdir/node/7***
+ the location in either case is node/7. In case you install CodKep in a subdirectory (like the second case)
+ the ***$site_config->base_path*** variable should set [in site settings|url:doc/codkep/modules#site_settings]
+ to that subdirectory where the CodKep installed.
+
+
+#customlocations#
+== Add custom locations ==
+
+We can use ***HOOK_defineroute*** [hook|url:doc/codkep/hooks] to add our own routes to the CodKep.
+.
+An implementation ***HOOK_defineroute*** hook have to return an array of associated arrays
+which define the routes and the actions matched to that routes. This hook does not have any parameter.
+.
+For instance ***mymodule*** wants to add the "ownpage" route to the codkep with a callback function:
+~~~php
+<?php
+//mymodule.php file
+.
+function hook_mymodule_defineroute()
+{
+    $r = [];
+    $r[] = [
+             'path' => 'own',
+             'callback' => 'ownpage',
+           ];
+    return $r;
+}
+.
+function ownpage()
+{
+    return 'This is my first page!';
+}
+~~~
+
+When ***mymodule.php*** is enabled in ***_modules.php*** the page is should alive on url:
+- ___http://example.com/index.php?q=own___
+- ___http://example.com/own___ (If clean urls are enabled)
+In case the ***$site_config->base_path*** value is "testsite"
+- ___http://example.com/testsite/index.php?q=own___
+- ___http://example.com/testsite/own___ (If clean urls are enabled)
+
+#routedefarray#
+=== The route definition array ===
+The route definition array is an element should return by ***HOOK_defineroute*** hook
+ - ***"path" = path_string***
+  - The custom route/path name which is defined.
+  \ The ***path_string*** will be the new defined route. The route string can contains ***/*** signs and placeholders
+  \ for url parameters. (See later)
+ - ***"title" = title_string***
+  - The page title
+ - ***"callback" = php_function_name***
+  - The function callback to associated with the route
+ - ***"type" = < empty | "html" | "ajax" | "raw" >***
+  - Tell the page type of the callback. It's optional settings does not need to set. The following values can be set:
+   - ***"html"*** (default) The return value of the callback will interpreted as a html page.
+   \ All html header and footer will be used, and delivered as html page with the appropriate theme.
+   - ***"ajax"*** The callback will run as ajax call, and the callback will use ajax_add_* functions to do what it want.
+   \ The content will delivered as ajax calls.
+   - ***"raw"*** The return value of the callback will be delivered as is, without any formatting or header/footer.
+   \ Useful to deliver binary data for example images.
+ - ***"file" = filename***
+  - This value is works as ***"callback"*** but this way the CodKep will execute the specified php file
+  \ instead of callback function.
+ - ***"theme" = theme_name***
+  - Set a different theme for the route. Every route (with html type) will be rendered by using the default theme,
+  \ in case this option is not set.
+ - ***"parameters" = parameter_definition_array***
+  - Setup parameters for the page. Read [parameters chapter|url:doc/codkep/parameters#par_def_inroutedef]
+  \ to learn how to use it.
+ - ***#tag_string = string *** tag. See [tags|url:#tags].
+
+#urlparameters#
+=== Parameters in URL ===
+
+You can receive parameters passed in URL.<br/>
+In case you want to receive a parameter in URL
+you have to put a placeholder to the path string of the route.
+The placeholder should be the desired variable name between ***{}*** sings.
+.
+Let's see some example routes with parameters
+- ***userpage/{username}***
+ - When ***userpage/dave*** is requested the ***username*** parameter will be ***dave***
+- ***userpage/{username}/edit***
+ - When ***userpage/dave/edit*** is requested the ***username*** parameter will be ***dave***
+- ***vcardfeed{type}***
+ - When ***vcardfeedsimple*** is requested the ***type*** parameter will be ***simple***
+- ***edit/{item_id}/{mode}***
+ - When ***edit/456/htmlmode*** is requested the ***item_id*** parameter will be ***456***,
+ \ the ***mode*** will be ***htmlmode***
+
+The parameters defined through route paths are accessible by ***par($parameter_name)*** function,
+but disabled by default because security reasons.
+Read [parameters chapter|url:doc/codkep/parameters] to learn how to use it.
+
+#routecache#
+=== Caching routes ===
+
+The CodKep caches the results of ***HOOK_defineroute*** hook calls if [APC|url:http://php.net/manual/en/book.apc.php] is
+available and enable in the webserver. It means that after you create a new ***HOOK_defineroute*** hook or change
+the content of one you have to clear the caches to make it work.
+You can drop the current cahches by hit the following CodKep [internal url|url:doc/codkep/routes]:
+
+- [emptycache|url:emptycache]
+
+*Note: The APC is an optional requirement of CodKep. If it is not available the system work properly but a bit slower.*
+.
+*Note2: In case you create a defineroute hook which generate dynamic results (like page module) you should take care*
+*of dropping route caches if the dynamic content possibly changed.*
+*You can do this by calling ***ccache_delete('routecache')*** code.*
+
+#urlfunc#
+== Generating URLs ==
+
+Because the internal location are not real urls the programmer should use a special functions
+to generate web urls correctly unified way.
+.
+__Strongly recommend to use url generator functions of CodKep both internal locations and outer urls too!__
+.
+Generation of an url in codkep:<br/>
+@@@url($loc, array $query = array(), array $options = array())@@@
+
+- ***$loc*** parameter
+ - This is a location or external url to build the generated url.
+  - If the $loc is matched with an existing location the generated url will be reference that location.
+    - The url function will generate the output url according to the clean url enabled or not.
+    - Keep in mind that the $loc is only accepted as internal location if the CodKep can match
+    \ with an existing internal location in routing table!
+    - If the ***$site_config->base_path*** variable is set it will be append to the appropriate place in url.
+    - If the $loc is not found in routing table, it will be considered as static file url
+    \ which may be different base path (***$site_config->base_path_nonexfiles***) or further settings.
+  - If the $loc is started with "http://" prefix the url is interpreted as external url without and further checking.
+- ***$query*** parameter
+ - An array of query key/value-pairs (without any URL-encoding) to append to the URL. (GET parameters)
+- ***$options*** parameter associative array (optional)
+ - Possible elements
+  - ***"fragment" = string***
+   - The html anchor to reference.
+  - ***"skipbasepath" = <"all" | "internal" | "files">***
+   - Don't append base path for the specified typed urls.
+  - ***"skip_orig_query" = "skip"***
+   - Drop the original query (GET) parameters which came from the tokenize of $loc variables.
+   \ (Not from $query parameter) If not set the parameters are merged.
+
+
+The function returns a printable url which can directly used in browsers.
+
+~~~php
+print "The url of the user login is: ".url("user/login");
+print "The site of the author is: ".url("http://hyperprog.com");
+//This is not a link, just put the raw url.
+//To make link use l() instead of url()
+~~~
+The output of the code above could be:
+~~~code
+The url of the user login is: http://example.com/index.php?q=user/login
+The site of the author is: http://hyperprog.com
+~~~
+
+The ***url()*** function can invoke some [hook|url:doc/codkep/hooks] during the url generation.
+This hooks receives the url object parameter, which contains the parts of the url, and may be modified.
+(Use ***d2()*** [debugging function|url:doc/codkep/debug] to determine the structure of ***$uo***)
+- ***HOOK_outbound_internal_url($uo)***
+- ***HOOK_outbound_external_url($uo)***
+- ***HOOK_outbound_internal_file_url($uo)***
+
+#lfunc#
+== Generating Links ==
+Many cases we have to generate html links instead of simple urls.
+The CodKep have a html anchor tag generator function, which uses the ***url()*** function
+to generate a formatted html link.
+.
+@@@l($text, $loc, array $options = array(), array $query = array(), $fragment = NULL)@@@
+
+- ***$text*** parameter
+ - The link text for the anchor tag. Accept html tags too.
+- ***$loc*** parameter
+ - The location where the link points to. See the [url function|url:#urlfunc] for more information.
+- ***$options*** parameter associative array (optional)
+ - Possible elements
+  - ***"query" = query_array***
+   - An array of query key/value-pairs (without any URL-encoding) to append to the URL.
+   \ (GET parameters) This array will be merged with the ***$query*** parameter array.
+  - ***"url_options" = options_array***
+   - This array is directly passed to the ***url()*** function. See the [url()|url:#urlfunc].
+  - ***"title" = title_string***
+   - ***title_string*** is the text of the title attribute of the anchor tag..
+  - ***"target" = target_string***
+   - ***target_string*** is the text of the title attribute of the anchor tag..
+  - ***"class" = class_string***
+   - ***class_string*** is the text of the class attribute of the anchor tag.
+  - ***"id" = id_string***
+   - ***id_string*** is the text of the id attribute of the anchor tag.
+  - ***"style" = style_css_string***
+   - ***style_css_string*** is the css text of the style attribute of the anchor tag.
+  - ***"newtab = true"***
+   - If this option is specified and true the anchor tag will have the ***target="_tab"*** attribute.
+   \ It means that the browser try to open the link in a new browser tab.
+  - ***"rawattr" = raw attribute string of a tag***
+   - If this option is specified the string value is appended to the attributes of a tag without modification.
+- ***$query*** parameter
+ - An array of query key/value-pairs (without any URL-encoding) to append to the URL. (GET parameters)
+- ***$fragment*** parameter
+ - The html anchor to reference.
+
+The function returns a printable link/anchor tag which can directly used in browsers.
+
+~~~php
+print l("Login","user/login");
+print l("The site of the author","http://hyperprog.com",["class" => "extlink"]);
+print l("Edit content: $title","edit/$id",[],['foo' => 'full']);
+~~~
+The code above will generate the following html content (It may be different according to the settings of site)
+~~~code
+<a href="index.php?q=user/login">Login</a>
+<a href="http://hyperprog.com" class="extlink">The site of the author</a>
+<a href="index.php?q=edit/34&foo=full">Edit content: second</a>
+~~~
+
+#redirections#
+== Redirections ==
+
+In case the browser open a CodKep page, some location is requested. After the routing process is finished
+the programmer always can query the actual location is requested by the ***current_loc()*** function.
+.
+@@@current_loc()@@@ - Returns the current location path if available.
+.
+---
+.
+It is possible to change the location is currently executed. There is two possible way to do this:
+.
+@@@load_loc($location, ...parameters...)@@@
+.
+Stops (or won't start) the current executing, drops the outputs,
+and immediately start execution of the parameter passed location/page.
+It means that this function does internal routing again,
+so the requested url in the browser will be unfinished.
+- ***$location*** parameter is the location to go/exec. (Uses ***url()*** to generate)
+- The other parameters are passed to the callback function of the requested location
+
+_Note: Because this function do internal redirection the original requested url is stay unchanged in browser._
+_After this kind of redirection the client cannot detect the redirection._
+_It will know that it see the requested url, but the content will change._
+.
+
+@@@goto_loc($location,array $query = array())@@@
+.
+Stops (or won't start) the current executing, drops the outputs, and immediately send
+redirection headers to the browsers with the parameter passed location.
+This function does redirection with http redirect header.
+- ***$location*** parameter is the location to redirect. (Uses ***url()*** to generate)
+- ***$query*** array
+   - An array of query key/value-pairs (without any URL-encoding) to append to the URL.
+   \ (GET parameters) Uses ***url()*** inside.
+_Note: Bacause this function requiest the redirection from browser, the url will change in the browser's address line._
+
+
+
+#tags#
+== Tags ==
+
+
+It is possible to associate tags to the [route definition array|url:#routedefarray].
+This tags should starts with ***#*** sings and continue with a string.
+This string will be the name of the tag. The value of the tag will be the value of the array item
+which can be a simple string.
+.
+This code defines two tag (***mainmenu*** and ***public***) in a ***HOOK_defineroute*** hook:
+~~~php
+<?php
+function hook_mymodule_defineroute()
+{
+    $r = [];
+    $r[] = [
+             'path' => 'own',
+             'callback' => 'ownpage',
+             '#mainmenu' => 'My own page',
+             '#public' => 'My own page',
+           ];
+
+    $r[] = [
+             'path' => 'secondsample',
+             'callback' => 'mysecondpage',
+             '#mainmenu' => 'My second page',
+           ];
+
+    return $r;
+}
+~~~
+
+_Note: This tags does not have special meanings. This is just arbitrary strings begins with ***#*** sign._
+.
+Later we can use this tags to get special array of routes by ***routes_tag_array()*** function.
+.
+@@@routes_tag_array($tag)@@@
+.
+This function returns an associated array of routes where:
+ - The array will contains all routes where the parameter passed tag is exists/defined.
+ - The index of the array items will be the value of the tag in the corresponding route.
+ - The value of the array will be the path of the corresponding route.
+.
+In the example above the result of ***routes_tag_array("mainmenu");*** is:
+~~~php
+[
+ "My own page" => "own",
+ "My second page" => "secondsample"
+]
+~~~
+
+This function helps to use array of routes for a different purposes like menu building or link collections etc...
+.
+The ***mainmenu*** has a special meaning. It can used to place a location to the main menu.
+See [menu part of theme documentation|url:doc/codkep/structure#menu].
+
+
+#cleanurls#
+== Clean URLs ==
+
+Like the Drupal CMS the CodKep also can use "Clean URLs" to looks internal urls better:<br/>
+By default, the generated URLs for your site's pages that look like ***http://www.example.com/?q=node/83***.
+With so-called clean URLs this would be displayed without the ***?q=*** as ***http://www.example.com/node/83***.
+.
+The style of URLs using ***?q=*** can be hard to read,
+and may even prevent some search engines from indexing all the pages of your site.
+.
+**Prerequisites of using Clean urls:**
+.
+To use clean urls have to set the webserver to redirect all queries to ***index.php*** of CodKep.<br/>
+_Note: The index.php of CodKep can receive the original query string and it can interpret as normal queries._
+.
+Sample configs for webservers to use clean urls:
+~~~code
+# nginx config
+
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name sandbox.example.com;
+
+    root /var/www/mypage;
+    index index.php;
+
+    location / {
+        try_files $uri @rewrite;
+    }
+
+    location @rewrite {
+        rewrite ^ /index.php;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/var/run/php5-fpm.sock;
+    }
+}
+~~~
+
+~~~code
+# apache2 config
+#
+# Have to enable rewrite module:
+#  a2enmod rewrite
+#
+<VirtualHost *:80>
+    ServerAdmin webmaster@localhost
+    ServerName sandbox.example.com
+    DocumentRoot /var/www/mypage
+    <Directory /var/www/mypage/>
+        Options -Indexes FollowSymLinks MultiViews
+        AllowOverride None
+        Order allow,deny
+        allow from all
+        RewriteEngine on
+        RewriteBase /
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteCond %{REQUEST_FILENAME} !-d
+        RewriteRule ^(.*)$ index.php [L]
+    </Directory>
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    LogLevel warn
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+~~~
+
+On apache2 it is possible to do this redirection from htaccess file
+~~~code
+DirectoryIndex index.php
+Options -Indexes
+
+RewriteEngine on
+RewriteBase /
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [L]
+~~~
+.
+**Enable clean urls:**
+.
+In case the webserver are correctly set the only thing to do is enable clean urls
+[in CodKep settings|url:doc/codkep/modules#site_settings]:
+~~~code
+// _settings.php
+global $site_config;
+
+// ...
+
+$site_config->clean_urls = true;
+~~~
+
+If the ***clean_urls*** variable is set the [***url()***|url:#urlfunc] and [***l()***|url:#lfunc] functions
+are also generate clean urls.
+
+== Hooks related to routes ==
+
+
+The following [hooks|url:doc/codkep/hooks] can be implemented related to routes.
+| Hook                                | Description |
+| ---                                 | ---         |
+| HOOK_defineroute()                  | Define routes in the system   |
+| HOOK_outbound_internal_url($url_object)      | It can modify the generated url which targets an internal location of the site |
+| HOOK_outbound_internal_file_url($url_object) | It can modify the generated url which targets an internal location of the site but not known by routing (probably a file url) |
+| HOOK_outbound_external_url($url_object)      | It can modify the generated url which targets out of the site |
+| HOOK_inbound_url($iu_object)        | It runs immediately before the routing process. It can do a permanent redirection or url aliases |

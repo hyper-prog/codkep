@@ -1,0 +1,237 @@
+= Parameters =
+
+Every page can receive parameters from the user side/browsers. The CodKep can use 3 type of parameters:
+
+ - Parameters [came from URL|url:doc/codkep/routes#urlparameters]
+ - Standard html GET parameters
+ - Standard html POST parameters
+
+All type of parameters above can access same way in CodKep.
+
+#par_define#
+== Defining parameters ==
+
+By security reasons you have to define each parameter before use it.
+The definition have to specify the type of the parameter which divided to security classes,
+and can tell other properties.
+.
+You can define a parameter with the following function:<br/>
+@@@par_def($name,$security_class,$source = 'all',$accept_empty = true,$default = NULL,$required = NULL)@@@
+.
+- ***$name*** parameter
+ - This is the name of the parameter. If this is an url parameter the name must be identical the placeholder name
+ \ in route definition string.
+- ***$security_class*** parameter
+ - Specify the content accepted by this parameter. If the parameter not fit in this security class,
+ \ the CodKep will disable the access, and show an error message.
+ \ See [available security classes|url:#securityclasses]
+- ***$source*** parameter.
+ - Restrict the parameter came from a specified source. Possible values are:
+   - ***"all"*** All source is accepted. (default)
+   - ***"get"*** Allows as html GET parameter only.
+   - ***"post"*** Allows as html POST parameter only.
+   - ***"url"*** Allows as url parameter only.
+- ***$accept_empty*** parameter
+ - If this parameter is set the ***par_ex()*** function accepts empty value as defined parameter.
+ \ (This is the default behaviour)
+- ***$default***
+ - The default value in case the parameter is not received.
+- ***$required***
+ - If the required text is not NULL: The system check the existing of this parameter.
+ \ In case the parameter is not recieived the CodKep will raise error,
+ \ with the error text set in this parameter above.
+
+Example definition of two get parameter
+~~~php
+function mypage()
+{
+  par_def("id","number0","url",false,NULL,"You have to specify the id of the item");
+  par_def("name","text3");
+  //...
+  //parameters are accesible by par()
+  print "Id: ".par("id");
+  print "Name:".par("name");
+}
+~~~
+
+
+#par_def_inroutedef#
+=== Defining in route definition array ===
+
+
+It is possible to do the parameter definition in [route definition array|url:doc/codkep/routes#routedefarray].
+.
+You have to put an associative array under ***"parameters"*** index in
+[route definition array|url:doc/codkep/routes#routedefarray].
+The structure of this array structured this way:
+  - ***"parameters"=***
+   - An associative array of parameters where the index is the name of the parameter which defined.
+    # Easy definition:The value of the array can be a simple string which is a security class of the parameter.
+    # Complex definition: The value of the array item is an another associative array
+    \ where the following key values can presents:
+     - ***security*** The security class of the parameter
+     - ***source*** The source restriction of the parameter
+     - ***acceptempty*** Accepts empty parameters or not
+     - ***default*** The default value if not received
+     - ***required*** Make the parameter mandatory, and specify missing error text.
+
+*Note: The items of this array are passed to the ***par_def()*** function which define the parameters*
+*according to this array. Because the values of this array are passed to the ***par_def()*** see*
+*the documentation of that for further explanations.*
+.
+An examample ***defineroute*** hook which defined two parameter "id" and "name"
+~~~php
+function hook_mymodule_defineroute()
+{
+    $r = [];
+    $r[] = [
+             'path' => 'showitem/{id}',
+             'callback' => 'showitempage',
+             'parameters' => [
+                                'id' => ['security' => 'number0'
+                                         'source' => 'url',
+                                         'required' => 'You have to specify the id of the item',
+                                        ],
+                                'name' => 'text3',
+                             ],
+           ];
+    return $r;
+}
+.
+function showitempage()
+{
+    ob_start();
+
+    //You can use par() function here to access parameters
+    print "Id:".par("id");
+    print "Name:".par("name");
+    //...
+    return ob_get_clean();
+}
+~~~
+
+
+== Using parameters ==
+
+@@@par($name, $autodefine_type = 'no')@@@
+<br/>
+Returns the value of the parameter ***$name***. The parameter must be defined before the value is requested.
+.
+In case the ***$site_config->parameter_autodefine*** is set ***true*** in
+[site settings|url:doc/codkep/modules#site_settings] the par() function can automatically define the
+parameter by the security class ***$autodefine_type***.
+.
+@@@par_ex($name, $autodefine_type = 'no')@@@
+<br/>
+Return ***true*** if the parameter is received, otherwise ***false***.
+It does not raise error if the parameter is not defined.
+.
+@@@par_is($name, $value,$autodefine_type = 'no')@@@
+<br/>
+Return ***true*** if the parameter is received and have same value as ***$value*** parameter, otherwise ***false***.
+It does not raise error if the parameter is not defined.
+.
+~~~php
+function mypage()
+{
+  par_def("id","number0","url",false,NULL,"You have to specify the id of the item");
+  par_def("name","text3");
+  .
+  ob_start();
+  if(par_is("id","0"))
+  {
+    //Only displayed if the "id" parameter is "0"
+    print "This is the first element!";
+  }
+  .
+  print "Id: ".par("id");
+  .
+  if(par_ex("name"))
+  {
+    //Only displayed if the "name" parameter is received
+    print "Name:".par("name");
+  }
+  .
+  return ob_get_clean();
+}
+~~~
+== Other parameter related functions ==
+
+@@@par_reset()@@@
+<br/>
+Erase all parameter definition.
+.
+@@@parameters(array $change = array(), array $infilter = array(), array $outfilter = array())@@@
+<br/>
+Returns a key-value array with the defined and set parameters.
+The parameter name will be the index, the value is the current value of the parameter,
+except if modified by ***$change*** parameter.
+- ***$change*** parameter
+ - Value overwrite array, contains name-value pairs. It does not modify real parameter value just the returned array.
+- ***$infilter*** parameter
+ - Filters the returned parameters. If this parameter is set an not an empty array,
+ \ the function only returns that parameters which index is present in ***$filter*** array.
+- ***$outfilter*** parameter
+ - Filters the returned parameters. If this parameter is set an not an empty array,
+ \ the function skip returning that parameters which index is present in this array.
+
+
+#securityclasses#
+== Security classes ==
+
+Every parameter is received through the CodKep parameter system,
+must meet the restriction of a security class which is assigned to the parameter during the definition.
+Each security class is defined by a regex. (You can add your own security classes, see below)
+.
+Built-in security classes in CodKep:
+| code name      | Allowed characters/contets |
+| ---       | ---              |
+| ___bool___      |  01onf |
+| ___number0___   |  0123456789 |
+| ___number1___   |  whitespaces 0123456789 . , - |
+| ___number1ns___ |  0123456789 . , - |
+| ___numberi___   |  0123456789 - |
+| ___text0___     |  whitespaces a-z A-Z 0-9 |
+| ___text1___     |  whitespaces a-z A-Z 0-9 - _ |
+| ___text1ns___   |  a-z A-Z 0-9 - _ |
+| ___text2___     |  whitespaces a-z A-Z 0-9 UnicodeLetters |
+| ___text2ns___   |  a-z A-Z 0-9 UnicodeLetters |
+| ___text3___     |  whitespaces a-z A-Z 0-9 UnicodeLetters - _ |
+| ___text3ns___   |  a-z A-Z 0-9 UnicodeLetters - _ |
+| ___text4___     |  whitespaces a-z A-Z 0-9 UnicodeLetters - _ . , : ? # / ! ( ) = + |
+| ___text4ns___   |  a-z A-Z 0-9 UnicodeLetters - _ . , : ? # / ! ( ) = + |
+| ___text5___     |  whitespaces a-z A-Z 0-9 UnicodeLetters - _ . , : ? & # / ! ( ) = % + ; @ * |
+| ___text6___     |  whitespaces a-z A-Z 0-9 UnicodeLetters - _ . , : ? & # / ! ( ) = % + ; @ * " |
+| ___textbase64___ | a-z A-Z 0-9 = |
+| ___tst___       |  whitespaces a-z A-Z 0-9 UnicodeLetters - : . + |
+| ___tstns___     |  a-z A-Z 0-9 UnicodeLetters - : . + |
+| ___isodate___   |  NNNN-NN-NN e.g: 2016-10-11 |
+| ___free___      |  no limitations |
+| ___no___        |  only match to empty string |
+
+.
+You can define your own security classes with ***register_parameter_security_class(name,regex)*** function.
+<br/>
+@@@register_parameter_security_class($name,$regex)@@@
+- ***$name***
+ - The security class name to define
+- ***$regex***
+ - The regex pattern to assign with the defined security class
+.
+A security class can be defined by a regex.
+See the following example which define the "user_id" security class in "mymodule" module.
+
+~~~php
+function hook_mymodule_init()
+{
+    register_parameter_security_class('user_id','/^user_[0-9]+$/');
+}
+.
+function mypage()
+{
+  par_def("uid","user_id");
+
+  $uid = par("uid");
+  //...
+}
+~~~

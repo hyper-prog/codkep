@@ -1,0 +1,3508 @@
+<?php
+/*  CodKep - Lightweight web framework core file
+ *
+ *  Written by Peter Deak (C) hyper80@gmail.com , License GPLv2
+ *
+ *
+ * Forms module
+ *  Required modules: core,sql
+ */
+
+function h($type,$name='')
+{
+    if($type == 'table')
+        return new HtmlTable($name);
+    if($type == 'form')
+        return new HtmlForm($name);
+    if($type == 'excelxml')
+        return new ExcelXmlDocument($name);
+}
+
+/** Builds a HTML Table
+ *  @package forms */
+class HtmlTable
+{
+    public $name;
+    public $h; //head array
+    public $b; //body array
+    public $o; //table options
+    public $tr_open;
+    public $ena_f;
+
+    public function __construct($n = '')
+    {
+        $this->name = $n;
+        $this->h = array();
+        $this->b = array();
+        $this->o = array();
+        $this->tr_open = false;
+        $this->ena_f = false;
+    }
+
+    public function name($n)
+    {
+        $this->name = $n;
+        return $this;
+    }
+
+    public function opts(array $o)
+    {
+        if(isset($o['formatter']) && $o['formatter'])
+            $this->ena_f = true;
+        $this->o = array_merge($this->o,$o);
+        return $this;
+    }
+
+    public function nrow(array $opts=array())
+    {
+        if($this->tr_open)
+            array_push($this->b,'</tr>');
+        array_push($this->b,
+            '<tr'.
+            (isset($opts['class']) ? ' class="'.$opts['class'].'"':'').
+            (isset($opts['style']) ? ' style="'.$opts['style'].'"':'').
+            '>');
+        $this->tr_open = true;
+        return $this;
+    }
+
+    public function head($h,array $opts=array())
+    {
+        if(isset($opts['type']) && $opts['type'] == 'uni')
+            $opts = table_options_translator($opts);
+        array_push($this->h,
+            '<th'.
+            (isset($opts['class']) ? ' class="'.$opts['class'].'"':'').
+            (isset($opts['style']) ? ' style="'.$opts['style'].'"':'').
+            (isset($opts['align']) ? ' align="'.$opts['align'].'"':'') .
+            '>'.$this->f($h).'</th>');
+        return $this;
+    }
+
+    public function heads($hs,array $opts=array())
+    {
+        foreach($hs as $h)
+            $this->head($h,$opts);
+        return $this;
+    }
+
+    public function cell($c,array $opts=array())
+    {
+        if(!$this->tr_open)
+            $this->nrow();
+        if(isset($opts['type']) && $opts['type'] == 'uni')
+            $opts = table_options_translator($opts);
+        array_push($this->b,
+            '<td'. 
+            (isset($opts['class']) ? ' class="'.$opts['class'].'"':'') .
+            (isset($opts['style']) ? ' style="'.$opts['style'].'"':'') .
+            (isset($opts['align']) ? ' align="'.$opts['align'].'"':'') .
+            (isset($opts['colspan']) ? ' colspan="'.$opts['colspan'].'"':'') .
+            '>'.$this->f($c).'</td>');
+        return $this;
+    }
+
+    public function cells($cs,array $opts=array())
+    {
+        if(is_array($cs))
+            foreach($cs as $c)
+                $this->cell($c,$opts);
+        return $this;
+    }
+
+    public function cellss($cs,array $opts=array())
+    {
+        if(is_array($cs))
+            foreach($cs as $c)
+                if(is_array($c))
+                {
+                    $this->nrow();
+                    $this->cells($c,$opts);
+                }
+        return $this;
+    }
+
+    public function get()
+    {
+        $pass = new stdClass();
+        $pass->table_ref = &$this;
+        run_hook('table_get',$pass);
+        ob_start();
+        print '<table'.
+                (isset($this->o['class']) ? ' class="'.$this->o['class'].'"':'').
+                (isset($this->o['style']) ? ' style="'.$this->o['style'].'"':'').
+                (isset($this->o['border']) ? ' border="'.$this->o['border'].'"':'').
+                '>';
+        if($this->tr_open)
+            array_push($this->b,'</tr>');
+
+        if(count($this->h) > 0)
+        {
+            print '<thead>';
+            print '<tr>';
+            print implode($this->h);
+            print '</tr>';
+            print '</thead>';
+        }
+        print '<tbody>';
+        print implode($this->b);
+        print '</tbody>';
+        print "</table>\n";
+        $this->h = array();
+        $this->b = array();
+        $this->tr_open = false;
+        return ob_get_clean();
+    }
+
+    public function f($str)
+    {
+        if(!$this->ena_f)
+            return $str;
+        if(strpos($str,'#') === FALSE)
+            return $str;
+        $s = '';
+        $parts = explode('#',$str);
+        if(isset($parts[0]) && $parts[0] == 'LINK' && isset($parts[1]) && isset($parts[2]))
+        {
+            return l($parts[1],$parts[2]);
+        }
+    }
+}
+
+/**
+ * Class ExcelXmlDocument generate an Excel XML Spreadsheet
+ * cell,cells,cells and nrow function can be used to build a formatted table just like in HtmlTable class
+ * The cells can receive an options array which is tell the formatting of the cell(s).
+ * These options is an associative array can hold values:
+ *
+ *  height => NUMBER - The height of the cell's row
+ *  width => NUMBER - The width of the cell's row
+ *  formula => STRING - Specify a formula to the cell
+ *      Examples: "=RC[-1]*2" - Same row 1 column less * 2
+ *                "=R[-1]C*2" - Same column 1 row less * 2
+ *                "=R3C3*2" - Absolute row 3 column 3 * 2
+ *  t => str|num|dat - The type of the cell
+ *      str - String
+ *      num - Number
+ *      dat - Date, also specify the numberformat => "Short Date" and give the data in iso date yyyy-MM-dd!
+ *   wrap => on|off - Cell wrapping on or off
+ *   vertical => top|center|bottom - Vertical align of the cell
+ *   horizontal => left|center|right - Horizontal align of the cell
+ *   border => [none|all|top|bottom|left|right] - Borders of the cell. Can be a simple text or an array too.
+ *   borderweight => 0|1|2|3 - Border width
+ *   background-color => #RRGGBB - The background color of the cell
+ *   strong => yes - Bold font
+ *   italic => yes - Italic font
+ *   size => XX - Point size of the font
+ *   underline => yes - The font will be underlined
+ *   color => #RRGGBB - The color of the font
+ *   numberformat => STRING - The format of the numbers "#,##0\ &quot;Ft&quot;;[Red]\-#,##0\ &quot;Ft&quot;"
+ *
+ *  These options above can be translated to options works with HtmlTable class with table_options_translator()
+ *  @package forms
+ */
+class ExcelXmlDocument
+{
+    private $n;
+    private $style = array();
+    private $b = array();
+    private $colcount;
+    private $rowcount;
+    private $r_open;
+    private $r_empty;
+    private $c_index;
+    private $c_emptycellbefore;
+    private $style_counter;
+    private $row;
+    private $rowh;
+    private $colwarray;
+    private $orientation;
+    private $hc_cc;
+
+    public function __construct($n = 'Generated excel xml table')
+    {
+        $this->n = $n;
+        $this->style = [];
+        $this->b = [];
+        $this->colcount = 0;
+        $this->rowcount = 0;
+        $this->r_open = false;
+        $this->r_empty = true;
+        $this->c_index = 1;
+        $this->c_emptycellbefore = false;
+        $this->style_counter = 10;
+        $this->row = '';
+        $this->rowh = 0;
+        $this->colwarray = [];
+        $this->orientation = "";
+        $this->hc_cc=0;
+    }
+
+    public function setHtmlHeaders($filename)
+    {
+        header('Content-Type:application/xml');
+        header('Content-Disposition: attachment; filename="'.$filename.'"');
+    }
+
+    public function name($n)
+    {
+        $this->n = $n;
+        return $this;
+    }
+
+    /** Does nothing, for compatibility reasons only */
+    public function opts(array $opts)
+    {
+        return $this;
+    }
+
+    public function nrow($count = 1)
+    {
+        if($count <= 0)
+            return;
+        if($this->r_open)
+            $this->endRow();
+        $this->beginRow();
+        if($count > 1)
+            for($i = 1 ; $i < $count ; $i++)
+            {
+                if($this->r_open)
+                    $this->endRow();
+                $this->beginRow();
+            }
+        return $this;
+    }
+
+    private function beginRow()
+    {
+        if($this->r_open)
+            return;
+        $this->r_empty = true;
+        $this->row = '';
+        $this->rowh = 0;
+        $this->r_open = true;
+        $this->c_index = 1;
+        $this->c_emptycellbefore = false;
+        $this->rowcount++;
+    }
+
+    private function endRow()
+    {
+        if(!$this->r_open)
+            return;
+        if($this->r_empty)
+        {
+            array_push($this->b,"<Row><Cell/></Row>\n");
+        }
+        else
+        {
+            if($this->rowh != 0)
+                array_push($this->b,'<Row ss:AutoFitHeight="0" ss:Height="'.$this->rowh.'">'."\n");
+            else
+                array_push($this->b,"<Row>\n");
+            array_push($this->b,$this->row);
+            array_push($this->b, "</Row>\n");
+        }
+        $this->row = '';
+        $this->rowh = 0;
+        $this->r_open = false;
+    }
+
+    function cell($c = '',array $opts=array())
+    {
+        if(!$this->r_open)
+            $this->beginRow();
+
+        if($this->hc_cc == 1 && !isset($opts['ashead']))
+        {
+            $this->hc_cc = 2;
+            $this->nrow();
+        }
+
+        if(isset($opts['height']) && $opts['height'] != '')
+            if($this->rowh < $opts['height'])
+                $this->rowh = $opts['height'];
+        if(isset($opts['width']) && $opts['width'] != '')
+            if(!isset($this->colwarray[$this->c_index]) || $this->colwarray[$this->c_index] < $opts['width'])
+                $this->colwarray[$this->c_index] = $opts['width'];
+
+        $sId = $this->styleId($opts);
+        if($c !== '' || $sId != '' || isset($opts['formula']))
+        {
+            $ssStyle = '';
+            $ssIndex = '';
+            $ssFormula = '';
+            if($this->c_emptycellbefore)
+                $ssIndex = ' ss:Index="'.$this->c_index.'"';
+            if($sId != '')
+                $ssStyle = ' ss:StyleID="'.$sId.'"';
+            if(isset($opts['formula']))
+                $ssFormula = ' ss:Formula="'.$opts['formula'].'"';
+            if($c !== '')
+            {
+                $type = 'String';
+                if(isset($opts['t']))
+                {
+                    if($opts['t'] == 'num')
+                        $type = 'Number';
+                    if($opts['t'] == 'dat')
+                        $type = 'DateTime';
+                }
+                $this->row .= ' <Cell' . $ssIndex . $ssStyle . $ssFormula. '><Data ss:Type="'.$type.'">' . $c . '</Data></Cell>' . "\n";
+            }
+            else
+            {
+                $this->row .= ' <Cell' . $ssIndex . $ssStyle . $ssFormula .'/>' . "\n";
+            }
+            $this->c_emptycellbefore = false;
+            $this->r_empty = false;
+        }
+        else
+        {
+            $this->c_emptycellbefore = true;
+        }
+
+        $this->c_index++;
+        if($this->colcount < $this->c_index)
+            $this->colcount = $this->c_index;
+        return $this;
+    }
+
+    function cells($cs,array $opts=array())
+    {
+        if(is_array($cs))
+            foreach($cs as $c)
+                $this->cell($c,$opts);
+        return $this;
+    }
+
+    function cellss($cs,array $opts=array())
+    {
+        if(is_array($cs))
+            foreach($cs as $c)
+                if(is_array($c))
+                {
+                    $this->nrow();
+                    $this->cells($c, $opts);
+                }
+        return $this;
+    }
+
+    public function head($hs,array $opts=array())
+    {
+        $this->hc_cc=1;
+        $opts['ashead'] = true;
+        return $this->cell($hs,$opts);
+    }
+
+    public function heads($hs,array $opts=array())
+    {
+        $this->hc_cc=1;
+        $opts['ashead'] = true;
+        return $this->cells($hs,$opts);
+    }
+
+    private function styleId(array $opts)
+    {
+        $sStr = "";
+
+        //wrap & vertical & horizontal
+        if(isset($opts['wrap']) || isset($opts['vertical']) || isset($opts['horizontal']))
+        {
+            $wrap = "1";
+            if(isset($opts['wrap']) && $opts['wrap'] == 'off')
+                $wrap = "0";
+            $vertical = "Top";
+            if(isset($opts['vertical']))
+            {
+                if($opts['vertical'] == 'top'   ) $vertical = 'Top';
+                if($opts['vertical'] == 'center') $vertical = 'Center';
+                if($opts['vertical'] == 'bottom') $vertical = 'Bottom';
+            }
+            $horizontal = "Left";
+            if(isset($opts['horizontal']))
+            {
+                if($opts['horizontal'] == 'left'  ) $horizontal = 'Left';
+                if($opts['horizontal'] == 'center') $horizontal = 'Center';
+                if($opts['horizontal'] == 'right' ) $horizontal = 'Right';
+            }
+            $sStr .= "    <Alignment ss:Horizontal=\"$horizontal\" ss:Vertical=\"$vertical\" ss:WrapText=\"$wrap\"/>\n";
+        }
+
+        //border & borderweight
+        if(isset($opts['border']))
+        {
+            $borders = ['Bottom','Left','Right','Top'];
+            $bw = '1';
+            if(isset($opts['borderweight']))
+                $bw = $opts['borderweight'];
+            if(!in_array($bw,['0','1','2','3']))
+                $bw = '1';
+            $sStr .= "    <Borders>\n";
+            if(is_array($opts['border']))
+            {
+                foreach($borders as $b)
+                    if(in_array(strtolower($b),$opts["border"]) || in_array("all",$opts["border"]))
+                        $sStr .= '      <Border ss:Position="'.$b.'" ss:LineStyle="Continuous" ss:Weight="'.$bw.'"/>'."\n";
+            }
+            else
+            {
+                foreach($borders as $b)
+                    if($opts["border"] == strtolower($b) || $opts["border"] == "all")
+                        $sStr .= '      <Border ss:Position="'.$b.'" ss:LineStyle="Continuous" ss:Weight="'.$bw.'"/>'."\n";
+            }
+            $sStr .= "    </Borders>\n";
+        }
+
+        //background-color
+        if(isset($opts['background-color']))
+        {
+            $bgcolor = '';
+            if(isset($opts['background-color']) && $opts['background-color'] != '')
+                $bgcolor = $opts['background-color'];
+            $sStr .= "    <Interior ss:Color=\"$bgcolor\" ss:Pattern=\"Solid\"/>\n";
+        }
+
+        //strong & italic & size & color
+        if(isset($opts['strong']) || isset($opts['italic']) ||
+            isset($opts['underline']) || isset($opts['size']) || isset($opts['color']))
+        {
+            $strong = '';
+            if(isset($opts['strong']) && $opts['strong'] == 'yes')
+                $strong = ' ss:Bold="1"';
+
+            $italic = '';
+            if(isset($opts['italic']) && $opts['italic'] == 'yes')
+                $italic = ' ss:Italic="1"';
+
+            $underline = '';
+            if(isset($opts['underline']) && $opts['underline'] == 'yes')
+                $underline = ' ss:Underline="Single"';
+
+            $size = '';
+            if(isset($opts['size']) && $opts['size'] != '')
+                $size = ' ss:Size="'.$opts['size'].'"';
+
+            $color = '';
+            if(isset($opts['color']) && $opts['color'] != '')
+                $color = ' ss:Color="'.$opts['color'].'"';
+
+            $sStr .= "    <Font ss:FontName=\"Arial\" x:CharSet=\"238\" x:Family=\"Swiss\"$size$strong$italic$underline$color/>\n";
+        }
+
+        //numberformat
+        if(isset($opts['numberformat']) && $opts['numberformat'] != '')
+        {
+            $sStr .= "    <NumberFormat ss:Format=\"".$opts['numberformat']."\"/>\n";
+        }
+
+        // - End of building style -
+        if($sStr == '')
+            return '';
+
+        $fidx = array_search($sStr,$this->style);
+        if($fidx !== FALSE && substr($fidx,0,1) == 's')
+            return $fidx;
+
+        $fidx = 's'.$this->style_counter;
+        $this->style[$fidx] = $sStr;
+        $this->style_counter++;
+        return $fidx;
+    }
+
+    function setTitle($title)
+    {
+        $this->name($title);
+    }
+
+    function setOrientationLandscape()
+    {
+        $this->orientation = "Landscape";
+    }
+
+    function setOrientationPortrait()
+    {
+        $this->orientation = "";
+    }
+
+    function get()
+    {
+        global $user;
+        if($this->r_open)
+            $this->endRow();
+
+        ob_start();
+        print "<?xml version=\"1.0\"?>\n".
+            "<?mso-application progid=\"Excel.Sheet\"?>\n".
+            "<Workbook xmlns=\"urn:schemas-microsoft-com:office:spreadsheet\"\n".
+            " xmlns:o=\"urn:schemas-microsoft-com:office:office\"\n".
+            " xmlns:x=\"urn:schemas-microsoft-com:office:excel\"\n".
+            " xmlns:ss=\"urn:schemas-microsoft-com:office:spreadsheet\"\n".
+            " xmlns:html=\"http://www.w3.org/TR/REC-html40\">\n\n";
+
+        $un = "CodKep generated";
+        if($user->auth && $user->name != '')
+            $un = "CodKep generated by ".$user->name;
+
+        print "<DocumentProperties xmlns=\"urn:schemas-microsoft-com:office:office\">\n".
+            "  <Author>$un</Author>\n".
+            "  <LastAuthor>$un</LastAuthor>\n".
+            "  <Created>".date("Y-m-d\TH:i:s\Z")."</Created>\n".
+            "</DocumentProperties>\n";
+
+        print "<Styles>\n";
+        print "  <Style ss:ID=\"Default\" ss:Name=\"Normal\">\n".
+            "    <Alignment ss:Vertical=\"Top\" ss:WrapText=\"1\"/>\n".
+            "    <Borders/>\n".
+            "    <Font ss:FontName=\"Arial\" x:CharSet=\"238\"/>\n".
+            "    <Interior/>\n".
+            "    <NumberFormat/>\n".
+            "    <Protection/>\n".
+            "  </Style>\n";
+        foreach($this->style as $styleKey => $styleValue)
+        {
+            print "  <Style ss:ID=\"$styleKey\">\n";
+            print $styleValue;
+            print "  </Style>\n";
+        }
+        print "</Styles>\n\n";
+
+        if($this->n == '')
+            $this->n = 'Generated';
+        print "<Worksheet ss:Name=\"" . $this->n . "\">\n";
+        print "<Table ss:ExpandedColumnCount=\"".$this->colcount."\" ".
+            "ss:ExpandedRowCount=\"".$this->rowcount."\" x:FullColumns=\"1\" x:FullRows=\"1\">\n";
+        for($c = 1 ; $c <= $this->colcount ; ++$c)
+            if(isset($this->colwarray[$c]))
+                print "<Column ss:Index=\"$c\" ss:AutoFitWidth=\"0\" ss:Width=\"".$this->colwarray[$c]."\"/>\n";
+        print implode($this->b);
+        print "</Table>\n";
+        print "<WorksheetOptions xmlns=\"urn:schemas-microsoft-com:office:excel\">\n".
+            "  <PageSetup>\n";
+
+        if($this->orientation != '')
+            print "    <Layout x:Orientation=\"".$this->orientation."\"/>\n";
+
+        print "    <Header x:Margin=\"0.3\"/>\n".
+              "    <Footer x:Margin=\"0.3\"/>\n".
+              "    <PageMargins x:Bottom=\"0.75\" x:Left=\"0.25\" x:Right=\"0.25\" x:Top=\"0.75\"/>\n".
+              "  </PageSetup>\n".
+              "  <ProtectObjects>False</ProtectObjects>\n".
+              "  <ProtectScenarios>False</ProtectScenarios>\n".
+              "</WorksheetOptions>\n";
+        print "</Worksheet>\n";
+        print "</Workbook>\n"; //Root element
+        return ob_get_clean();
+    }
+}
+
+/** Transforms ExcelXmlDocument cell options to HtmlTable cell options
+ *  @package forms */
+function table_options_translator(array $opts,array $additional = array())
+{
+    $o = array();
+    $style = '';
+    if(isset($opts['width']))
+        $style .= 'min-width: '.$opts['width'].'px; ';
+    if(isset($opts['height']))
+        $style .= 'height: '.$opts['height'].'px; ';
+    if(isset($opts['background-color']))
+        $style .= 'background-color: '.$opts['background-color'].'; ';
+    if(isset($opts['color']))
+        $style .= 'color: '.$opts['color'].'; ';
+    if(isset($opts['strong']) && $opts['strong'] == 'yes')
+        $style .= 'font-weight: bold; ';
+    if(isset($opts['italic']) && $opts['italic'] == 'yes')
+        $style .= 'font-style: italic; ';
+    if(isset($opts['underline']) && $opts['underline'] == 'yes')
+        $style .= 'text-decoration: underline; ';
+    if(isset($opts['size']))
+        $style .= 'font-size: '.$opts['size'].'px; ';
+
+    if(isset($opts['vertical']))
+    {
+        if($opts['vertical'] == 'top')
+            $style .= 'vertical-align: top; ';
+        if($opts['vertical'] == 'bottom')
+            $style .= 'vertical-align: bottom; ';
+        if($opts['vertical'] == 'center')
+            $style .= 'vertical-align: middle; ';
+    }
+    else
+        $style .= 'vertical-align: top; ';
+
+    if(isset($opts['horizontal']))
+    {
+        if($opts['horizontal'] == 'left')
+            $style .= 'text-align: left; ';
+        if($opts['horizontal'] == 'right')
+            $style .= 'text-align: right; ';
+        if($opts['horizontal'] == 'center')
+            $style .= 'text-align: center; ';
+    }
+    else
+        $style .= 'text-align: left; ';
+
+    $borders = ['bottom','left','right','top'];
+    $bw = '1';
+    if(isset($opts['borderweight']))
+        $bw = $opts['borderweight'];
+    if(!in_array($bw,['0','1','2','3']))
+        $bw = '1';
+
+    if(isset($opts["border"]))
+    {
+        if(is_array($opts['border']))
+        {
+            foreach($borders as $b)
+                if(in_array($b, $opts["border"]) || in_array("all", $opts["border"]))
+                    $style .= "border-$b: $bw" . "px solid black; ";
+        }
+        else
+        {
+            foreach($borders as $b)
+                if($opts["border"] == $b || $opts["border"] == "all")
+                    $style .= "border-$b: $bw" . "px solid black; ";
+        }
+    }
+
+    $o['style'] = $style;
+    if(isset($opts['class']))
+        $o['class'] = $opts['class'];
+    if(isset($opts['align']))
+        $o['align'] = $opts['align'];
+    if(isset($opts['colspan']))
+        $o['colspan'] = $opts['colspan'];
+    $o = array_merge($o,$additional);
+    return $o;
+}
+
+/** Builds a HTML form
+ *  @package forms */
+class HtmlForm
+{
+    public $name;
+    public $d; //data
+    public $o; //opts
+    public $url;
+    public $mode;
+
+    public $formatter;
+
+    public function __construct($n = '',$formatter = NULL)
+    {
+        $this->name = $n;
+        $this->d = array();
+        $this->o = array();
+        $this->url = '';
+        $this->mode = 'POST';
+        $this->formatter = $formatter == NULL ? new HtmlFormFormatter() : $formatter ;
+        $this->hidden('harassment-value',getFormSalt());
+    }
+
+    public function name($n)
+    {
+        $this->name = $n;
+        return $this;
+    }
+
+    public function opts($o)
+    {
+        $this->o = array_merge($this->o,$o);
+        return $this;
+    }
+
+    public function set_formatter($formatter)
+    {
+        $this->formatter = $formatter;
+    }
+
+    public function action_get($rawurl,array $query = array(),array $urlopts = array())
+    {
+        $this->url = url($rawurl,[],$urlopts);
+        $this->mode = 'GET';
+
+        foreach($query as $n => $v)
+            $this->hidden($n,$v);
+        return $this;
+    }
+    public function action_post($rawurl,array $query = array(),array $urlopts = array())
+    {
+        $this->url = url($rawurl,$query,$urlopts);
+        $this->mode = 'POST';
+        return $this;
+    }
+    public function action_ajax($rawurl,array $query = array(),array $urlopts = array())
+    {
+        $this->url = url($rawurl,$query,$urlopts);
+        $this->mode = 'AJAX';
+        return $this;
+    }
+
+    public function input($type,$n,$v,$opts=array())
+    {
+        array_push($this->d,
+            ['type' => $type,
+             'name' => $n,
+             'value' => $v,
+             'class' => (isset($opts['class']) ? $opts['class'] : ''),
+             'style' => (isset($opts['style']) ? $opts['style'] : ''),
+             'onclick' => (isset($opts['onclick']) ? $opts['onclick'] : ''),
+             'onchange' => (isset($opts['onchange']) ? $opts['onchange'] : ''),
+             'id' => (isset($opts['id']) ? $opts['id'] : ''),
+             'before' => (isset($opts['before']) ? $opts['before'] : ''),
+             'after' => (isset($opts['after']) ? $opts['after'] : ''),
+             'size' => (isset($opts['size']) ? $opts['size'] : ''),
+             'maxlength' => (isset($opts['maxlength']) ? $opts['maxlength'] : ''),
+             'readonly' => (isset($opts['readonly']) ? $opts['readonly'] : false),
+             'autofocus' => (isset($opts['autofocus']) ? $opts['autofocus'] : false),
+            ]);
+        return $this;
+    }
+
+    public function upload($n,$v,$opts=array())
+    {
+        array_push($this->d,
+            ['type' => 'upload',
+             'name' => $n,
+             'value' => $v,
+             'class' => (isset($opts['class']) ? $opts['class'] : ''),
+             'style' => (isset($opts['style']) ? $opts['style'] : ''),
+             'onclick' => (isset($opts['onclick']) ? $opts['onclick'] : ''),
+             'onchange' => (isset($opts['onchange']) ? $opts['onchange'] : ''),
+             'id' => (isset($opts['id']) ? $opts['id'] : ''),
+             'before' => (isset($opts['before']) ? $opts['before'] : ''),
+             'after' => (isset($opts['after']) ? $opts['after'] : ''),
+             'size' => (isset($opts['size']) ? $opts['size'] : ''),
+             'maxlength' => (isset($opts['maxlength']) ? $opts['maxlength'] : ''),
+             'readonly' => (isset($opts['readonly']) ? $opts['readonly'] : false),
+             'autofocus' => (isset($opts['autofocus']) ? $opts['autofocus'] : false),
+            ]);
+        return $this;
+    }
+
+    public function datefield($type,$n,$v,$opts=array())
+    {
+        array_push($this->d,
+            ['type' => $type,
+             'name' => $n,
+             'value' => $v,
+             'class' => (isset($opts['class']) ? $opts['class'] : ''),
+             'style' => (isset($opts['style']) ? $opts['style'] : ''),
+             'before' => (isset($opts['before']) ? $opts['before'] : ''),
+             'after' => (isset($opts['after']) ? $opts['after'] : ''),
+             'readonly' => (isset($opts['readonly']) ? $opts['readonly'] : false),
+             'autofocus' => false,
+            ]);
+        return $this;
+    }
+
+    public function select($type,$n,$v,$values=array(),$opts=array())
+    {
+        array_push($this->d,
+            ['type' => $type,
+             'name' => $n,
+             'value' => $v,
+             'values' => $values,
+             'class' => (isset($opts['class']) ? $opts['class'] : ''),
+             'style' => (isset($opts['style']) ? $opts['style'] : ''),
+             'onclick' => (isset($opts['onclick']) ? $opts['onclick'] : ''),
+             'onchange' => (isset($opts['onchange']) ? $opts['onchange'] : ''),
+             'id' => (isset($opts['id']) ? $opts['id'] : ''),
+             'before' => (isset($opts['before']) ? $opts['before'] : ''),
+             'after' => (isset($opts['after']) ? $opts['after'] : ''),
+             'readonly' => (isset($opts['readonly']) ? $opts['readonly'] : false),
+             'autofocus' => (isset($opts['autofocus']) ? $opts['autofocus'] : false),
+            ]);
+        return $this;
+    }
+
+    public function textarea($n,$v,$row,$col,$opts=array())
+    {
+        array_push($this->d,
+            ['type' => 'textarea',
+             'name' => $n,
+             'value' => $v,
+             'row'   => $row,
+             'col'   => $col,
+             'class' => (isset($opts['class']) ? $opts['class'] : ''),
+             'style' => (isset($opts['style']) ? $opts['style'] : ''),
+             'onclick' => (isset($opts['onclick']) ? $opts['onclick'] : ''),
+             'onchange' => (isset($opts['onchange']) ? $opts['onchange'] : ''),
+             'id' => (isset($opts['id']) ? $opts['id'] : ''),
+             'before' => (isset($opts['before']) ? $opts['before'] : ''),
+             'after' => (isset($opts['after']) ? $opts['after'] : ''),
+             'readonly' => (isset($opts['readonly']) ? $opts['readonly'] : false),
+             'autofocus' => (isset($opts['autofocus']) ? $opts['autofocus'] : false),
+            ]);
+        return $this;
+    }
+
+    public function text($name,$t,$opts=array())
+    {
+        array_push($this->d,
+            ['type' => 'raw',
+             'name' => $name,
+             'data' => $t,
+             'class' => (isset($opts['class']) ? $opts['class'] : ''),
+             'style' => (isset($opts['style']) ? $opts['style'] : ''),
+             'onclick' => (isset($opts['onclick']) ? $opts['onclick'] : ''),
+             'onchange' => (isset($opts['onchange']) ? $opts['onchange'] : ''),
+             'id' => (isset($opts['id']) ? $opts['id'] : ''),
+             'before' => (isset($opts['before']) ? $opts['before'] : ''),
+             'after' => (isset($opts['after']) ? $opts['after'] : ''),
+             'readonly' => (isset($opts['readonly']) ? $opts['readonly'] : false),
+             'autofocus' => (isset($opts['autofocus']) ? $opts['autofocus'] : false),
+            ]);
+        return $this;
+    }
+
+    public function hidden($n,$v,$opts=array())
+    {
+        $this->input('hidden',$n,$v,$opts);
+        return $this;
+    }
+
+    public function input_p($type,$n,$v,$opts=array())
+    {
+        par_def($n,isset($opts['par_sec']) ? $opts['par_sec'] : 'text4');
+
+        if(par_ex($n))
+            $v = par($n);
+        $this->input($type,$n,$v,$opts);
+        return $this;
+    }
+
+    public function select_p($type,$n,$v,$values=array(),$opts=array())
+    {
+        par_def($n,isset($opts['par_sec']) ? $opts['par_sec'] : 'text4');
+
+        if(par_ex($n))
+            $v = par($n);
+        $this->select($type,$n,$v,$values,$opts);
+        return $this;
+    }
+
+    public function textarea_p($n,$v,$row,$col,$opts=array())
+    {
+        par_def($n,isset($opts['par_sec']) ? $opts['par_sec'] : 'text4');
+
+        if(par_ex($n))
+            $v = par($n);
+        $this->textarea($n,$v,$row,$col,$opts);
+        return $this;
+    }
+
+    public function datefield_p($type,$n,$v,$opts=array())
+    {
+        par_def($n.'_year' ,isset($opts['par_sec']) ? $opts['par_sec'] : 'number0');
+        par_def($n.'_month',isset($opts['par_sec']) ? $opts['par_sec'] : 'number0');
+        par_def($n.'_day'  ,isset($opts['par_sec']) ? $opts['par_sec'] : 'number0');
+
+        if(par_ex($n.'_year' ) && par_ex($n.'_month') && par_ex($n.'_day'  ))
+        {
+            $vy = par($n . '_year');
+            $vm = par($n . '_month');
+            $vd = par($n . '_day');
+        }
+
+        $this->datefield($type,$n,"$vy-$vm-$vd",$opts);
+        return $this;
+    }
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    public function get($readonly = false)
+    {
+        return $this->get_start($readonly) . $this->get_p($readonly) . $this->get_end($readonly);
+    }
+
+    public function get_start($readonly = false)
+    {
+        $pass = new stdClass();
+        $pass->form_ref = &$this;
+        run_hook('form_get_start',$pass);
+        ob_start();
+        $mode = 'POST';
+        $enc = ' enctype="multipart/form-data"';
+        if($this->mode == 'GET')
+        {
+            $mode = 'GET';
+            $enc = '';
+        }
+        if($this->mode == 'AJAX')
+        {
+            if(isset($this->o['class']))
+                $this->o['class'] .= ' use-ajax';
+            else
+                $this->o['class'] = 'use-ajax';
+        }
+        print $this->formatter->begin_form(
+            "<form method=\"$mode\"".
+            ($this->url != '' ? ' action="'.$this->url.'"':'').
+            (isset($this->o['class']) ? ' class="'.$this->o['class'].'"':'').
+            (isset($this->o['style']) ? ' style="'.$this->o['style'].'"':'').
+            "$enc>");
+        return ob_get_clean();
+    }
+
+    protected function get_item($dta,$readonly = false)
+    {
+        $ro = $readonly;
+        if($dta['readonly'])
+            $ro = true;
+        $pass = new stdClass();
+        $pass->form_name = $this->name;
+        $pass->item_ref = &$dta;
+        $pass->readonly_ref = &$ro;
+        run_hook('form_get_item',$pass);
+
+        if($ro && $dta['type'] != 'submit')
+            return $this->get_readonly_item($dta);
+
+        ob_start();
+        if($dta['type'] == 'hidden')
+        {
+            print $dta['before']."<input type=\"". $dta['type'] ."\" name=\"". $dta['name'] .
+                    "\" value=\"". $dta['value'] ."\"".
+                    ($dta['class']==''?'':' class="'.$dta['class'].'"').
+                    ($dta['style']==''?'':' style="'.$dta['style'].'"').
+                    ($dta['id']==''?'':' id="'.$dta['id'].'"').
+                    "/>".$dta['after']."\n";
+        }
+
+        if($dta['type'] == 'raw')
+            print $this->formatter->item($dta['before'].$dta['data'].$dta['after'],$dta['name']);
+
+        if($dta['type'] == 'text'     ||
+           $dta['type'] == 'number'   ||
+           $dta['type'] == 'file'     ||
+           $dta['type'] == 'password' ||
+           $dta['type'] == 'submit'     )
+        {
+            print $this->formatter->item($dta['before'].
+                    "<input type=\"". $dta['type'] ."\" name=\"". $dta['name'] .
+                    "\" value=\"". $dta['value'] ."\"".
+                    ($dta['class']==''?'':' class="'.$dta['class'].'"').
+                    ($dta['style']==''?'':' style="'.$dta['style'].'"').
+                    ($dta['onclick']==''?'':' onclick="'.$dta['onclick'].'"').
+                    ($dta['onchange']==''?'':' onchange="'.$dta['onchange'].'"').
+                    ($dta['id']==''?'':' id="'.$dta['id'].'"').
+                    ($dta['size']==''?'':' size="'.$dta['size'].'"').
+                    ($dta['type'] == 'password' ? ' autocomplete="off"' : '').
+                    ($dta['maxlength']==''?'':' maxlength="'.$dta['maxlength'].'"').
+                    ($dta['autofocus']?' autofocus':'').
+                    "/>".$dta['after'],$dta['name']);
+        }
+
+        if($dta['type'] == 'upload')
+        {
+            $cnt = '';
+            if($dta['value'] == '')
+            {
+                $cnt .= "<input type=\"file\" name=\"". $dta['name'] .
+                    "\" value=\"". $dta['value'] ."\"/>";
+            }
+            else
+            {
+                $id = 'fuf_'.$dta['name'].'_'.rand(1000,9999);
+                $fobject = file_load($dta['value'],true);
+                $cnt .= "<input id=\"f_$id\" style=\"display:none;\" type=\"file\" name=\"". $dta['name'] .
+                    "\" value=\"". $dta['value'] ."\"/>";
+                $cnt .= "<input id=\"h_$id\" type=\"hidden\" name=\"". $dta['name'] . '_delete' .
+                    "\" value=\"keep\"/>";
+                $cnt .= l($fobject->name,$fobject->url,['id' => "l_$id"]);
+                $cnt .= ' ';
+                $btnstyle = 'border: 0 none; cursor: pointer; margin: 0; padding: 0;';
+                $oncl = "forms_click_delete('$id');";
+                $cnt .= "<span id=\"b_$id\" style=\"$btnstyle\" onclick=\"javascript:$oncl\">".
+                        "<img src=\"".url('/sys/images/small_red_cross.png').'" style="width: 16px; height: 16px;"/></span>';
+            }
+            print $this->formatter->item($dta['before'].$cnt.$dta['after'],$dta['name']);
+        }
+
+        if($dta['type'] == 'checkbox')
+        {
+            $s = $dta['value'] ? ' checked="checked"' : '';
+            print $this->formatter->item($dta['before'].
+                    "<input type=\"hidden\" name=\"". $dta['name'] . "\" value=\"off\"/>".
+                    "<input type=\"". $dta['type'] ."\" name=\"". $dta['name'] . "\"".
+                    ($dta['class']==''?'':' class="'.$dta['class'].'"').
+                    ($dta['style']==''?'':' style="'.$dta['style'].'"').
+                    ($dta['onclick']==''?'':' onclick="'.$dta['onclick'].'"').
+                    ($dta['id']==''?'':' id="'.$dta['id'].'"').
+                    "$s/>".$dta['after'],$dta['name']);
+        }
+
+        if($dta['type'] == 'select')
+        {
+            $t = '<select name="'.$dta['name'].'"'.
+                 ($dta['class']==''?'':' class="'.$dta['class'].'"').
+                 ($dta['style']==''?'':' style="'.$dta['style'].'"').
+                 ($dta['onclick']==''?'':' onclick="'.$dta['onclick'].'"').
+                 ($dta['onchange']==''?'':' onchange="'.$dta['onchange'].'"').
+                 ($dta['id']==''?'':' id="'.$dta['id'].'"').
+                 ($dta['autofocus']?' autofocus':'').
+                 '>';
+            foreach($dta['values'] as $h => $v)
+            {
+                $s = $dta['value'] == $h ? ' selected' : ''; 
+                $t .= "<option value=\"$h\"$s>$v</option>";
+            }
+            $t .= '</select>';
+            print $this->formatter->item($dta['before'].$t.$dta['after'],$dta['name']);
+        }
+
+        if($dta['type'] == 'optselect')
+        {
+            $id = 'fsf_'.$dta['name'].'_'.rand(1000,9999);
+            $value_is_set = false;
+            if($dta['value'] != '')
+                $value_is_set = true;
+
+            $t = '<input type="hidden" name="'.$dta['name'].'_sts" value="'.($value_is_set ? 'set' : 'null' ).
+                 '"  id="sts_'.$id.'"/>';
+            if(!$value_is_set)
+                $dta['style'] .= ' display:none;';
+            $t .= '<select name="'.$dta['name'].'"'.
+                ($dta['class']==''?'':' class="'.$dta['class'].'"').
+                ($dta['style']==''?'':' style="'.$dta['style'].'"').
+                ' id="sel_'.$id.'"'.
+                '>';
+            foreach($dta['values'] as $h => $v)
+            {
+                $s = $dta['value'] == $h ? ' selected' : '';
+                $t .= "<option value=\"$h\"$s>$v</option>";
+            }
+            $t .= '</select> ';
+            $onclset = "forms_click_selset('$id');";
+            $onclreset = "forms_click_selreset('$id');";
+            $btnstyle1 = 'border: 0 none; cursor: pointer; margin: 0; padding: 0;';
+            $btnstyle2 = 'border: 0 none; cursor: pointer; margin: 0; padding: 0;';
+            if($value_is_set)
+                $btnstyle2 .= ' display:none;';
+            else
+                $btnstyle1 .= ' display:none;';
+
+            $t .= "<span id=\"reset_$id\" style=\"$btnstyle1\" onclick=\"javascript:$onclreset\">".
+                    "<img src=\"".url('/sys/images/small_red_cross.png').'" style="width: 16px; height: 16px;"/></span>';
+            $t .= "<span id=\"set_$id\" style=\"$btnstyle2\" onclick=\"javascript:$onclset\">".
+                "<img src=\"".url('/sys/images/small_green_plus.png').'" style="width: 16px; height: 16px;"/></span>';
+            print $this->formatter->item($dta['before'].$t.$dta['after'],$dta['name']);
+        }
+
+        if($dta['type'] == 'radio')
+        {
+            $t = '';
+            foreach($dta['values'] as $h => $v)
+            {
+                $s = $dta['value'] == $h ? ' checked="checked"' : ''; 
+                $t .= "<input type=\"radio\" name=\"".$dta['name']."\" value=\"$h\"".
+                    ($dta['class']==''?'':' class="'.$dta['class'].'"').
+                    ($dta['style']==''?'':' style="'.$dta['style'].'"').
+                    ($dta['onclick']==''?'':' onclick="'.$dta['onclick'].'"').
+                    ($dta['onchange']==''?'':' onchange="'.$dta['onchange'].'"').
+                    ($dta['id']==''?'':' id="'.$dta['id'].'"').
+                    "$s>$v";
+            }
+            print $this->formatter->item($dta['before'].$t.$dta['after'],$dta['name']);
+        }
+
+        if($dta['type'] == 'textarea')
+        {
+            $t = '<textarea name="'.$dta['name'].'" rows="'.$dta['row'].'" cols="'.$dta['col'].'"'.
+                 ($dta['class']==''?'':' class="'.$dta['class'].'"').
+                 ($dta['style']==''?'':' style="'.$dta['style'].'"').
+                 ($dta['onclick']==''?'':' onclick="'.$dta['onclick'].'"').
+                 ($dta['id']==''?'':' id="'.$dta['id'].'"').
+                 ($dta['autofocus']?' autofocus':'').
+                 '>';
+            $t .= $dta['value'];
+            $t .= '</textarea>';
+            print $this->formatter->item($dta['before'].$t.$dta['after'],$dta['name']);
+        }
+
+        if($dta['type'] == 'date' || $dta['type'] == 'dateu')
+        {
+            $custom_id = 'f_date_'.$dta['name'] . '_'. rand(10000,99999);
+
+            $unknown = false;
+            $parts = array();
+            if(!preg_match('/(\d+)-(\d+)-(\d+)/',$dta['value'],$parts))
+            {
+                if($dta['type'] == 'dateu')
+                    $unknown = true;
+                $parts[1] = 1969;
+                $parts[2] = 0;
+                $parts[3] = 0;
+            }
+            $t = '<select name="'.$dta['name'].'_year" id="'.$custom_id.'_sel_y">';
+            for($i=1970;$i<2100;++$i)
+            {
+                $s = $parts[1] == $i ? ' selected' : '';
+                $t .= "<option value=\"$i\"$s>".($i==1969 ? ' ' : $i )."</option>";
+            }
+            $s = $parts[1] == 1969 ? ' selected' : '';
+            $t .= "<option value=\"1969\"$s> </option>";
+            $t .= '</select>';
+            $t .= '<select name="'.$dta['name'].'_month" id="'.$custom_id.'_sel_m">';
+            for($i=1;$i<13;++$i)
+            {
+                global $sys_data;
+                $s = $parts[2] == $i ? ' selected' : '';
+                $t .= "<option value=\"$i\"$s>" . ($i==0 ? ' ' : t($sys_data->month_names[intval($i)])) . "</option>";
+            }
+            $s = $parts[2] == 0 ? ' selected' : '';
+            $t .= "<option value=\"0\"$s> </option>";
+            $t .= '</select>';
+            $t .= '<select name="'.$dta['name'].'_day" id="'.$custom_id.'_sel_d">';
+            for($i=1;$i<32;++$i)
+            {
+                $s = $parts[3] == $i ? ' selected' : '';
+                $t .= "<option value=\"$i\"$s>".($i==0?' ':$i)."</option>";
+            }
+            $s = $parts[3] == 0 ? ' selected' : '';
+            $t .= "<option value=\"0\"$s> </option>";
+            $t .= '</select>';
+
+            if($dta['type'] == 'dateu')
+            {
+                $s = $unknown ? ' checked="checked"' : '';
+                $t .= "<input type=\"hidden\" name=\"". $dta['name'] . "_set\" value=\"off\"/>".
+                      "<input type=\"checkbox\" onclick=\"forms_set_reset_unknown_date('$custom_id');\" ".
+                        "name=\"". $dta['name'] . "_set\" id=\"".$custom_id."_set\"$s/>".t('Unknown').
+                      "<script>forms_set_reset_unknown_date('$custom_id');</script>";
+            }
+            print $this->formatter->item($dta['before'].$t.$dta['after'],$dta['name']);
+        }
+
+        return ob_get_clean();
+    }
+
+    public function get_readonly_item($dta)
+    {
+        ob_start();
+
+        if($dta['type'] == 'raw')
+            print $this->formatter->item($dta['before'].$dta['data'].$dta['after'],$dta['name']);
+
+        if($dta['type'] == 'text' ||
+           $dta['type'] == 'textarea' ||
+           $dta['type'] == 'number' ||
+           $dta['type'] == 'float' )
+        {
+            print $this->formatter->item($dta['before'].$dta['value'].$dta['after'],$dta['name']);
+        }
+
+        if($dta['type'] == 'upload')
+        {
+            if($dta['value'] != '')
+            {
+                $fobject = new File('');
+                $fobject->load($dta['value'],true);
+                print $this->formatter->item($dta['before'].l($fobject->name,$fobject->url).$dta['after'],$dta['name']);
+            }
+            else
+            {
+                print $this->formatter->item($dta['before'].'-'.$dta['after'],$dta['name']);
+            }
+        }
+
+        if($dta['type'] == 'checkbox')
+        {
+            $v = $dta['value'] ? t('Yes') : t('No');
+            print $this->formatter->item($dta['before'].$v.$dta['after'],$dta['name']);
+        }
+
+        if($dta['type'] == 'select' ||
+           $dta['type'] == 'radio')
+        {
+            $dispv = '';
+            foreach($dta['values'] as $h => $v)
+            {
+                if($dta['value'] == $h)
+                    $dispv = $v;
+            }
+            print $this->formatter->item($dta['before'].$dispv.$dta['after'],$dta['name']);
+        }
+
+        if($dta['type'] == 'optselect')
+        {
+            $dispv = '';
+            if($dta['value'] == '')
+                $dispv = '-';
+            else
+                foreach($dta['values'] as $h => $v)
+                {
+                    if($dta['value'] == $h)
+                        $dispv = $v;
+                }
+            print $this->formatter->item($dta['before'].$dispv.$dta['after'],$dta['name']);
+        }
+
+        if($dta['type'] == 'date' || $dta['type'] == 'dateu')
+        {
+            $dispv = '';
+            $unknown = false;
+            $parts = array();
+            if(!preg_match('/(\d+)-(\d+)-(\d+)/',$dta['value'],$parts))
+            {
+                if($dta['type'] == 'dateu')
+                    $unknown = true;
+                $parts[1] = 1969;
+                $parts[2] = 0;
+                $parts[3] = 0;
+            }
+            if($dta['type'] == 'dateu' && $unknown)
+            {
+                $dispv = t('Unknown');
+            }
+            else
+            {
+                global $sys_data;
+                $dispv = $parts[1] . ' ' . t($sys_data->month_names[intval($parts[2])]) . ' '. $parts[3];
+            }
+
+            print $this->formatter->item($dta['before'].$dispv.$dta['after'],$dta['name']);
+        }
+
+        return ob_get_clean();
+    }
+
+    public function get_p($readonly = false)
+    {
+        ob_start();
+        foreach($this->d as $dta)
+            print $this->get_item($dta,$readonly);
+        $this->d = array();
+        return ob_get_clean();
+    }
+
+    public function get_part($first,$last,$readonly = false)
+    {
+        ob_start();
+        $show = false;
+        if($first === NULL)
+            $show = true;
+        foreach($this->d as $dta)
+        {
+            if($dta['name'] == $first)
+                $show = true;
+            if($show)
+                print $this->get_item($dta,$readonly);
+            if($last !== NULL && $dta['name'] == $last)
+                $show = false;
+        }
+        return ob_get_clean();
+    }
+
+    public function get_one($name,$readonly = false)
+    {
+        ob_start();
+        foreach($this->d as $dta)
+        {
+            if($dta['name'] == $name)
+                print $this->get_item($dta,$readonly);
+        }
+        return ob_get_clean();
+    }
+
+    public function get_end($readonly = false)
+    {
+        ob_start();
+        print '</form>';
+        return $this->formatter->end_form(ob_get_clean());
+    }
+}
+
+/** Check form source check value. Returns false if OK. */
+function form_source_check($disable_auto_redirect = false)
+{
+    par_def('harassment-value','text1ns');
+    if(par_is('harassment-value',getFormSalt()))
+        return false;
+    if(!$disable_auto_redirect)
+        load_loc('error',t('Form validation error'));
+    return true;
+}
+
+class HtmlFormFormatter
+{
+    public $name;
+    public function __construct()
+    {
+        $this->name = 'null_formatter';
+    }
+
+    function begin_form($txt)
+    {
+        return $txt;
+    }
+
+    function end_form($txt)
+    {
+        return $txt;
+    }
+
+    function item($txt,$name)
+    {
+        return $txt;
+    }
+}
+
+function hook_forms_init()
+{
+    global $speedform_handlers;
+    global $field_repository;
+    global $datadef_repository;
+
+    $speedform_handlers = [];
+    $field_repository = [];
+    $datadef_repository = [];
+
+    $speedform_handlers['keyn'] = [
+             'sqlname'  => 'sfh_name_nomod',
+             'sqlvalue' => 'sfh_value_numtype',
+             'directval'=> false,
+             'dispval'  => 'sfh_dispval_simple',
+             'form'     => 'sfh_key_form',
+             'loadpar'  => 'sfh_key_loadpar',
+             'par_sec'  => 'number0',
+             'sqltype'  => 'SERIAL',
+             'validator'=> NULL, ];
+
+    $speedform_handlers['keys'] = [
+             'sqlname'  => 'sfh_name_nomod',
+             'sqlvalue' => 'sfh_value_textype',
+             'directval'=> false,
+             'dispval'  => 'sfh_dispval_simple',
+             'form'     => 'sfh_key_form',
+             'loadpar'  => 'sfh_key_loadpar',
+             'par_sec'  => 'text1ns',
+             'sqltype'  => 'VARCHAR(32)',
+             'validator'=> NULL,  ];
+
+    $speedform_handlers['smalltext'] = [
+             'sqlname'  => 'sfh_name_simple',
+             'sqlvalue' => 'sfh_value_textype',
+             'directval'=> false,
+             'dispval'  => 'sfh_dispval_simple',
+             'form'     => 'sfh_smalltext_form',
+             'loadpar'  => NULL,
+             'par_sec'  => 'text4',
+             'sqltype'  => 'VARCHAR(128)',
+             'validator'=> NULL, ];
+
+    $speedform_handlers['number'] = [
+             'sqlname'  => 'sfh_name_simple',
+             'sqlvalue' => 'sfh_value_numtype',
+             'directval'=> false,
+             'dispval'  => 'sfh_dispval_simple',
+             'form'     => 'sfh_number_form',
+             'loadpar'  => NULL,
+             'par_sec'  => 'numberi',
+             'sqltype'  => 'NUMERIC(10)',
+             'validator'=> 'sfh_number_validator', ];
+
+    $speedform_handlers['largetext'] = [
+             'sqlname'  => 'sfh_name_simple',
+             'sqlvalue' => 'sfh_value_textype',
+             'directval'=> false,
+             'dispval'  => 'sfh_dispval_simple',
+             'form'     => 'sfh_largetext_form',
+             'loadpar'  => NULL,
+             'par_sec'  => 'text4',
+             'sqltype'  => sql_t('longtext_type'),
+             'validator'=> NULL, ];
+
+    $speedform_handlers['txtselect'] = [
+             'sqlname'  => 'sfh_name_simple',
+             'sqlvalue' => 'sfh_value_textype',
+             'directval'=> false,
+             'dispval'  => 'sfh_dispval_arrayvalues',
+             'form'     => 'sfh_select_form',
+             'loadpar'  => NULL,
+             'par_sec'  => 'text1ns',
+             'sqltype'  => 'VARCHAR(16)',
+             'validator'=> NULL, ];
+
+    $speedform_handlers['numselect'] = [
+             'sqlname'  => 'sfh_name_simple',
+             'sqlvalue' => 'sfh_value_numtype',
+             'directval'=> false,
+             'dispval'  => 'sfh_dispval_arrayvalues',
+             'form'     => 'sfh_select_form',
+             'loadpar'  => NULL,
+             'par_sec'  => 'number0',
+             'sqltype'  => 'NUMERIC(4)',
+             'validator'=> NULL, ];
+
+    $speedform_handlers['float'] = [
+             'sqlname'  => 'sfh_name_simple',
+             'sqlvalue' => 'sfh_value_numtype',
+             'directval'=> false,
+             'dispval'  => 'sfh_dispval_simple',
+             'form'     => 'sfh_smalltext_form',
+             'loadpar'  => NULL,
+             'par_sec'  => 'number1ns',
+             'sqltype'  => 'NUMERIC(15,5)',
+             'validator'=> 'sfh_number_validator', ];
+
+    $speedform_handlers['password'] = [
+             'sqlname'  => 'sfh_name_simple',
+             'sqlvalue' => 'sfh_value_textype',
+             'directval'=> false,
+             'dispval'  => 'sfh_dispval_none',
+             'form'     => 'sfh_password_form',
+             'loadpar'  => NULL,
+             'par_sec'  => 'text4',
+             'sqltype'  => 'VARCHAR(128)',
+             'validator'=> NULL, ];
+
+    $speedform_handlers['static'] = [
+             'sqlname'  => 'sfh_name_empty',
+             'sqlvalue' => 'sfh_value_empty',
+             'directval'=> false,
+             'dispval'  => 'sfh_dispval_none',
+             'form'     => 'sfh_static_form',
+             'loadpar'  => NULL,
+             'par_sec'  => 'no',
+             'sqltype'  => '',
+             'validator'=> NULL, ];
+
+    $speedform_handlers['rotext'] = [
+             'sqlname'  => 'sfh_name_nomod',
+             'sqlvalue' => 'sfh_value_textype',
+             'directval'=> false,
+             'dispval'  => 'sfh_dispval_simple',
+             'form'     => 'sfh_key_form',
+             'loadpar'  => NULL,
+             'par_sec'  => 'text1ns',
+             'sqltype'  => 'VARCHAR(128)',
+             'validator'=> NULL,  ];
+
+    $speedform_handlers['txtselect_intrange'] = [
+             'sqlname'  => 'sfh_name_simple',
+             'sqlvalue' => 'sfh_value_textype',
+             'directval'=> false,
+             'dispval'  => 'sfh_dispval_simple',
+             'form'     => 'sfh_select_intrange_form',
+             'loadpar'  => NULL,
+             'par_sec'  => 'text1ns',
+             'sqltype'  => 'VARCHAR(16)',
+             'validator'=> 'sfh_number_validator', ];
+
+    $speedform_handlers['numselect_intrange'] = [
+             'sqlname'  => 'sfh_name_simple',
+             'sqlvalue' => 'sfh_value_numtype',
+             'directval'=> false,
+             'dispval'  => 'sfh_dispval_simple',
+             'form'     => 'sfh_select_intrange_form',
+             'loadpar'  => NULL,
+             'par_sec'  => 'number0',
+             'sqltype'  => 'NUMERIC(4)',
+             'validator'=> 'sfh_number_validator', ];
+
+    $speedform_handlers['txtradio'] = [
+             'sqlname'  => 'sfh_name_simple',
+             'sqlvalue' => 'sfh_value_textype',
+             'directval'=> false,
+             'dispval'  => 'sfh_dispval_arrayvalues',
+             'form'     => 'sfh_radio_form',
+             'loadpar'  => NULL,
+             'par_sec'  => 'text1ns',
+             'sqltype'  => 'VARCHAR(16)',
+             'validator'=> NULL, ];
+
+    $speedform_handlers['numradio'] = [
+             'sqlname'  => 'sfh_name_simple',
+             'sqlvalue' => 'sfh_value_numtype',
+             'directval'=> false,
+             'dispval'  => 'sfh_dispval_arrayvalues',
+             'form'     => 'sfh_radio_form',
+             'loadpar'  => NULL,
+             'par_sec'  => 'number0',
+             'sqltype'  => 'NUMERIC(4)',
+             'validator'=> NULL, ];
+
+    $speedform_handlers['check'] = [
+             'sqlname'  => 'sfh_name_simple',
+             'sqlvalue' => 'sfh_value_checktype',
+             'directval'=> false,
+             'dispval'  => 'sfh_dispval_check',
+             'form'     => 'sfh_check_form',
+             'loadpar'  => 'sfh_check_lpar',
+             'par_sec'  => 'bool',
+             'sqltype'  => 'BOOLEAN',
+             'validator'=> NULL, ];
+
+    $speedform_handlers['date'] = [
+             'sqlname'  => 'sfh_name_simple',
+             'defvaltr' => 'sfh_default_datetype',
+             'sqlvalue' => 'sfh_value_datetype',
+             'directval'=> false,
+             'dispval'  => 'sfh_dispval_date',
+             'form'     => 'sfh_date_form',
+             'loadpar'  => 'sfh_date_lpar',
+             'par_sec'  => 'number0',
+             'sqltype'  => 'DATE',
+             'validator'=> NULL, ];
+
+    $speedform_handlers['dateu'] = [
+             'sqlname'  => 'sfh_name_simple',
+             'sqlvalue' => 'sfh_value_datetype',
+             'directval'=> false,
+             'dispval'  => 'sfh_dispval_date',
+             'form'     => 'sfh_dateu_form',
+             'loadpar'  => 'sfh_dateu_lpar',
+             'par_sec'  => 'number0',
+             'sqltype'  => 'DATE',
+             'validator'=> NULL, ];
+
+    $speedform_handlers['timestamp_create'] = [
+             'sqlname'  => 'sfh_name_timestamp',
+             'sqlvalue' => 'sfh_value_timestamp',
+             'directval'=> true,
+             'dispval'  => 'sfh_dispval_simple',
+             'form'     => 'sfh_timestamp_form',
+             'loadpar'  => NULL,
+             'par_sec'  => 'tst',
+             'sqltype'  => sql_t('timestamp_noupd'),
+             'validator'=> NULL, ];
+
+    $speedform_handlers['timestamp_mod'] = [
+             'sqlname'  => 'sfh_name_timestamp',
+             'sqlvalue' => 'sfh_value_timestamp',
+             'directval'=> true,
+             'dispval'  => 'sfh_dispval_simple',
+             'form'     => 'sfh_timestamp_form',
+             'loadpar'  => NULL,
+             'par_sec'  => 'tst',
+             'sqltype'  => sql_t('timestamp_noupd'),
+             'validator'=> NULL, ];
+
+    $speedform_handlers['modifier_user'] = [
+            'sqlname'  => 'sfh_name_simple',
+            'sqlvalue' => 'sfh_value_modifieruser',
+            'directval'=> false,
+            'dispval'  => 'sfh_dispval_simple',
+            'form'     => 'sfh_key_form',
+            'loadpar'  => NULL,
+            'par_sec'  => 'text5',
+            'sqltype'  => 'VARCHAR(128)',
+            'validator'=> NULL, ];
+
+    $speedform_handlers['sqlnchoose'] = [
+             'sqlname'  => 'sfh_name_simple',
+             'sqlvalue' => 'sfh_value_numtype',
+             'directval'=> false,
+             'dispval'  => 'sfh_dispval_sqlchoose',
+             'form'     => 'sfh_sqlchoose_form',
+             'loadpar'  => NULL,
+             'par_sec'  => 'number0',
+             'sqltype'  => 'NUMERIC(4)',
+             'validator'=> NULL, ];
+
+    $speedform_handlers['sqlschoose'] = [
+             'sqlname'  => 'sfh_name_simple',
+             'sqlvalue' => 'sfh_value_textype',
+             'directval'=> false,
+             'dispval'  => 'sfh_dispval_sqlchoose',
+             'form'     => 'sfh_sqlchoose_form',
+             'loadpar'  => NULL,
+             'par_sec'  => 'text1ns',
+             'sqltype'  => 'VARCHAR(16)',
+             'validator'=> NULL, ];
+
+    $speedform_handlers['file'] = [
+             'sqlname'  => 'sfh_name_simple',
+             'sqlvalue' => 'sfh_value_textype',
+             'directval'=> false,
+             'dispval'  => 'sfh_dispval_file',
+             'form'     => 'sfh_file_form',
+             'loadpar'  => 'sfh_file_lpar',
+             'loadpar_deferred' => 'sfh_file_lpar_deferred',
+             'par_sec'  => 'text4ns',
+             'sqltype'  => 'VARCHAR(64)',
+             'validator'=> NULL, ];
+
+    $speedform_handlers['submit'] = [
+             'sqlname'  => 'sfh_name_empty',
+             'sqlvalue' => 'sfh_value_empty',
+             'directval'=> false,
+             'dispval'  => 'sfh_dispval_none',
+             'form'     => 'sfh_submit_form',
+             'loadpar'  => NULL,
+             'par_sec'  => 'text4',
+             'sqltype'  => '',
+             'validator'=> NULL, ];
+
+    $speedform_handlers = array_merge($speedform_handlers,run_hook('custom_formtypes'));
+
+    $field_repository = array_merge($field_repository,run_hook('field_repository'));
+    $datadef_repository = run_hook('datadef_repository');
+}
+
+function datadef_from_repository($name)
+{
+    global $datadef_repository;
+    if(array_key_exists($name,$datadef_repository))
+        return call_user_func($datadef_repository[$name]);
+    return NULL;
+}
+
+function sfh_name_empty($field_def,$op)
+{
+    return '';
+}
+
+function sfh_name_simple($field_def,$op)
+{
+    if(isset($field_def['table']) && $op == 'SELECT')
+        return $field_def['table'].'.'.$field_def['sql'];
+    return $field_def['sql'];
+}
+
+function sfh_name_nomod($field_def,$op)
+{
+    if($op != 'SELECT')
+        return '';
+    if(isset($field_def['table']))
+        return $field_def['table'].'.'.$field_def['sql'];
+    return $field_def['sql'];
+}
+
+function sfh_value_empty($strip,$field_def,$op,$value)
+{
+    return "";
+}
+
+function sfh_value_textype($strip,$field_def,$op,$value)
+{
+    if(isset($field_def['optional']) && $field_def['optional'] == "yes" && $value == '')
+    {
+        if($strip)
+            return null;
+        return 'NULL';
+    }
+    if($strip)
+        return $value;
+    return "'$value'";
+}
+
+function sfh_value_numtype($strip,$field_def,$op,$value)
+{
+    if($value == '')
+    {
+        if($strip)
+            return null;
+        return 'NULL';
+    }
+    if($strip)
+        return $value;
+    return "$value";
+}
+
+function sfh_value_checktype($strip,$field_def,$op,$value)
+{
+    if($value !== 'off' && ($value || $value == 'on'))
+    {
+        if($strip)
+            return 1;
+        return 'TRUE';
+    }
+    if($strip)
+        return 0;
+    return 'FALSE';
+}
+
+function sfh_value_datetype($strip,$field_def,$op,$value)
+{
+    if($value == '' || $value == 'u')
+    {
+        if($strip)
+            return null;
+        return 'NULL';
+    }
+    if(preg_match('/\d+-\d+-\d+/',$value))
+    {
+        if($strip)
+            return $value;
+        return "date('$value')";
+    }
+    if($strip)
+        return null;
+    return 'NULL';
+}
+
+function sfh_value_modifieruser($strip,$field_def,$op,$value)
+{
+    global $user;
+    if(isset($field_def["userdata"]) && $field_def["userdata"] == "fullname")
+    {
+        if($strip)
+            return $user->name;
+        return "'" . $user->name . "'";
+    }
+    if($strip)
+        return $user->login;
+    return "'".$user->login."'";
+}
+
+function sfh_static_form($field_def,$form,$value,$opts)
+{
+    $form->text($field_def['sql'],$value,$opts);
+}
+
+function sfh_submit_form($field_def,$form,$value,$opts)
+{
+    $form->input('submit',$field_def['sql'],$value,$opts);
+}
+
+function sfh_key_form($field_def,$form,$value,$opts)
+{
+    $form->hidden($field_def['sql'],$value);
+
+    if($value != '' && isset($field_def['link']))
+    {
+        $url = str_replace('<key>',$value,$field_def['link']);
+        $linkedvalue = l($value,$url,['class'=>'f_key_linked f_key_link_'.$field_def['sql']]);
+        $value = $linkedvalue;
+    }
+    $form->text($field_def['sql'],$value,$opts);
+}
+
+function sfh_smalltext_form($field_def,$form,$value,$opts)
+{
+    $n = $field_def['sql'];
+    $form->input('text',$n,$value,$opts);
+}
+
+function sfh_number_form($field_def,$form,$value,$opts)
+{
+    $n = $field_def['sql'];
+    $form->input('number',$n,$value,$opts);
+}
+
+function sfh_password_form($field_def,$form,$value,$opts)
+{
+    $n = $field_def['sql'];
+    if(isset($field_def['converter']) && $field_def['converter'] != '')
+        $value = '';
+    $form->input('password',$n,$value,$opts);
+}
+
+function sfh_largetext_form($field_def,$form,$value,$opts)
+{
+    $n = $field_def['sql'];
+    $form->textarea($n,$value,
+                (isset($field_def['row']) ? $field_def['row'] : 5),
+                (isset($field_def['col']) ? $field_def['col'] : 35),
+                $opts
+              );
+}
+
+function sfh_select_form($field_def,$form,$value,$opts)
+{
+    $n = $field_def['sql'];
+    $type = 'select';
+    if(isset($field_def['optional']) && $field_def['optional'] == "yes")
+        $type = 'optselect';
+    $form->select($type,$n,$value,$field_def['values'],$opts);
+}
+
+function sfh_select_intrange_form($field_def,$form,$value,$opts)
+{
+    $n = $field_def['sql'];
+    $values = [];
+    for($i = $field_def['start'];$i<=$field_def['end'];++$i)
+        $values[$i] = $i;
+    $form->select('select',$n,$value,$values,$opts);
+}
+
+function sfh_radio_form($field_def,$form,$value,$opts)
+{
+    $n = $field_def['sql'];
+    $form->select('radio',$n,$value,$field_def['values'],$opts);
+}
+
+function sfh_check_form($field_def,$form,$value,$opts)
+{
+    $n = $field_def['sql'];
+    $v = false;
+    if($value !== 'off' && ($value || $value == 'on'))
+        $v = true;
+    $form->input('checkbox',$n,$v,$opts);
+}
+
+function sfh_date_form($field_def,$form,$value,$opts)
+{
+    $n = $field_def['sql'];
+    $form->datefield('date',$n,$value,$opts);
+}
+
+function sfh_dateu_form($field_def,$form,$value,$opts)
+{
+    $n = $field_def['sql'];
+    $form->datefield('dateu',$n,$value,$opts);
+}
+
+function sfh_date_lpar($field_def,$tablename)
+{
+    global $speedform_handlers;
+
+    $v = '';
+    $vy = 1969;
+    $vm = 0;
+    $vd = 0;
+
+    par_def($field_def['sql'].'_year' ,$speedform_handlers[$field_def['type']]['par_sec']);
+    par_def($field_def['sql'].'_month',$speedform_handlers[$field_def['type']]['par_sec']);
+    par_def($field_def['sql'].'_day'  ,$speedform_handlers[$field_def['type']]['par_sec']);
+
+    if(par_ex($field_def['sql'].'_year') &&
+       par_ex($field_def['sql'].'_month') &&
+       par_ex($field_def['sql'].'_day')  )
+    {
+        $vy = par($field_def['sql'].'_year');
+        $vm = par($field_def['sql'].'_month');
+        $vd = par($field_def['sql'].'_day');
+        return "$vy-$vm-$vd";
+    }
+    return NULL;
+}
+
+function sfh_dateu_lpar($field_def,$tablename)
+{
+    global $speedform_handlers;
+
+    $v = '';
+    $vy = 1969;
+    $vm = 0;
+    $vd = 0;
+
+    par_def($field_def['sql'].'_year' ,$speedform_handlers[$field_def['type']]['par_sec']);
+    par_def($field_def['sql'].'_month',$speedform_handlers[$field_def['type']]['par_sec']);
+    par_def($field_def['sql'].'_day'  ,$speedform_handlers[$field_def['type']]['par_sec']);
+    par_def($field_def['sql'].'_set'  ,'bool');
+
+    if(par_is($field_def['sql'].'_set','on'))
+        return 'u';
+
+    if(par_ex($field_def['sql'].'_year') &&
+       par_ex($field_def['sql'].'_month') &&
+       par_ex($field_def['sql'].'_day')  )
+    {
+        $vy = par($field_def['sql'].'_year');
+        $vm = par($field_def['sql'].'_month');
+        $vd = par($field_def['sql'].'_day');
+        return "$vy-$vm-$vd";
+    }
+    return NULL;
+}
+
+function sfh_key_loadpar($field_def,$tablename)
+{
+    global $speedform_handlers;
+    par_def($field_def['sql'],(isset($field_def['par_sec']) ? $field_def['par_sec'] : $speedform_handlers[$field_def['type']]['par_sec']));
+    if(par_ex($field_def['sql']))
+    {
+        if(par_is($field_def['sql'],isset($field_def['default']) ? $field_def['default'] : '' ))
+            return '';
+        return par($field_def['sql']);
+    }
+}
+
+function sfh_name_timestamp($field_def,$op)
+{
+    if($field_def['type'] == 'timestamp_create' && $op == 'UPDATE')
+        return '';
+
+    if($op == 'UPDATE' && isset($field_def['autoupdate']) && $field_def['autoupdate'] == 'disable')
+        return '';
+
+    if(isset($field_def['table']) && $op == 'SELECT')
+        return $field_def['table'].'.'.$field_def['sql'];
+    return $field_def['sql'];
+}
+
+function sfh_value_timestamp($strip,$field_def,$op,$value)
+{
+    return sql_t('current_timestamp');
+}
+
+function sfh_timestamp_form($field_def,$form,$value,$opts)
+{
+    $form->hidden($field_def['sql'],$value);
+    $form->text($field_def['sql'],$value,$opts);
+}
+
+function sfh_sqlchoose_form($field_def,$form,$value,$opts)
+{
+    $n = $field_def['sql'];
+
+    $type = 'select';
+    if(isset($field_def['optional']) && $field_def['optional'] == "yes")
+        $type = "optselect";
+
+    $values = array();
+    $keyname    = $field_def['keyname'];
+    $showpart   = $field_def['showpart'];
+    $ctable     = $field_def['connected_table'];
+    $where_order_part = $field_def['where_orderby_part'];
+    $ra = sql_exec_fetchAll("SELECT $keyname,$showpart FROM $ctable $where_order_part");
+    foreach($ra as $r)
+        $values[$r[0]] = $r[1];
+    $form->select($type,$n,$value,$values,$opts);
+}
+
+function sfh_number_validator($field_def,$value)
+{
+    if(isset($field_def['minimum']) && $field_def['minimum'] > $value)
+        return t('The "_field_" field is lower than minimum',['_field_' => $field_def['sql']]);
+    if(isset($field_def['maximum']) && $field_def['maximum'] < $value)
+        return t('The "_field_" field is higher than maximum',['_field_' => $field_def['sql']]);
+    return '';
+}
+
+function sfh_file_form($field_def,$form,$value,$opts)
+{
+    $n = $field_def['sql'];
+    $form->upload($n,$value,$opts);
+}
+
+function sfh_check_lpar($field_def,$tablename)
+{
+    global $speedform_handlers;
+    par_def($field_def['sql'], (isset($field_def['par_sec']) ? $field_def['par_sec'] : $speedform_handlers[$field_def['type']]['par_sec']));
+    if (par_ex($field_def['sql']))
+    {
+        $v = par($field_def['sql']);
+        if($v === 'off')
+            $v = false;
+        if($v === 'on')
+            $v = true;
+        return $v;
+    }
+    return NULL;
+}
+
+function sfh_file_lpar($field_def,$tablename)
+{
+    global $speedform_handlers;
+    par_def($field_def['sql'],(isset($field_def['par_sec']) ? $field_def['par_sec'] : $speedform_handlers[$field_def['type']]['par_sec']));
+
+    if($_FILES[$field_def['sql']]['error'] == UPLOAD_ERR_OK)
+    {
+        if(isset($field_def['filetypes']))
+        {
+            $req_filetypes = explode(';', $field_def['filetypes']);
+            if(!in_array($_FILES[$field_def['sql']]['type'], $req_filetypes))
+            {
+                load_loc('error',
+                    t('The uploaded file type is "_upltype_" not in "_reqtype_". Please upload the allowed kind of file',
+                        ['_upltype_' => $_FILES[$field_def['sql']]['type'],
+                            '_reqtype_' => $field_def['filetypes']]),
+                    t('Form validation error'));
+            }
+        }
+
+        if(in_array($_FILES[$field_def['sql']]['type'],
+            ['image/jpeg', 'image/png', 'image/tiff', 'image/gif']
+        ))
+        {
+            $check = getimagesize($_FILES[$field_def['sql']]["tmp_name"]);
+            if($check === false)
+                load_loc('error', t('The uploaded file type is not image file. Please upload image file'),
+                    t('Form validation error'));
+        }
+
+        return 'deferred_new_ufi';
+    }
+
+    if(par_is($field_def['sql'].'_delete','delete'))
+        return '';
+    return NULL; //Will not set, the previous will left in table
+}
+
+function sfh_file_lpar_deferred($field_def,$tablename)
+{
+    global $speedform_handlers;
+
+    if($_FILES[$field_def['sql']]['error'] == UPLOAD_ERR_OK)
+    {
+        //File type validations done in sfh_file_lpar()
+
+        $f = new File(isset($field_def['container']) ? $field_def['container'] : 'public');
+        $f->addFromTemp($_FILES[$field_def['sql']]['name'],
+            $_FILES[$field_def['sql']]["tmp_name"],
+            (isset($field_def['subdir']) ? $field_def['subdir'] : ''),
+            ['sql' => $field_def['sql'], 'table' => $tablename]
+        );
+        return $f->ufi;
+    }
+
+    if(par_is($field_def['sql'].'_delete','delete'))
+        return '';
+    return NULL; //Will not set, the previous will left in table
+}
+
+function sfh_dispval_none($field_def,$value)
+{
+    return '';
+}
+
+function sfh_dispval_simple($field_def,$value)
+{
+    return $value;
+}
+
+function sfh_dispval_arrayvalues($field_def,$value)
+{
+    if(isset($field_def['values'][$value]))
+        return $field_def['values'][$value];
+    return '';
+}
+
+function sfh_dispval_check($field_def,$value)
+{
+    if($value)
+        return t('Yes');
+    return t('No');
+}
+
+function sfh_dispval_date($field_def,$value)
+{
+    if($value == NULL)
+        return t('Unknown');
+    return $value;
+}
+
+function sfh_dispval_sqlchoose($field_def,$value)
+{
+    if(isset($field_def['optional']) && $field_def['optional'] == "yes" && ($value == NULL || $value == ''))
+        return '-';
+
+    $keyname    = $field_def['keyname'];
+    $showpart   = $field_def['showpart'];
+    $ctable     = $field_def['connected_table'];
+    $dv = sql_exec_single("SELECT $showpart FROM $ctable WHERE $keyname=:kk",[':kk' => $value]);
+    return $dv;
+}
+
+function sfh_dispval_file($field_def,$value)
+{
+    if($value == '' || $value == NULL)
+        return '';
+    $f = file_load($value,true);
+    if($f->mime == '')
+        return '';
+    return l($f->name,$f->url);
+}
+
+function sfh_default_datetype($field_def,$default_value)
+{
+    if($default_value == 'now')
+        return date('Y-m-d');
+    return $default_value;
+}
+
+class SpeedForm
+{
+    public $def;
+    public $values;
+    public $highlighted;
+    public $validate_errortext;
+    public $loaded_values;
+
+    private $load_parameters_done;
+    private $load_parameters_deferred_done;
+
+    public function __construct($definition)
+    {
+        global $speedform_handlers;
+
+        $this->def = $definition;
+
+        $this->highlighted = array();
+        $this->validate_errortext = '';
+        $this->values = array();
+        $this->load_parameters_done = false;
+        $this->load_parameters_deferred_done = false;
+
+        foreach($this->def['fields'] as $idx => $f)
+        {
+            if(isset($speedform_handlers[$f['type']]['defvaltr']) &&
+               $speedform_handlers[$f['type']]['defvaltr'] != NULL)
+            {
+                $dip = $speedform_handlers[$f['type']]['defvaltr'];
+
+                $v = call_user_func($dip,$f,isset($f['default']) ? $f['default'] : '');
+                $this->values[$f['sql']] = $v;
+            }
+            else
+            {
+                $this->values[$f['sql']] = isset($f['default']) ? $f['default'] : '';
+            }
+        }
+        $this->loaded_values = $this->values;
+
+        $pass = new stdClass();
+        $pass->definition_ref = &$this->def;
+        $pass->values_ref = &$this->values;
+        run_hook("speedform_created",$pass);
+    }
+
+    function index_of($sql)
+    {
+        foreach($this->def['fields'] as $idx => $f)
+        {
+            if($f['sql'] == $sql)
+                return $idx;
+        }
+        return NULL;
+    }
+
+    function get_key_name()
+    {
+        foreach($this->def['fields'] as $idx => $f)
+        {
+            if($f['type'] == 'keys' || $f['type'] == 'keyn')
+                return $f['sql'];
+        }
+        return NULL;
+    }
+
+    function get_key()
+    {
+        return $this->values[get_key_name()];
+    }
+
+    function get_key_sqlvalue($strip = false)
+    {
+        global $speedform_handlers;
+
+        $keyname = $this->get_key_name();
+        if($keyname == NULL)
+            return NULL;
+        $keyindex = $this->index_of($keyname);
+        $fnc = $speedform_handlers[$this->def['fields'][$keyindex]['type']]['sqlvalue'];
+        return call_user_func($fnc,$strip,$this->def['fields'][$keyindex],'SELECT',$this->values[$keyname]);
+    }
+
+    function set_key($v)
+    {
+        $pass = new stdClass();
+        $pass->definition = $this->def;
+        $pass->newval_ref = &$v;
+        run_hook("speedform_set_key",$pass);
+        $this->values[$this->get_key_name()] = $v;
+        return $this;
+    }
+
+    function set_value($sql,$value)
+    {
+        $this->values[$sql] = $value;
+    }
+
+    function get_value($sql)
+    {
+        return $this->values[$sql];
+    }
+
+    function get_display_value($sql)
+    {
+        global $speedform_handlers;
+
+        $f = $this->get_field($sql);
+        if($f == NULL)
+            return '';
+        $fnc = $speedform_handlers[$f['type']]['dispval'];
+        $dispval = call_user_func($fnc,$f,$this->values[$sql]);
+        return $dispval;
+    }
+
+    function &get_field($sql)
+    {
+        foreach($this->def['fields'] as $idx => $f)
+        {
+            if($f['sql'] == $sql)
+                return $this->def['fields'][$idx];
+        }
+        return NULL;
+    }
+
+    /** Check post parameters if any action in progress
+     *  @param string $action Action to test. Values can be: "submit" "insert" "update" "delete" "select" */
+    function in_action($action = 'submit')
+    {
+        foreach($this->def['fields'] as $idx => $f)
+        {
+            if($f['type'] == 'submit')
+            {
+                par_def($f['sql'],'text5');
+                if( ($action == 'submit' || !isset($f['in_mode']) || $action == $f['in_mode']) &&
+                    par_is($f['sql'],$f['default'])
+                  )
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    function in_specified_action($sql)
+    {
+        foreach($this->def['fields'] as $idx => $f)
+        {
+            if($f['type'] == 'submit' && $f['sql'] == $sql)
+            {
+                par_def($f['sql'],'text5');
+                if(par_is($f['sql'],$f['default']))
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    function load_parameters()
+    {
+        global $speedform_handlers;
+        form_source_check();
+        foreach($this->def['fields'] as $idx => $f)
+        {
+            $fnc = $speedform_handlers[$f['type']]['sqlname'];
+            $sqlname = call_user_func($fnc,$f,'UPDATE');
+
+            if($f['type'] == 'file')
+            {
+                par_def($f['sql'].'_delete','text1ns');
+            }
+
+            if($sqlname != '')
+            {
+                $lp = $speedform_handlers[$f['type']]['loadpar'];
+                if ($lp != NULL)
+                {
+                    $v = call_user_func($lp, $f, $this->def['table']);
+                    if(isset($f['converter']) && $f['converter'] != '')
+                        $v = call_user_func($f['converter'],$v);
+                    if($v !== NULL)
+                        $this->values[$f['sql']] = $v;
+                }
+                else
+                {
+                    $skip = false;
+                    if(isset($f['optional']) && $f['optional'] == "yes")
+                    {
+                        par_def($f['sql'] . '_sts', 'text1ns');
+                        if(par_is($f['sql'] . '_sts', 'null'))
+                        {
+                            $skip = true;
+                            $this->values[$f['sql']] = '';
+                        }
+                    }
+                    par_def($f['sql'], (isset($f['par_sec']) ? $f['par_sec'] : $speedform_handlers[$f['type']]['par_sec']));
+                    if (par_ex($f['sql']) && !$skip)
+                    {
+                        $v = par($f['sql']);
+                        if(isset($f['converter']) && $f['converter'] != '')
+                            $v = call_user_func($f['converter'],$v);
+                        $this->values[$f['sql']] = $v;
+                    }
+                }
+            }
+        }
+
+        $pass = new stdClass();
+        $pass->definition = $this->def;
+        $pass->values_ref = &$this->values;
+        run_hook("speedform_parameters_loaded",$pass);
+
+        $this->load_parameters_done = true;
+        return $this;
+    }
+
+    private function load_parameters_deferred()
+    {
+        if(!$this->load_parameters_done)
+            return;
+        if($this->load_parameters_deferred_done)
+            return;
+
+        $files_marked_to_delete = array();
+        global $speedform_handlers;
+        foreach($this->def['fields'] as $idx => $f)
+        {
+            $fnc = $speedform_handlers[$f['type']]['sqlname'];
+            $sqlname = call_user_func($fnc,$f,'UPDATE');
+
+            if($sqlname != '')
+            {
+                $lp = NULL;
+                if(isset($speedform_handlers[$f['type']]['loadpar_deferred']))
+                    $lp = $speedform_handlers[$f['type']]['loadpar_deferred'];
+                if($lp != NULL)
+                {
+                    $v = call_user_func($lp, $f, $this->def['table']);
+                    if(isset($f['converter']) && $f['converter'] != '')
+                        $v = call_user_func($f['converter'],$v);
+                    if($v !== NULL)
+                        $this->values[$f['sql']] = $v;
+                }
+            }
+
+            //In the special case the field is file
+            if($f['type'] == 'file')
+            {
+                if(par_is($f['sql'].'_delete','delete'))
+                    array_push($files_marked_to_delete,$f['sql']);
+            }
+        }
+
+        if(!empty($files_marked_to_delete))
+            $this->delete_previous_files($files_marked_to_delete);
+
+        $this->load_parameters_deferred_done = true;
+        return;
+    }
+
+    function load_values($vals)
+    {
+        global $speedform_handlers;
+        foreach($this->def['fields'] as $idx => $f)
+        {
+            if(isset($f['skip']) && ($f['skip'] == 'all' || $f['skip'] == 'sql' || $f['skip'] == 'select'))
+                continue;
+
+            $fnc = $speedform_handlers[$f['type']]['sqlname'];
+            $str = call_user_func($fnc,$f,'SELECT');
+            if($str != '')
+                $this->values[$f['sql']] = $vals[$f['sql']];
+        }
+        $this->loaded_values = $this->values;
+
+        $pass = new stdClass();
+        $pass->definition = $this->def;
+        $pass->values_ref = &$this->values;
+        run_hook("speedform_values_loaded",$pass);
+        return $this;
+    }
+
+    function delete_previous_files($afsql)
+    {
+        foreach($afsql as $fsql)
+        {
+            $sql = 'SELECT '. $fsql .
+                   ' FROM ' . $this->def['table'] .
+                   ' WHERE ' . $this->get_key_name() . '=:keyval';
+
+            $ufi = sql_exec_single($sql,[':keyval' => $this->get_key_sqlvalue(true)]);
+            if($ufi != '')
+            {
+                $file_object = new File('public');
+                if($file_object->load($ufi,true) != NULL)
+                    $file_object->remove();
+            }
+        }
+    }
+
+    function clean_before_delete()
+    {
+        foreach($this->def['fields'] as $idx => $f)
+            if($f['type'] == 'file' && !isset($f['ondelete']) && $f['ondelete'] != 'keep')
+            {
+                if($this->values[$f['sql']] != '')
+                {
+                    $file_object = new File('');
+                    if($file_object->load($this->values[$f['sql']],true) != NULL)
+                        $file_object->remove();
+                }
+            }
+    }
+
+    function sql_select_part($tablename = '')
+    {
+        global $speedform_handlers;
+        $sf = '';
+        foreach($this->def['fields'] as $idx => $f)
+        {
+            if(isset($f['skip']) && ($f['skip'] == 'all' || $f['skip'] == 'sql' || $f['skip'] == 'select'))
+                continue;
+
+            if(!isset($f['table']) || $tablename == '' || $tablename == $f['table'])
+            {
+                $fnc = $speedform_handlers[$f['type']]['sqlname'];
+                $str = call_user_func($fnc, $f, 'SELECT');
+                if($str != '')
+                    $sf .= ($sf == '' ? '' : ',') . "$str";
+            }
+        }
+        return $sf;
+    }
+
+    function sql_update_part($tablename = '')
+    {
+        return $this->sql_update_part_CMN($tablename,0);
+    }
+
+    function sql_update_part_PQ($tablename = '')
+    {
+        return $this->sql_update_part_CMN($tablename,1);
+    }
+
+    function sql_update_part_PA($tablename = '')
+    {
+        return $this->sql_update_part_CMN($tablename,2);
+    }
+
+    function sql_update_part_CMN($tablename,$mode) // 0-normal,1-PQ,2-PA
+    {
+        global $speedform_handlers;
+        $uf = '';
+        $pa = array();
+        $this->load_parameters_deferred();
+        foreach($this->def['fields'] as $idx => $f)
+        {
+            if(isset($f['skip']) && ($f['skip'] == 'all' || $f['skip'] == 'sql' || $f['skip'] == 'modify' || $f['skip'] == 'update'))
+                continue;
+
+            if(!isset($f['table']) || $tablename == '' || $tablename == $f['table'])
+            {
+                $fnc = $speedform_handlers[$f['type']]['sqlname'];
+                $sqlname = call_user_func($fnc,$f,'UPDATE');
+                $sqlnamemod = str_replace('.','_',$sqlname);
+                if($sqlname != '')
+                {
+                    if($mode == 0) //Normal mode
+                    {
+                        $fnc = $speedform_handlers[$f['type']]['sqlvalue'];
+                        $sqlvalue = call_user_func($fnc, false, $f, 'UPDATE', $this->values[$f['sql']]);
+                        $uf .= ($uf == '' ? '' : ',') . "$sqlname=$sqlvalue";
+                    }
+                    if($mode == 1) //PQ
+                    {
+                        if($speedform_handlers[$f['type']]['directval'])
+                        {
+                            $fnc = $speedform_handlers[$f['type']]['sqlvalue'];
+                            $sqlvalue = call_user_func($fnc,false,$f,'UPDATE',$this->values[$f['sql']]);
+                            $uf .= ($uf == '' ? '' : ',') . "$sqlname=$sqlvalue";
+                        }
+                        else
+                        {
+                            $uf .= ($uf == '' ? '' : ',') . "$sqlname=:phu_$sqlnamemod";
+                        }
+                    }
+                    if($mode == 2) //PA
+                    {
+                        if(!$speedform_handlers[$f['type']]['directval'])
+                        {
+                            $fnc = $speedform_handlers[$f['type']]['sqlvalue'];
+                            $sqlvalue = call_user_func($fnc, true, $f, 'UPDATE', $this->values[$f['sql']]);
+                            $pa[':phu_' . $sqlnamemod] = $sqlvalue;
+                        }
+                    }
+                }
+            }
+        }
+        if($mode == 2)
+            return $pa;
+        return $uf;
+    }
+
+    function sql_insert_part($tablename = '',$extra = [])
+    {
+        return $this->sql_insert_part_CMN($tablename,0,$extra);
+    }
+
+    function sql_insert_part_PQ($tablename = '',$extra = [])
+    {
+        return $this->sql_insert_part_CMN($tablename,1,$extra);
+    }
+
+    function sql_insert_part_PA($tablename = '',$extra = [])
+    {
+        return $this->sql_insert_part_CMN($tablename,2,$extra);
+    }
+
+    function sql_insert_part_CMN($tablename,$mode,$extra) // 0-normal,1-PQ,2-PA
+    {
+        global $speedform_handlers;
+        $npart = '';
+        $vpart = '';
+        $pa = array();
+        $this->load_parameters_deferred();
+        foreach($this->def['fields'] as $idx => $f)
+        {
+            if(isset($f['skip']) && ($f['skip'] == 'all' || $f['skip'] == 'sql' || $f['skip'] == 'modify' || $f['skip'] == 'insert'))
+                continue;
+
+            if(!isset($f['table']) || $tablename == '' || $tablename == $f['table'])
+            {
+                $fnc = $speedform_handlers[$f['type']]['sqlname'];
+                $sqlname = call_user_func($fnc,$f,'INSERT');
+                $sqlnamemod = str_replace('.','_',$sqlname);
+                if($sqlname != '')
+                {
+                    if($mode == 0) //Normal
+                    {
+                        $fnc = $speedform_handlers[$f['type']]['sqlvalue'];
+                        $sqlvalue = call_user_func($fnc, false, $f, 'INSERT', $this->values[$f['sql']]);
+                        $npart .= ($npart == '' ? '' : ',') . "$sqlname";
+                        $vpart .= ($vpart == '' ? '' : ',') . "$sqlvalue";
+                    }
+                    if($mode == 1) //PQ
+                    {
+                        $npart .= ($npart == '' ? '' : ',') . "$sqlname";
+                        if($speedform_handlers[$f['type']]['directval'])
+                        {
+                            $fnc = $speedform_handlers[$f['type']]['sqlvalue'];
+                            $sqlvalue = call_user_func($fnc,false,$f,'INSERT',$this->values[$f['sql']]);
+                            $vpart .= ($vpart == '' ? '' : ',') . "$sqlvalue";
+                        }
+                        else
+                        {
+                            $vpart .= ($vpart == '' ? '' : ',') . ":phi_$sqlnamemod";
+                        }
+                    }
+                    if($mode == 2) //PA
+                    {
+                        if(!$speedform_handlers[$f['type']]['directval'])
+                        {
+                            $fnc = $speedform_handlers[$f['type']]['sqlvalue'];
+                            $sqlvalue = call_user_func($fnc, true, $f, 'INSERT', $this->values[$f['sql']]);
+                            $pa[':phi_' . $sqlnamemod] = $sqlvalue;
+                        }
+                    }
+                }
+            }
+        }
+        foreach($extra as $idx => $val)
+        {
+            if($mode == 0 || $mode == 1) //Normal || PQ
+            {
+                $npart .= ($npart == '' ? '' : ',') . "$idx";
+                $vpart .= ($vpart == '' ? '' : ',') . "$val";
+            }
+        }
+        if($mode == 2)
+            return $pa;
+        return "($npart) VALUES($vpart)";
+    }
+
+    function sql_select_string($tablename = '')
+    {
+        return 'SELECT ' . $this->sql_select_part($tablename) .
+               ' FROM ' . $this->def['table'] .
+               ' WHERE ' . $this->get_key_name() . '='. $this->get_key_sqlvalue();
+    }
+
+    function sql_select_string_PQ($tablename = '')
+    {
+        return 'SELECT ' . $this->sql_select_part($tablename) .
+               ' FROM ' . $this->def['table'] .
+               ' WHERE ' . $this->get_key_name() . '=:ph_'. $this->get_key_name();
+    }
+
+    function sql_select_string_PA($tablename = '')
+    {
+        return [':ph_' . $this->get_key_name() => $this->get_key_sqlvalue(true) ];
+    }
+
+    function sql_update_string($tablename = '')
+    {
+        return 'UPDATE ' . ($tablename != '' ? $tablename : $this->def['table']) .
+               ' SET ' . $this->sql_update_part($tablename) .
+               ' WHERE ' . $this->get_key_name() . '='. $this->get_key_sqlvalue();
+    }
+
+    function sql_update_string_PQ($tablename = '')
+    {
+        return 'UPDATE ' . ($tablename != '' ? $tablename : $this->def['table']) .
+               ' SET ' . $this->sql_update_part_PQ($tablename) .
+               ' WHERE ' . $this->get_key_name() . '=:ph_'. $this->get_key_name();
+    }
+
+    function sql_update_string_PA($tablename = '')
+    {
+        $pa = $this->sql_update_part_PA($tablename);
+        $pa[':ph_'.$this->get_key_name()] = $this->get_key_sqlvalue(true);
+        return $pa;
+    }
+
+    function sql_insert_string($tablename = '',$extra = [])
+    {
+        return 'INSERT into ' . ($tablename != '' ? $tablename : $this->def['table']) .
+               $this->sql_insert_part($tablename,$extra);
+    }
+
+    function sql_insert_string_PQ($tablename = '',$extra = [])
+    {
+        return 'INSERT into ' . ($tablename != '' ? $tablename : $this->def['table']) .
+        $this->sql_insert_part_PQ($tablename,$extra);
+    }
+
+    function sql_insert_string_PA($tablename = '',$extra = [])
+    {
+        return $this->sql_insert_part_PA($tablename,$extra);
+    }
+
+    function sql_create_string()
+    {
+        global $speedform_handlers;
+        ob_start();
+        print "CREATE TABLE ".$this->def['table']."(\n";
+        $ff = true;
+        foreach($this->def['fields'] as $i => $f)
+        {
+            if(!isset($f['table']) || $f['table'] == '' || $this->def['table'] == $f['table'])
+            {
+                if($speedform_handlers[$f['type']]['sqltype'] != '')
+                {
+                    print ($ff ? "" : ",\n") . "\t" . $f['sql'] . ' ' . $speedform_handlers[$f['type']]['sqltype'];
+                    $ff = false;
+                }
+            }
+        }
+        print "\n);\n";
+        return ob_get_clean();
+    }
+
+    function sql_create_schema()
+    {
+        global $speedform_handlers;
+        ob_start();
+        $r = array();
+        $r['tablename'] = $this->def['table'];
+
+        $cols = array();
+        foreach($this->def['fields'] as $i => $f)
+        {
+            if(!isset($f['table']) || $f['table'] == '' || $r['tablename'] == $f['table'])
+            {
+                if(isset($f['sqlcreatetype']))
+                {
+                    $cols[$f['sql']] = $f['sqlcreatetype'];
+                }
+                else
+                {
+                    if($speedform_handlers[$f['type']]['sqltype'] != '')
+                        $cols[$f['sql']] = $speedform_handlers[$f['type']]['sqltype'];
+                }
+            }
+        }
+
+        $r['columns'] = $cols;
+        return $r;
+    }
+
+    /** Do form expirity check according to the timespamp_mod field.
+     *  Return: 0 - Check ok, doesn't require refresh 
+     *          1 - Check indicates the form is expired. Needs refresh.
+     *          2 - Error, Can't run the check  */
+    function do_expirity_check($auto_handle = true)
+    {
+        $msn = '';
+        $msv = '';
+        $dsv = '';
+        foreach($this->def['fields'] as $idx => $f)
+        {
+            if($f['type'] == 'timestamp_mod')
+            {
+                $msn = $f['sql'];
+                $msv = $this->values[$f['sql']];
+                $dsv = isset($f['default']) ? $f['default'] : '';
+            }
+        }
+        if($msn == '' || $msv == '')
+            return 2;
+
+        if($msv == $dsv) //The form is not queried from the database (may insert)
+            return 2;
+
+        $tablename = $this->def['table'];
+        $keyname   = $this->get_key_name();
+        $keyvalue  = $this->get_key_sqlvalue(true);
+        if($tablename == '' || $keyname == '' || $keyvalue == '')
+            return 2;
+        $res = sql_exec_fetch("SELECT $msn FROM $tablename WHERE $keyname=:ph_keyval",[':ph_keyval' => $keyvalue]);
+        $csv = $res[$msn];
+        if($csv == $msv)
+            return 0;
+
+        if($auto_handle)
+            load_loc('error',
+                t('The form is expired. Please refresh the page!')."<br/>\n".
+                 t('(The form is loaded _msv_ but modified _csv_)',
+                    ['_msv_'=>$msv,'_csv_'=>$csv]),
+                t('Expired form error'));
+        return 1;
+    }
+
+    function do_validate($auto_handle = true)
+    {
+        global $speedform_handlers;
+
+        $i = 1;
+        $this->highlighted = array();
+        $this->validate_errortext = '';
+
+        $pass = new stdClass();
+        $pass->definition = $this->def;
+        $pass->values_ref = &$this->values;
+        $pass->highlighted_ref = &$this->highlighted;
+        $pass->validate_errortext_ref = &$this->validate_errortext;
+        run_hook("speedform_before_validate",$pass);
+        if($this->validate_errortext != '' && $auto_handle)
+            load_loc('error',"<pre>".$this->validate_errortext."</pre>",t('Form validation error'));
+        foreach($this->def['fields'] as $idx => $f)
+        {
+            //regex check
+            if(isset($f['check_regex']))
+            {
+                if(is_array($f['check_regex']))
+                {
+                    foreach($f['check_regex'] as $regex => $errortext)
+                    {
+                        if(preg_match($regex,$this->values[$f['sql']]) != 1)
+                        {
+                            $this->highlighted[$f['sql']] = 1;
+                            if($errortext != '')
+                                $this->validate_errortext .= "$i: ".t($errortext,['_field_' => $f['sql'],
+                                                                                  '_value_' => $this->values[$f['sql']]
+                                                                                 ])."\n";
+                            else
+                                $this->validate_errortext .= "$i: " .
+                                        t('Validation error on field: _field_ (_value_)',
+                                                    ['_field_' => $f['sql'],
+                                                     '_value_' => $this->values[$f['sql']]]) . "\n";
+                            ++$i;
+                        }
+                    }
+                }
+                else
+                {
+                    if(preg_match($f['check_regex'],$this->values[$f['sql']]) != 1)
+                    {
+                        $this->highlighted[$f['sql']] = 1;
+                        $this->validate_errortext .= "$i: " . 
+                                        t('Validation error on field: _field_ (_value_)',
+                                                    ['_field_' => $f['sql'],
+                                                     '_value_' => $this->values[$f['sql']]]) . "\n";
+                        ++$i;
+                    }
+                }
+            }
+
+            //empty check
+            if(isset($f['check_noempty']))
+            {
+                if($this->values[$f['sql']] === NULL || $this->values[$f['sql']] == '')
+                {
+                    $this->highlighted[$f['sql']] = 1;
+                    if($f['check_noempty'] == '')
+                        $this->validate_errortext .= "$i: " . 
+                                t('Field "_field_" cannot be empty',['_field_' => $f['sql']]) . "\n";
+                    else
+                        $this->validate_errortext .= "$i: ". $f['check_noempty'] . "\n";
+                    ++$i;
+                }
+            }
+
+            //custom checks
+            $vf = $speedform_handlers[$f['type']]['validator'];
+            if($vf != NULL)
+            {
+                $v = call_user_func($vf,$f,$this->values[$f['sql']]);
+                if($v != '')
+                {
+                    $this->highlighted[$f['sql']] = 1;
+                    $this->validate_errortext .= "$i: $v\n";
+                    ++$i;
+                }
+            }
+        }
+
+        if(count($this->highlighted) > 0)
+        {
+            if($auto_handle)
+                load_loc('error',"<pre>".$this->validate_errortext."</pre>",t('Form validation error'));
+            return 1;
+        }
+        return 0;
+    }
+
+    function generate_form($mode = 'all', $tablename = '')
+    {
+        global $speedform_handlers;
+        $ff = NULL;
+        if($this->def['show'] == 'table')
+            $ff = new Table_SpeedFormFormFormmater($this->def,$this->highlighted);
+        if($this->def['show'] == 'div')
+            $ff = new Div_SpeedFormFormFormmater($this->def,$this->highlighted);
+        if($ff === NULL) //fallback
+            $ff = new HtmlFormFormatter();
+
+        $n = isset($this->def['name']) ? $this->def['name'] : 'unnamed';
+        $form = new HtmlForm("speedform:$n",$ff);
+
+        foreach($this->def['fields'] as $idx => $f)
+        {
+            if(!isset($f['hide']) || !$f['hide'])
+            {
+                if(!isset($f['in_mode']) || $mode == 'all' || $f['in_mode'] == $mode)
+                {
+                    if(!isset($f['table']) || $tablename == '' || $tablename == $f['table'])
+                    {
+                        $opts = [];
+                        if(isset($f['form_options']))
+                            $opts = $f['form_options'];
+                        if(isset($f['readonly']) && $f['readonly'])
+                            $opts['readonly'] = true;
+                        $fnc = $speedform_handlers[$f['type']]['form'];
+                        call_user_func($fnc,$f,$form,$this->values[$f['sql']],$opts);
+                    }
+                }
+            }
+        }
+        $pass = new stdClass();
+        $pass->definition = $this->def;
+        $pass->form_ref = &$form;
+        run_hook("speedform_form_generated",$pass);
+        return $form;
+    }
+
+    function do_select()
+    {
+        $pq = $this->sql_select_string_PQ();
+        $pa = $this->sql_select_string_PA();
+        $v = sql_exec_fetch($pq,$pa);
+        $this->load_values($v);
+    }
+
+    function do_insert($disable_checks = false)
+    {
+        global $db;
+        if(!$disable_checks)
+        {
+            $this->do_validate(); //auto_handle=true by default
+        }
+
+        $pq = $this->sql_insert_string_PQ();
+        $pa = $this->sql_insert_string_PA();
+        sql_exec($pq,$pa);
+
+        $keyname = $this->get_key_name();
+        $k = $this->get_field($keyname);
+        $ikey = $db->sql->lastInsertId(isset($k['sql_sequence_name']) ? $k['sql_sequence_name'] : $keyname);
+
+        if($k != NULL && isset($k['keyprefix']))
+            $ikey = $k['keyprefix'] . $ikey;
+        if($k != NULL && isset($k['keysuffix']))
+            $ikey =  $ikey .$k['keysuffix'];
+
+        return $ikey;
+    }
+
+    function do_update($disable_checks = false)
+    {
+        if(!$disable_checks)
+        {
+            $this->do_validate(); //auto_handle=true by default
+            $this->do_expirity_check(); //auto_handle=true by default
+        }
+
+        $us = $this->sql_update_string_PQ();
+        $up = $this->sql_update_string_PA();
+        sql_exec($us,$up);
+    }
+
+    function do_create()
+    {
+        $cs = $this->sql_create_string();
+        sql_exec($cs);
+    }
+}
+
+class Table_SpeedFormFormFormmater extends HtmlFormFormatter
+{
+    public $name;
+    public $def;
+    public $highl;
+    public function __construct($definition,$highlighted = array())
+    {
+        $this->name = 'table_speedform_formatter';
+        $this->def = $definition;
+        $this->highl = $highlighted;
+    }
+
+    public function get_definition_of_field($name)
+    {
+        foreach($this->def['fields'] as $f)
+        {
+            if($f['sql'] == $name || (isset($f['table']) && $name == $f['table'].'.'.$f['sql']))
+                return $f;
+        }
+        return array();
+    }
+
+    function begin_form($txt)
+    {
+        $before = '';
+        if(isset($this->def['before']))
+            $before = $this->def['before'];
+
+        $b = 0;
+        $tc = 'f_gener_table f_gener_table_'.$this->def['table'];
+        if(isset($this->def['table_class']))
+            $tc .= ' '.$this->def['table_class'];
+        if(isset($this->def['table_border']))
+            $b = $this->def['table_border'];
+        $stylepart = '';
+        if(isset($this->def['table_style']))
+            $stylepart = ' style="'.$this->def['table_style'].'"';
+        $bgc = '';
+        if(isset($this->def['color']))
+            $bgc = ' bgcolor="'.$this->def['color'].'"';
+        $t = "<table border=\"$b\" class=\"$tc\"$stylepart$bgc>";
+        return $before . $txt . $t;
+    }
+
+    function end_form($txt)
+    {
+        $after = '';
+        if(isset($this->def['after']))
+            $after = $this->def['after'];
+
+        $t = '</table>';
+        return $t . $txt . $after;
+    }
+
+    function item($txt,$name)
+    {
+        $f = $this->get_definition_of_field($name);
+
+        if(isset($f['skip']) && ($f['skip'] == 'all' || $f['skip'] == 'visual'))
+            return '';
+
+        $cs = false;
+        ob_start();
+        if(isset($f['before']))
+            print $f['before'];
+        if(!isset($f['formatters']) || $f['formatters'] == 'before' || $f['formatters'] == 'all')
+        {
+            $style = '';
+            $lc = 'f_tgen_line f_tgen_line_'.$name;
+
+            if(array_key_exists($name,$this->highl) && $this->highl[$name] == 1)
+            {
+                $style = ' style="border: 8px solid red;"';
+                $lc .= " validation_highlighted";
+            }
+            $tc = 'f_gen_title';
+            $vc = 'f_gen_value';
+
+            if(isset($f['line_class']))
+                $lc .= ' ' . $f['line_class'];
+            if(isset($f['title_class']))
+                $tc .= ' ' . $f['title_class'];
+            if(isset($f['value_class']))
+                $vc .= ' ' . $f['value_class'];
+
+            print '<tr'.(isset($f['color'])?' bgcolor="'.$f['color'].'"':'')."$style class=\"$lc\">";
+            if(isset($f['text']))
+            {
+                print '<td class="'.$tc.'">'.$f['text'].'</td>';
+            }
+            else
+            {
+                $cs = true;
+            }
+            print '<td'.($cs?' colspan="2" ':'').' class="'.$vc.'">';
+
+            if(isset($f['centered'])  && $f['centered'])
+                print "<center>";
+        }
+
+        if(isset($f['prefix']))
+            print $f['prefix'];
+        print $txt;
+        if(isset($f['suffix']))
+            print $f['suffix'];
+
+        if(isset($f['script']))
+            print '<script>'.$f['script'].'</script>';
+
+        if(!isset($f['formatters']) || $f['formatters'] == 'after' || $f['formatters'] == 'all')
+        {
+            if(isset($f['centered']) && $f['centered'])
+                print "</center>";
+            print '</td></tr>';
+        }
+        if(isset($f['after']))
+            print $f['after'];
+        return ob_get_clean();
+    }
+}
+
+class Div_SpeedFormFormFormmater extends HtmlFormFormatter
+{
+    public $name;
+    public $def;
+    public $highl;
+    public function __construct($definition,$highlighted = array())
+    {
+        $this->name = 'div_speedform_formatter';
+        $this->def = $definition;
+        $this->highl = $highlighted;
+    }
+
+    public function get_definition_of_field($name)
+    {
+        foreach($this->def['fields'] as $f)
+        {
+            if($f['sql'] == $name || (isset($f['table']) && $name == $f['table'].'.'.$f['sql']))
+                return $f;
+        }
+        return array();
+    }
+
+    function begin_form($txt)
+    {
+        $before = '';
+        if(isset($this->def['before']))
+            $before = $this->def['before'];
+
+        $dc = 'f_gener_div f_gener_div_'.$this->def['table'];
+        if(isset($this->def['div_class']))
+            $dc .= ' '.$this->def['div_class'];
+        $t = "<div class=\"$dc\">";
+        return $before . $txt . $t;
+    }
+
+    function end_form($txt)
+    {
+        $after = '';
+        if(isset($this->def['after']))
+            $after = $this->def['after'];
+
+        $t = '</div>';
+        return $t . $txt . $after;
+    }
+
+    function item($txt,$name)
+    {
+        $f = $this->get_definition_of_field($name);
+
+        if(isset($f['skip']) && ($f['skip'] == 'all' || $f['skip'] == 'visual'))
+            return '';
+
+        ob_start();
+        if(isset($f['before']))
+                print $f['before'];
+        if(!isset($f['formatters']) || $f['formatters'] == 'before' || $f['formatters'] == 'all')
+        {
+            $style = '';
+            if(isset($f['color']))
+            $style .= ' background-color:'.$f['color'].';';
+
+            $lc = 'f_gen_line f_gen_line_'.$this->def['table'].'_'.$name;
+            if(array_key_exists($name,$this->highl) && $this->highl[$name] == 1)
+            {
+                $style .= ' border: 8px solid red;';
+                $lc .= " validation_highlighted";
+            }
+
+            if(isset($f['line_class']))
+                $lc .= ' ' . $f['line_class'];
+            $tc = 'f_gen_title';
+            if(isset($f['title_class']))
+                $tc .= ' ' . $f['title_class'];
+            $vc = 'f_gen_value';
+              if(isset($f['value_class']))
+                $vc .= ' ' . $f['value_class'];
+
+            print "<div style=\"$style\" class=\"$lc\">";
+            if(isset($f['text']))
+            {
+                print "<div class=\"$tc\">".$f['text'].'</div>';
+            }
+            print "<div class=\"$vc\">";
+            if(isset($f['centered']) && $f['centered'])
+                print "<center>";
+        }
+
+        if(isset($f['prefix']))
+            print $f['prefix'];
+        print $txt;
+        if(isset($f['suffix']))
+            print $f['suffix'];
+
+        if(isset($f['script']))
+            print '<script>'.$f['script'].'</script>';
+
+        if(!isset($f['formatters']) || $f['formatters'] == 'after' || $f['formatters'] == 'all')
+        {
+            if(isset($f['centered'])  && $f['centered'])
+                print "</center>";
+            print '</div>';
+
+            if(isset($this->def['div_c_afterv']) && $this->def['div_c_afterv'])
+                print '<div class="c"></div>';
+            print '</div>';
+            if(isset($this->def['div_c_afterl']) && $this->def['div_c_afterl'])
+                print '<div class="c"></div>';
+        }
+        if(isset($f['after']))
+            print $f['after'];
+        return ob_get_clean();
+    }
+}
+
+function speedform_available_types()
+{
+    global $speedform_handlers;
+    return array_keys($speedform_handlers);
+}
+
+/** Change the sort order sql string by option array useable by to_table function
+ * @param mixed $sp The original sort parameter string
+ * @param array $options The customisation orders of the table by to_table
+ * @return string Returns the modified sort string
+ * @see to_table
+ * @package forms */
+function to_sqlsort($sp,array $options=array())
+{
+    global $field_repository;
+
+    if(isset($options[$sp]['sqlsort']))
+        return $options[$sp]['sqlsort'];
+
+    $oo = '';
+    if(isset($options['#output_object']))
+        $oo = $options['#output_object'];
+    else
+        $oo = 'table';
+
+    if(isset($options['#fields']))
+        foreach($options['#fields'] as $f)
+            if(substr($f,0,1) == '#')
+            {
+                $iopt = $field_repository[substr($f, 1)];
+                if(isset($iopt['sqlname:'.$oo]) && $iopt['sqlname:'.$oo] == $sp)
+                {
+                    if(isset($iopt['sqlsort:'.$oo]))
+                        return $iopt['sqlsort:'.$oo];
+                    if(isset($iopt['sqlsort']))
+                        return $iopt['sqlsort'];
+                }
+
+                if(isset($iopt['sqlname']) && $iopt['sqlname'] == $sp)
+                {
+                    if(isset($iopt['sqlsort:'.$oo]))
+                        return $iopt['sqlsort:'.$oo];
+                    if(isset($iopt['sqlsort']))
+                        return $iopt['sqlsort'];
+                }
+
+                if(substr($f,1) == $sp)
+                {
+                    if(isset($iopt['sqlsort:'.$oo]))
+                        return $iopt['sqlsort:'.$oo];
+                    if(isset($iopt['sqlsort']))
+                        return $iopt['sqlsort'];
+                }
+            }
+    return $sp;
+}
+
+/** Generates a html table from an executed sql query or 2dimensional array
+ * The output is highly customizable by the $options array.
+ * @param mixed $dataobj The executed sql query or a 2dimensional array which holds the data cells
+ * @param array $options The customisation orders of the table
+ * @param array $results An optional array to get some data back from generation
+ * @return string The generated html table code
+ * @package forms */
+function to_table($dataobj,array $options=array(),array &$results = NULL)
+{
+    global $field_repository;
+
+    $is_array = false;
+    $is_pdo = false;
+    $beforetext = '';
+    $aftertext = '';
+
+    if(is_array($dataobj))
+        $is_array = true;
+    if(is_object($dataobj) && get_class($dataobj) == "PDOStatement")
+        $is_pdo = true;
+
+    $oo = '';
+    $table = NULL;
+    if(isset($options['#output_object']))
+    {
+        $oo = $options['#output_object'];
+        $table = h($oo, isset($options['#name']) ? $options['#name'] : 'Generated');
+    }
+    else
+    {
+        $oo = 'table';
+        $table = new HtmlTable('array_generated');
+    }
+    if(isset($options['#tableopts']))
+        $table->opts($options['#tableopts']);
+
+    if(isset($options['#before']) && is_callable($options['#before']))
+    {
+        ob_start();
+        call_user_func($options['#before'], $table);
+        $beforetext = ob_get_clean();
+    }
+
+    $rowcount = 0;
+    $first = true;
+    $end = false;
+
+    $columns = array(); //columns to show
+    $rcv_columns = array(); //columns in received data
+    if(isset($options["#fields"]))
+        $columns = $options["#fields"];
+
+    $r_prefixes = array();
+    $r_suffixes = array();
+    $r_cellopts = array();
+    $r_valuecallback = array();
+    $r_sqlname = array();
+    $r_show = array();
+
+    while(true)
+    {
+        if($is_pdo)
+        {
+            $r = $dataobj->fetch(PDO::FETCH_NAMED);
+            if(!$r)
+                $end = true;
+        }
+        if($is_array)
+        {
+            if($first)
+                $r = reset($dataobj);
+            else
+                $r = next($dataobj);
+            if($r === FALSE)
+                $end = true;
+        }
+
+        //There is no more data row, exiting...
+        if($end)
+        {
+            if($results !== NULL)
+                $results['rowcount'] = $rowcount;
+            if(isset($options['#after']) && is_callable($options['#after']))
+            {
+                ob_start();
+                call_user_func($options['#after'], $table);
+                $aftertext = ob_get_clean();
+            }
+            return $beforetext.$table->get().$aftertext;
+        }
+
+        if($first)
+        {
+            $rcv_columns = array_keys($r);
+            if(empty($columns))
+                $columns = $rcv_columns;
+
+            foreach($columns as $hitem)
+            {
+                $iopt = array();
+                if(substr($hitem,0,1) == '#')
+                    $iopt = $field_repository[substr($hitem, 1)];
+                else
+                    if(isset($options[$hitem]))
+                        $iopt = $options[$hitem];
+
+                $r_show[$hitem] = true;
+                if(isset($iopt['skip:'.$oo]))
+                {
+                    if($iopt['skip:'.$oo])
+                        $r_show[$hitem] = false;
+                }
+                else
+                {
+                    if(isset($iopt['skip']) && $iopt['skip'])
+                        $r_show[$hitem] = false;
+                }
+
+                $r_sqlname[$hitem] = optSel($iopt , ['sqlname:'.$oo , 'sqlname'],
+                            (substr($hitem,0,1) == '#' ? substr($hitem,1) : $hitem ) );
+
+                if($r_show[$hitem])
+                {
+                    $headertext = optSel($iopt,['headertext:'.$oo,'headertext'],$hitem);
+                    if(is_callable($headertext))
+                        $txt = call_user_func($headertext);
+                    else
+                        $txt = $headertext;
+
+                    $table->head($txt, isset($iopt['headeropts']) ? $iopt['headeropts'] : array());
+
+                    $r_prefixes[$hitem] = optSel($iopt,['cellprefix:'.$oo,'cellprefix'],'');
+                    $r_suffixes[$hitem] = optSel($iopt,['cellsuffix:'.$oo,'cellsuffix'],'');
+                    $r_cellopts[$hitem] = optSel($iopt,['cellopts:'.$oo,'cellopts'],array());
+                    $r_valuecallback[$hitem] = optSel($iopt,['valuecallback:'.$oo,'valuecallback'],NULL);
+                }
+            }
+
+            //If I redefined the fields to show (means that $columns differs from $rcv_columns),
+            //I even check query received headers to load repository controlled fields
+            //in order to resolve names to build correct $r_mapped below for callbacks
+            foreach($rcv_columns as $rname)
+                if(substr($rname,0,1) == '#')
+                    if(!isset($r_sqlname[$rname]))
+                    {
+                        $iopt2 = $field_repository[substr($rname,1)];
+                        $r_sqlname[$rname] = isset($iopt2['sqlname']) ? $iopt2['sqlname'] : substr($rname, 1);
+                    }
+
+            $first = false;
+        }
+
+        //This $r_mapped array is built for callback called below
+        //It contains the specified sqlname indexes instead of field repository or other fictive name indexes
+        $r_mapped = array();
+        $r_mapped['__rownumber__'] = $rowcount + 1;
+        if(isset($options['#callback_array_external']))
+            $r_mapped['__external__'] = $options['#callback_array_external'];
+        foreach($rcv_columns as $rname)
+        {
+            $keyname = isset($r_sqlname[$rname]) ? $r_sqlname[$rname] : $rname;
+            $r_mapped[$keyname] = $r[$rname];
+        }
+
+        $tr_opts = [];
+        if(isset($options['#lineoptions_callback']))
+            $tr_opts = call_user_func($options['#lineoptions_callback'],$r_mapped);
+        $table->nrow($tr_opts);
+
+        foreach($columns as $k)
+            if($r_show[$k])
+            {
+                if($r_valuecallback[$k] !== NULL)
+                {
+                    $value = call_user_func($r_valuecallback[$k],$r_mapped);
+                    $table->cell($r_prefixes[$k] . $value . $r_suffixes[$k], $r_cellopts[$k]);
+                }
+                else
+                {
+                    $keyname = $k;
+                    if(!isset($r[$k]))
+                        $keyname = $r_sqlname[$k];
+                    $table->cell($r_prefixes[$k] . $r[$keyname] . $r_suffixes[$k], $r_cellopts[$k]);
+                }
+            }
+
+
+        ++$rowcount;
+    }
+}
+
+/** Retruns the first set option or the default value if non of them were set */
+function optSel($options,$keys,$default)
+{
+    foreach($keys as $t)
+    {
+        if(isset($options[$t]))
+            return $options[$t];
+    }
+    return $default;
+}
+
+function hook_forms_required_sql_schema()
+{
+    global $datadef_repository;
+    $t = array();
+    foreach($datadef_repository as $ddname => $ddef)
+    {
+        $datastruct = call_user_func($ddef);
+        $sf = new SpeedForm($datastruct);
+        $t['DDefRepo: '.$ddname] = $sf->sql_create_schema();
+    }
+    return $t;
+}
+
+function hook_forms_documentation($section)
+{
+    $docs = [];
+    if($section == "codkep")
+    {
+        $docs[] = ['forms' => ['path' => 'sys/doc/forms.mdoc','index' => false, 'imagepath' => '/sys/doc/images']];
+        $docs[] = ['tablegen' => ['path' => 'sys/doc/tablegen.mdoc','index' => false, 'imagepath' => '/sys/doc/images']];
+        $docs[] = ['totable' => ['path' => 'sys/doc/totable.mdoc','index' => false, 'imagepath' => '/sys/doc/images']];
+    }
+    return $docs;
+}
+
+/**
+ * This hook runs before the HtmlTable class data rendered. It can modify the table data.
+ * @package forms */
+function _HOOK_table_get() {}
+
+/**
+ * This hook runs before the HtmlForm class started to render the form. It can modify some data.
+ * @package forms */
+function _HOOK_form_get_start() {}
+
+/**
+ * This hook runs every time when HtmlForm item is started to render. It can modify some data.
+ * @package forms */
+function _HOOK_form_get_item() {}
+
+/**
+ * This hook can defines new type in SpeedForm class. It should return a prepared associative array.
+ * @package forms */
+function _HOOK_custom_formtypes() {}
+
+/**
+ * This hook is run after a SpeedForm is started and got the definition. Is can modify definition and initial values.
+ * @package forms */
+function _HOOK_speedform_created() {}
+
+/**
+ * This hooks run when a SpeedForm key is set. It can modify the value of the set key itself.
+ * @package forms */
+function _HOOK_speedform_set_key() {}
+
+/**
+ * This hook run immediately after a SpeedForm is loaded the values from page parameters (POST/GET)
+ * @package forms */
+function _HOOK_speedform_parameters_loaded() {}
+
+/**
+ * This hook run immediately after a SpeedForm is loaded the values from function
+ * which is usally means the values loaded from database (SELECT)
+ * @package forms */
+function _HOOK_speedform_values_loaded() {}
+
+/**
+ * This hook is runs before the SpeedFrom validation process.
+ * In can raise a validation error or can modify values, highlights.
+ * @package forms */
+function _HOOK_speedform_before_validate() {}
+
+/**
+ * This hook runs immediately before the SpeedForm is genereted a HtmlForm object. It can modify some data.
+ * @package forms */
+function _HOOK_speedform_form_generated() {}
+
+/**
+ * You can define global field types with this hook, which can be used and reused in to_table() function anywhere
+ * to build nice and well formatted tables from a simple sql query without any additional coding.
+ * @package forms */
+function _HOOK_field_repository() {}
+
+/** You can add one or more data definition structure to a global repository by this hook and receive its when needed.
+ * (By datadef_from_repository($name) function)
+ * This data definition are accessible by speedform builder, if the settings makes it possible. */
+function _HOOK_datadef_repository() {}
+
+//end.

@@ -1,0 +1,303 @@
+= User module =
+
+The user module enables the user registration and login system.
+
+
+#userobject#
+== The global $user object ==
+
+
+The user module provides a ***global $user*** object which is always representing the user currently visiting the site.
+You can use this object anywhere in your codes by declare ***global $user***.
+.
+*Note: In codes run earlier than user identifying the ***$user*** object may be uninitialized.*
+*You can check the value of ***$sys_data->sys_status***. If the value is greater*
+*than ***STATUS_INIT_CALLED*** the user subsystem is started.*
+.
+**The ***global $user*** object contains:**
+ - ***$user->uid***
+  - The numeric identifier of the user. There is a special value of uid:
+   - ***0*** Unauthenticated user. If the user not logged in the uid will be zero.
+   - Other values than zero is assigned to authenticated users.
+ - ***$user->auth***
+  - This value is ***true*** or ***false***. The value is ***true*** if the user is authenticated.
+ - ***$user->login***
+  - Contains the login name of the current user
+ - ***$user->name***
+  - Contains the full name of the current user
+ - ***$user->role***
+  - Contains the role of the current user. The values can be the following (defines) :
+   - ***ROLE_NONE*** Role of the non authenticated users.
+   - ***ROLE_ADMIN*** Role of the system administrator.
+   - ***ROLE_EDITOR*** An intermediate role between the authenticated user and the site administrator.
+   - ***ROLE_USER*** Role of a normal authenticated user.
+ - ***$user->login_disabled***
+  - If this field is true the user cannot login into the site.
+.
+Example of using $user:
+~~~php
+function showuser_page()
+{
+ global $user;
+.
+ ob_start();
+ if($user->auth)
+ {
+   print $user->name. " is logged in.<br/>";
+   print "(Login name: ".$user->login.", Uid:".$user->uid.")<br/>";
+.
+   if($user->role == ROLE_ADMIN)
+   {
+     print "Hello admin, what should we do today?<br/>";
+     print l("Add a new user","node/user/add")."<br/>";
+   }
+ }
+ else
+   print "The current user is not logged in.";
+.
+ return ob_get_clean();
+}
+~~~
+
+
+#loginlogout#
+== Login and logout ==
+
+
+There is two special [location (internal url)|url:doc/codkep/routes] which is a login and a logout page.
+In case your site does not have login/logout pages this location is always available for login and logout.
+
+- ***user/login*** - The user login page (Try out [user/login|url:user/login])
+- ***user/logout*** - The user logout page (Try out [user/logout|url:user/logout])
+
+Print a login link to the page:
+~~~php
+print l("Login","user/login");
+~~~
+
+The login page looks like this way:
+.
+{file:loginpage.png}
+.
+*Note: There is a [user/whoami|url:user/whoami] location which shows the name of the currently authenticated user.*
+----------------------------------
+You can also login and logout users from your php codes. In case your site have custom login form,
+you can use the following functions to start a login:
+.
+@@@user_login($login,$password)@@@
+<br/>
+Try to login the user. It returns ***1*** if the user is success logged in otherwise ***0***.
+This function do a permanent login, if success the user stay logged in until logout or some timeout reached.
+.
+@@@user_logout()@@@
+<br/>
+Logs out the current user. It returns ***1*** if success log out otherwise ***0***.
+.
+@@@user_load($identifier,$type)@@@
+<br/>
+Loads the specified user without checking any credentials.
+This function does one time user load, the result won't be permanent. (The next page will forget this)<br/>
+The ***$identifier*** parameter has to be an UID or Login name according to the value of ***$type*** which
+can be ***"uid"*** or ***"login"***.
+.
+@@@user_unload()@@@
+<br/>
+Unloads the current logged user.
+This won't logout the current user just restore the ***$user*** object to unauthenticated state.
+.
+**Notes about login and logout**<br/>
+No matter what kind of login or logout is used there is some common features:
+ - The ***global $user*** object is immediately changed when the operation is done.
+ - There is some [hook|url:doc/codkep/hooks] which are automatically invoked
+  - ***HOOK_user_logged_in*** invoked immediately after the user is logged in
+  - ***HOOK_user_failed_login*** invoked after unsuccessful login.
+  \ It receives the failed login name, and a description text.
+  - ***HOOK_user_logout*** invoked before the user logged out.
+  - ***HOOK_user_identified*** invoked every time when the $user object is loaded (or reloaded).
+
+This sample code below logs every user authentication event to a file:
+~~~php
+global $logfile;
+$logfile = '/var/log/codkeplog.log';
+.
+function hook_mymodule_user_failed_login($login,$descr)
+{
+    global $logfile;
+    file_put_contents($logfile,date("Y-m-d_H.i.s").": $login: $descr\n",FILE_APPEND);
+}
+.
+function hook_mymodule_user_logout()
+{
+    global $logfile;
+    global $user;
+    file_put_contents($logfile,date("Y-m-d_H.i.s").": ".$user->login.": Logout.\n",FILE_APPEND);
+}
+.
+function hook_mymodule_user_logged_in()
+{
+    global $logfile;
+    global $user;
+    file_put_contents($logfile,date("Y-m-d_H.i.s").": ".$user->login.": Successful logged in.\n",FILE_APPEND);
+}
+~~~
+
+
+#usermanage#
+== Managing users ==
+
+
+The users are represent as [nodes|url:doc/codkep/node] in CodKep.
+As a result of this managing users is same that managing nodes.
+The user nodes have node type ***"user"***.
+.
+There is some special [location (internal url)|url:doc/codkep/routes] which can manage users by forms.
+(These all manage users as nodes)
+ - ***node/user/add*** - Add a new user (Try out [node/user/add|url:node/user/add])
+ - ***node/NID*** - View the user's data. The NID is a **N**ode **ID**entifier.
+ - ***node/NID/view*** - View the user's data.
+ - ***node/NID/edit*** - Edits the user's data.
+ - ***node/NID/delete*** - Delete the user.
+
+**Manage users from php codes**
+.
+Create a new user:
+~~~php
+ $u = node_create("user");
+ $u->name = "John Connor";
+ $u->login = "jconn";
+ $u->password = scatter_string_local("let0me0in");
+ $u->insert();
+ print "User ".$u->name." is created with nid:".$u->node_nid;
+~~~
+.
+Loads the user and change the role to admin
+~~~php
+ $u = node_load_intype($uid,'user'); // OR:  $u = node_load($nid);
+ $u->role = ROLE_ADMIN;
+ print "I will save ".$u->name." as administrator!";
+ print "(Node nid is ".$u->node_nid.")";
+ $u->save();
+~~~
+
+Delete a user
+~~~php
+ $u = node_load($nid); // OR:  $u = node_load_intype($uid,'user');
+ $u->remove();
+~~~
+
+*Note: The login name and password fields are restricted to 128 byte length and*
+*have [security class|url:doc/codkep/parameters#securityclasses] "text3ns"!*
+
+== Helper functions ==
+
+@@@require_auth()@@@
+<br/>
+If an unauthenticated user reaches a page with this function it will be redirected to the login page.
+.
+@@@user_login_block()@@@
+<br/>
+This function can used as block callback function to make a simple login block.
+.
+For example you can create a simple login block in right sidebar with this code:
+~~~php
+function hook_a_sitearea_sidebar_right()
+{
+    $def = [];
+    $def[] = [
+        'name' => 'MyLoginBlock',
+        'index' => 1,
+        'callback' => 'user_login_block',
+    ];
+    return $def;
+}
+~~~
+
+To understand this code above read the [theme documentation|url:doc/codkep/structure#usingthemes].
+.
+This block uses [ajax|url:doc/codkep/ajax] to log in and log out.
+When an operation is successful the CodKep will invoke the ***HOOK_user_ajax_logged_in*** or
+***HOOK_user_ajax_logout*** [hooks|url:doc/codkep/hooks]
+which called in ajax handler so be used to refresh some page parts depends on user authentication.
+
+
+== CodKep session data ==
+
+
+You can store some data assigned to the CodKep session system.
+This completely separated from the Browser/php (***$_SESSION***) session.
+All data stored this way is located in SQL database and live together with the authentication.
+It means that every data is dropped with a logout.
+.
+The name of the variable to store this data is ***$codkep_session***. It is an associative array.
+<br/>
+**The data of this variable is not stored automatically.**
+**You can make the changes to permanent with the ***codkepsession_store_local()*** function.**
+<br/>
+The values stored in database are automatically loaded together with user authentication data.
+.
+@@@codkepsession_store_local()@@@
+<br/>
+Store the data of the ***$codkep_session*** to the database.
+.
+Example of using ***$codkep_session***
+~~~php
+function show_something()
+{
+  global $codkep_session;
+  ...
+  print show_item_by_code($codkep_session['currentitem']);
+  ...
+}
+.
+function change_current_item($to_code)
+{
+  global $codkep_session;
+  $codkep_session['currentitem'] = $to_code;
+  codkepsession_store_local();
+}
+~~~
+
+*Note: You cannot use this CodKep session system in case you use different*
+*authentication system set by user...callback settings.*
+
+#usersettings#
+== Settings of user module ==
+
+The user module have some settings which can set [in site settings|url:doc/codkep/modules#site_settings].
+.
+*Note: You have to put ***global $user_module_settings*** before modify any settings.*
+.
+| name                                                              | default                          | description |
+|---                                                                |---       | ---                              |---          |
+|<small> ***$user_module_settings->session_timeout_sec***          </small>|<small> 28800               </small>| The user will be kicked out after this time of inactivity. In sec. (default 8 hour, 0 means disabled) |
+|<small> ***$user_module_settings->login_timeout_sec***            </small>|<small> 0                   </small>| The user will be kicked out after this time from login In sec. (0 means disabled) |
+|<small> ***$user_module_settings->login_garbagecoll***            </small>|<small> 28800               </small>| The inactive sessions (not logged out) will be deleted after this time of inactivity. In sec. (default 8 hour, 0 means disabled) |
+|<small> ***$user_module_settings->keychange_interval_sec***       </small>|<small> 300                 </small>| The CodKep will do automatic key change in auth cookies. In sec. (default 5 min, 0 means disabled) |
+|<small> ***$user_module_settings->disable_remote_blocking***      </small>|<small> false               </small>| If true disables the entire ip blocking mechanism. Should use for example the $_SERVER['REMOTE_ADDR'] gives false value because of some reverse proxy |
+|<small> ***$user_module_settings->faillogin_block_count***        </small>|<small> 3                   </small>| The client ip will be blocked after this time of failed login count. |
+|<small> ***$user_module_settings->faillogin_block_exipire_sec***  </small>|<small> 3600                </small>| The client ip block will be released after this time. In sec. (default 1 hour)|
+|<small> ***$user_module_settings->password_scattered***           </small>|<small> true                </small>| Whether CodKep store plaintext or scattered passwords in the database. (false:plaintext)|
+|<small> ***$user_module_settings->password_scatter_salt***        </small>|<small> random string       </small>| You can define a custom salt to scatter passwords. Warning: The stored passwords will corrupt if changed. |
+|<small> ***$user_module_settings->password_scatter_log2i***       </small>|<small> 14                  </small>| The complexity of password scattering. Larger is more complex.|
+|<small> ***$user_module_settings->form_salt***                    </small>|<small> random string       </small>| You can define a custom salt to login form check. Recommended to change the default value in production environments.|
+|<small> ***$user_module_settings->define_user_nodetype***         </small>|<small> true                </small>| Whether the user module should define the user node type. Disable this, if you have custom user tables.|
+|<small> ***$user_module_settings->login_title***                  </small>|<small> 'Login to the site' </small>| The welcome message of the user/login page. |
+|<small> ***$user_module_settings->login_location***               </small>|<small> 'user/login'        </small>| The ***require_auth()*** function will redirect unauthenticated users here. |
+|<small> ***$user_module_settings->user_login_callback***     </small>|<small> NULL </small>| You can set custom login mechanism by set this callback. Default is NULL which means the built in code. |
+|<small> ***$user_module_settings->user_logout_callback***    </small>|<small> NULL </small>| You can set custom logout mechanism by set this callback. Default is NULL which means the built in code.|
+|<small> ***$user_module_settings->user_init_callback***      </small>|<small> NULL </small>| You can set custom user auth/init mechanism by set this callback. Default is NULL which means the built in code.|
+|<small> ***$user_module_settings->user_after_callback***     </small>|<small> NULL </small>| You can set custom login auth-exit/garbage collection by set this callback. Default is NULL which means the built in code.|
+
+This is not a full list, the module contains some more settings for deeper customisation purposes.
+
+== Hooks ==
+
+The following [hooks|url:doc/codkep/hooks] can be implement to interact with user module.
+| Hook                       | Description |
+| ---                        | ---         |
+| HOOK_user_identified()                  | Invoked every time when the $user object is loaded (or reloaded) |
+| HOOK_user_logged_in()                   | Invoked immediately after the user is logged in |
+| HOOK_user_logout()                      | Invoked before the user logged out |
+| HOOK_user_failed_login($login,$descr)   | Invoked after unsuccessful login |
+| HOOK_user_ajax_logged_in()              | Invoked in ajax handler when the user is logged in |
+| HOOK_user_ajax_logout()                 | Invoked in ajax handler when the user is logged out |

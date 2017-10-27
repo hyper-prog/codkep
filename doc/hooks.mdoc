@@ -1,0 +1,170 @@
+= Hooks =
+
+Hooks are how modules can interact with the core and other modules.
+.
+Codkep module system is also based on the concept of "hooks" like Drupal CMS.
+The custom modules can implement hooks of invoked by core, but modules can define hooks of their own too.
+
+
+== Implement hooks ==
+
+
+A hook is a PHP function within a module that is named ***hook_abc_xyz()***, where "abc" is the name of the module
+and "xyz" is the name of the hook. Each hook has a defined set of parameters and a specified result type.
+.
+*Note: Unlike drupal, CodKep hooks are always starts with "hook_" prefix.*
+.
+To extend CodKep, a module need simply implement a hook(s). When CodKep wishes to allow intervention from modules,
+it determines which modules implement a hook and calls that hook in all enabled modules that implement it.
+.
+You can see the list of [Available hooks|url:hooks] on "hooks" internal url.
+In this table the ***HOOK_*** is a placeholder for the ***hook_modulename*** in the hook definitions.
+.
+Let's see an example which shows using of a hook named ***HOOK_defineroute***.
+This hook is define a internal path in CodKep and associate the path with a page callback named ***ownpage***.
+~~~php
+<?php
+//mymodule.php file
+.
+function hook_mymodule_defineroute()
+{
+    $r = [];
+    $r[] = [
+             'path' => 'own',
+             'callback' => 'ownpage',
+           ];
+    return $r;
+}
+.
+function ownpage()
+{
+    return 'This is my first page!';
+}
+~~~
+When ***mymodule.php*** is enabled in ***_modules.php*** the page is should alive on url:
+- ___http://example.com/index.php?q=own___
+- ___http://example.com/own___ (If clean urls are enabled)
+
+=== Interaction of hooks ===
+
+In case you implement a hook there is two main method the hook can interact with the other codes.
+- Return some data, which is used by other code parts.
+- Modify data, which is received in parameters.
+- Modify or set global variables or change global properties.
+
+*Hint: Some cases the hook receives parameters which does not documented in details.*
+*Use [CodKep debugging functions|url:doc/codkep/debug#dumpdata] to determine the parameter details.*
+
+
+#codkepsequence#
+=== Hook sequence of a page load ===
+
+
+Most hooks is associated to a special event which occurs unpredictable.
+In the other way there is some hooks which are occur in every page load and follow well defined sequence.
+This hooks can used to achieve special operations.
+<br/>
+In order to list them let's see the operation sequence of the CodKep:
+.
+**The CodKep starts serve a page**
+# Modules are loaded according to ***../site/_modules.php***
+# Hook table is built
+ - ***HOOK_boot***
+  - Can used to define global settings defaults which are modifiable by ***_settings.php***.
+# Site settings are read from ***../site/_settings.php***
+# Database connection is done (if exists)
+ - ***HOOK_init***
+  - Can change early things which are depended from the settings.
+  - The site settings are loaded here. The themes and routes are not loaded!
+# Initialize the output buffer.
+ - Operations which modifies the outputs are ineffective before this point.
+ \ (For example: ***add_style()***, ***add_css_file()***, ***add_js_file()***)
+# Themes loaded
+ - ***HOOK_theme***
+  - Define the themes
+# Routes loaded
+ - ***HOOK_defineroute***
+  - Define the locations/routes
+# Pre procession of routing
+ - ***HOOK_autorun***
+  - Can be used to do some things, before the main routing. (Everything is loaded)
+# Routing
+ - ***HOOK_before_start***
+  - Everything is loaded the current route is selected and the current theme are also loaded.
+  - This hook is run immediately before the route's callback
+# Execute the appropriate callback with the appropriate theme callbacks
+# Generating the output
+ - ***HOOK_before_deliver***
+  - This hook runs before the generated data is send to the browser. It can modify the data before deliver.
+# Sent data to the browser
+ - ***HOOK_after_deliver***
+  - Runs after the data was sent to the browser. It can do some post processing.
+
+== Create hooks ==
+
+You have the possibility to create your own hook,
+to request intervention from all enabled modules which implement your hook.
+.
+Use the ***run_hook*** function to invoke a hook in all enabled modules that implement it.
+.
+@@@run_hook($hookname, ...optional parameters... )@@@
+.
+- The first parameter is the name of the hooks to run.
+\ It is a simple string, it does not contains the "hook_" prefix and module names.
+- Other parameters are passed to the hook implementations of modules.
+- The returned values of the hooks are merged into an array.
+
+If a module invoke the hook "***HOOK_customaction***" :
+
+~~~php
+$var = "local variable data";
+.
+$result = run_hook("customaction",$var);
+~~~
+
+The "***mymodule***" module can implement this hook:
+
+~~~php
+//mymodule.php
+.
+function hook_mymodule_customaction($v)
+{
+  $r = [];
+  //do something
+  return $r;
+}
+~~~
+
+The return values of invoked hooks are merged to an array and returned by ***run_hook*** function.
+.
+*After booting the framework it collects the possible hooks in an associated array, so that a run_hook*
+*does not need to scan the modules for hooks, the execution is fast and does not have extra overhead.*
+.
+*The hook calling order is depends on the listing order of modules in ***sys/modules.php*** and ***site/_modules.php***.*
+
+#hookcache#
+=== Caching hooks ===
+
+The CodKep caches the hook calls if [APC|url:http://php.net/manual/en/book.apc.php] is available and enable in the
+webserver. It means that after you create a new hook you have to clear the caches to make it work.
+You can drop the current caches by hit the following CodKep [internal url|url:doc/codkep/routes]:
+
+- [emptycache|url:emptycache]
+
+*Note: The APC is an optional requirement of CodKep. If it is not available the system work properly but a bit slower.*
+
+== Debugging hooks ==
+
+If you enable these settings below  in your [site settings|url:doc/codkep/modules#site_settings] you can use same hook
+debugging page.
+~~~code
+global $site_config;
+$site_config->enable_hook_table_info = true;
+~~~
+
+The hook information/debugging pages
+
+|Function                               | Internal url   |
+|---                                    | ---            |
+|[System hook call table|url:hookcalls] | hookcalls      |
+|[Available hooks|url:hooks]            | hooks          |

@@ -1,0 +1,92 @@
+/* SEL->UL-ize CSS
+   Peter Deak (C) hyper80@gmail.com */
+/*
+-------------------------------
+  SELULIZE
+-------------------------------
+*/
+
+.selulized .arrow-down {
+    width: 0;
+    height: 0;
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-top: 12px solid #000;
+    margin-top: 12px;
+    display: inline-block;
+}
+
+.selulized button {
+    cursor: pointer;
+    padding: 5px 15px 5px 15px;
+    margin: 0;
+    border: 1px solid #666666;
+    border-radius: 5px;
+    display: block;
+    text-align: center;
+    background-color: #eeeeee;
+    font-size: 1em;
+}
+.selulized span {
+    padding: 2px 10px 2px 10px;
+    display: inline-block;
+}
+
+.selulized button:hover {
+    background-color: #eeeefe;
+}
+
+.selulized {
+    padding: 0;
+    margin: 0;
+}
+.selulized ul {
+    display:none;
+    border-left: 1px solid #666666;
+    border-right: 1px solid #666666;
+    border-bottom: 1px solid #666666;
+    list-style:none;
+    z-index: 9999;
+    position: absolute;
+    padding: 0;
+    margin: 0;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.6);
+    overflow:hidden;
+    min-width: 200px;
+}
+
+.selulized ul li {
+    cursor: pointer;
+    padding: 5px 22px 5px 15px;
+    background-color: #ffffff;
+    color: #111111;
+    width: 100%;
+}
+
+.selulized ul li:nth-child(even) {
+    background-color: #aaaaaa;
+}
+.selulized ul li:nth-child(odd) {
+    background-color: #ffffff;
+}
+.selulized ul li:nth-child(even):hover {
+    background-color: #8888ff;
+    color: #ffffff;
+    box-shadow: 3px 0px 3px 0px rgba(0,0,1,0.2);
+}
+.selulized ul li:nth-child(odd):hover {
+    background-color: #8888ff;
+    color: #ffffff;
+    box-shadow: 3px 0px 3px 0px rgba(0,0,1,0.2);
+}
+
+.selulized ul li {
+    padding: 5px 15px 5px 15px;
+    color: #111111;
+}
+
+.selulized ul li:hover {
+    background-color: #8888ff;
+    color: #ffffff;
+}
+/* End */

@@ -1,0 +1,427 @@
+= Documenting =
+
+You can add your own documentation file (contains CodKep's special markup language) under the ***doc/SECTION***
+[location|url:doc/codkep/routes] with the ***HOOK_documentation*** [hook|url:doc/codkep/hooks]:
+~~~php
+// Makes mymodule.mdoc available under "doc/mysection"
+//  with image path '/site/mymoduledoc/images'
+function hook_mymodule_documentation($section)
+{
+    $docs = [];
+    if($section == "mysection")
+    {
+        $docs[] = [
+                'doc' => ['path' => 'site/mymodule.mdoc',
+                          'index' => false,
+                          'imagepath' => '/site/mymoduledoc/images'
+                         ]
+                  ];
+    }
+    return $docs;
+}
+~~~
+
+== My mark language ==
+
+=== Highlights ===
+
+<table><tr>
+<tr><th>In raw text</th><th>Looks like in the document </th></tr>
+<tr>
+<td>
+~~~code
+the *sample* text
+~~~
+</td>
+<td>
+the *sample* text
+</td>
+</tr>
+
+<tr>
+<td>
+~~~code
+the _sample_ text
+~~~
+</td>
+<td>
+the _sample_ text
+</td>
+</tr>
+
+<tr>
+<td>
+~~~code
+the **sample** text
+~~~
+</td>
+<td>
+the **sample** text
+</td>
+</tr>
+
+<tr>
+<td>
+~~~code
+the __sample__ text
+~~~
+</td>
+<td>
+the __sample__ text
+</td>
+</tr>
+
+<tr>
+<td>
+~~~code
+the ***sample*** text
+~~~
+</td>
+<td>
+the ***sample*** text
+</td>
+</tr>
+
+<tr>
+<td>
+~~~code
+the ___sample___ text
+~~~
+</td>
+<td>
+the ___sample___ text
+</td>
+</tr>
+
+<tr>
+<td>
+~~~code
+the @@@sample@@@ text
+~~~
+</td>
+<td>
+the @@@sample@@@ text
+</td>
+</tr>
+
+</table>
+
+
+<table><tr>
+<tr><th>In raw text</th><th>Looks like in the document </th></tr>
+<td>
+~~~code
+This is a _sample_ text __with__
+some ___special___ marks.
+.
+This is an *another* way of **highlight** the ***special*** words.
+.
+You can also @@@use this@@@ or *****even this***** combined ****version****
+~~~
+</td>
+<td>
+This is a _sample_ text __with__ some ___special___ marks.
+.
+This is an *another* way of **highlight** the ***special*** words.
+.
+You can also @@@use this@@@ or *****even this***** combined ****version****
+</td>
+</tr></table>
+
+
+=== Headings ===
+
+<table><tr>
+<tr><th>In raw text</th><th>Looks like in the document </th><th>Table of contents</th></tr>
+<td>
+~~~code
+= One heading =
+~~~
+</td>
+<td>
+<h1>One heading</h1>
+</td>
+<td>Added</td>
+</tr>
+<tr>
+<td>
+~~~code
+== Two heading ==
+~~~
+</td>
+<td>
+<h2>Two heading</h2>
+</td>
+<td>Added</td>
+</tr>
+<tr>
+<td>
+~~~code
+=== Three heading ===
+~~~
+</td>
+<td>
+<h3>Three heading</h3>
+</td>
+<td>Added</td>
+</tr>
+<tr>
+<td>
+~~~code
+==== Four heading ====
+~~~
+</td>
+<td>
+<h3>Four heading</h3>
+</td>
+<td>No</td>
+</tr></table>
+.
+=== Other elements ===
+
+Horizontal line:
+<table><tr>
+<tr><th>In raw text</th><th>Looks like in the document </th></tr>
+<td>
+~~~code
+---
+~~~
+</td>
+<td>
+---
+</td>
+</tr></table>
+
+Line feed:
+<table><tr>
+<tr><th>In raw text</th><th>Html code</th></tr>
+<td>
+~~~code
+&nbsp.
+~~~
+</td>
+<td>
+&lt;br/&gt;
+</td>
+</tr></table>
+
+=== Tables ===
+
+
+<table><tr>
+<tr><th>In raw text</th><th>Looks like in the document </th></tr>
+<td>
+~~~code
+| One   | Two   | Three |
+| ---   | ---   | ---   |
+| Red   | Green | Blue  |
+| Apple | Pear  | Plum  |
+~~~
+</td>
+<td>
+
+| One   | Two   | Three |
+| ---   | ---   | ---   |
+| Red   | Green | Blue  |
+| Apple | Pear  | Plum  |
+</td>
+</tr></table>
+
+
+=== Lists ===
+<table><tr>
+<tr><th>In raw text</th><th>Looks like in the document </th></tr>
+<td>
+~~~code
+ - One
+ - Two
+  - Two-Sub 1
+  - Two-Sub 2
+ - Three
+~~~
+</td>
+<td>
+ - One
+ - Two
+  - Two-Sub 1
+  - Two-Sub 2
+ - Three
+</td>
+</tr></table>
+
+<table><tr>
+<tr><th>In raw text</th><th>Looks like in the document </th></tr>
+<td>
+~~~code
+# One
+# Two
+ # Two Sub 1
+ # Two Sub 2
+  - Low 1
+  - Low 2
+# Three
+~~~
+</td>
+<td>
+# One
+# Two
+ # Two Sub 1
+ # Two Sub 2
+  - Low 1
+  - Low 2
+# Three
+</td>
+</tr></table>
+
+<table><tr>
+<tr><th>In raw text</th><th>Looks like in the document </th></tr>
+<td>
+~~~code
+- One
+- Two
+ - Two Sub 1
+ - Two Sub 2 which
+ \ is longer and
+ \ wrapped to more line
+ - Two Sub 3
+- Three
+~~~
+</td>
+<td>
+- One
+- Two
+ - Two Sub 1
+ - Two Sub 2 which
+ \ is longer and
+ \ wrapped to more line
+ - Two Sub 3
+- Three
+</td>
+</tr></table>
+=== Codes ===
+
+<table><tr>
+<tr><th>In raw text</th><th>Looks like in the document </th></tr>
+<td>
+~~~code
+ ~~~code
+  This is a source code
+ ~~~
+~~~
+</td>
+<td>
+~~~code
+This is a source code
+~~~
+</td>
+</tr></table>
+
+<table><tr>
+<tr><th>In raw text</th><th>Looks like in the document </th></tr>
+<td>
+~~~code
+ ~~~php
+  function this_is_a_php_code($var)
+  {
+    //do something
+  }
+ ~~~
+~~~
+</td>
+<td>
+~~~php
+function this_is_a_php_code($var)
+{
+  //do something
+}
+~~~
+</td>
+</tr></table>
+
+=== Links ===
+
+<table><tr>
+<tr><th>In raw text</th><th>Looks like in the document </th></tr>
+<td>
+~~~code
+The [sample|url:#somwhere] link
+~~~
+</td>
+<td>
+The [sample|url:#somwhere] link
+</td>
+</tr>
+<tr>
+<td>
+~~~code
+Another [site|url:http://www.kernel.org] link
+~~~
+</td>
+<td>
+Another [site|url:http://www.kernel.org] link
+</td>
+</tr>
+<tr>
+<td>
+~~~code
+Another [site|url:start|css:background-color:#ff4444;] link
+~~~
+</td>
+<td>
+Another [site|url:start|css:background-color:#ff4444;] link
+</td>
+</tr>
+<tr>
+<td>
+~~~code
+Another [site|url:start|title:Title text] link
+~~~
+</td>
+<td>
+Another [site|url:start|title:Title text] link
+</td>
+</tr></table>
+
+=== Images ===
+
+<table><tr>
+<tr><th>In raw text</th><th>Looks like in the document </th></tr>
+<td>
+~~~code
+An image {file:cklogo_big.png} here
+~~~
+</td>
+<td>
+An image {file:cklogo_big.png} here
+</td>
+</tr>
+<tr>
+<td>
+~~~code
+{file:cklogo_big.png|width:50|title:Smaller codkep logo}
+~~~
+</td>
+<td>
+{file:cklogo_big.png|width:50|title:Smaller codkep logo}
+</td>
+</tr>
+<tr>
+<td>
+~~~code
+{file:cklogo_big.png|height:80|alt:Some text}
+~~~
+</td>
+<td>
+{file:cklogo_big.png|height:80|alt:Some text}
+</td>
+</tr>
+<tr>
+<td>
+~~~code
+{file:cklogo_big.png|height:80|css:opacity: 0.5;}
+~~~
+</td>
+<td>
+{file:cklogo_big.png|height:80|css:opacity: 0.5;}
+</td>
+</tr></table>

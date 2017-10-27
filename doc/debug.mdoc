@@ -1,0 +1,121 @@
+= Debugging =
+
+The CodKep framework has some debugging function to help the developers to troubleshoot the site.
+.
+
+#dumpdata#
+== Dumping arbitrary data objects ==
+
+
+There is three debugging functions which can receive any kind of complex data
+and prints the content in human readable way.
+All of this three function can used to display any kind of data,
+simple string or complex array or objects.
+The functions differs in output method.
+.
+#d0_func#
+@@@d0($arbitrarydata,$rdf = '')@@@
+<br/>
+Prints the parameter passed variable's content to the ***/tmp/DEBUG*** file unbuffered way.
+It can prints the whole structure of the passed parameter. The ***$rdf*** parameter is an optional
+suffix string which added to the output file name to ***/tmp/DEBUG***.
+(For example if the ***$rdf*** is "cache" the output is written to the ***/tmp/DEBUG_cache*** file.)
+.
+#d1_func#
+@@@d1($arbitrarydata)@@@
+<br/>
+Prints the parameter passed variable's content to the standard error output of webserver
+which usually the error log file.
+(In case of the apache2 with default configuration it will be written to ***/var/log/apache2/error.log***)
+.
+#d2_func#
+@@@d2($arbitrarydata)@@@
+<br/>
+Prints the parameter passed variable's content to the end of the html page.
+The output of this function will be added to a special buffer and appended to the end of html data.
+This way the output will be visible on the generated page.
+.
+Example of printable variables:
+~~~php
+.
+d1("Reached code X"); //simple string
+.
+$v = NULL;
+d1($v); //Can be a NULL value, this case the NULL string is printed
+.
+$a = ['key' => 'value'];
+d1($a); //Can be any kind of array, the whole structure is printed.
+.
+$o = new stdClass();
+$o->attribute = 'XyZ';
+d2($o); //Can be an object too.
+~~~
+.
+Examine an unknown received parameter:
+~~~php
+function hook_somemodule_somehook($parameter)
+{
+    //Prints the structure and the content of the received parameter
+    d2($parameter);
+}
+~~~
+
+#specpages#
+== Special pages ==
+
+The CodKep has some [internal route|url:doc/codkep/routes] which can show some useful debugging information.
+In order to reach this pages you have to enable some settings [in site settings|url:doc/codkep/modules#site_settings].
+.
+_Note: It's recommended to disable this debugging possibilities in production environment_
+
+| Path                            |  Enabling variable in site settings (Set "true" to enable) | Description |
+| ----                            | ----                                  | ----        |
+| [hooks|url:hooks]               | ***$site_config->enable_hook_table_info***  | Shows the available hooks in the system. (Collects the fake hook definitions, which started with ***_HOOK***) |
+| [hookcalls|url:hookcalls]       | ***$site_config->enable_hook_table_info***  | Shows the hook calling table, which shows the implemented hooks and hook orders in the system. |
+| [codkeproutes|url:codkeproutes] | ***$site_config->enable_route_table_info*** | Shows the defined routes in the system. |
+
+
+#allsql#
+== Debug sql calls ==
+
+
+If you set the ***$site_config->show_sql_commands_executed*** variable to ***true***
+[in site settings|url:doc/codkep/modules#site_settings] the CodKep appends
+all executed SQL command to the end of the page.
+
+~~~php
+global $site_config;
+$site_config->show_sql_commands_executed = true;
+~~~
+
+#parameterdebug#
+== Dump the parameters of the page ==
+
+@@@parameter_debug()@@@
+<br/>
+This function returns a html table shows the CodKep's defined parameters of the current page.
+It shows all of the POST/GET/URL parameter names, received values and the security class too.
+
+~~~php
+function mypagecallback()
+{
+  ob_start();
+  print "<h1>This is my page</h1>";
+  ...
+  print parameter_debug();
+  ...
+  return ob_get_clean();
+}
+~~~
+
+This function only shows the parameters defined by CodKep. Because it's not recommended to use
+***$_GET***, ***$_POST*** arrays directly this function won't show the values of these which not defined in CodKep.
+(To understand this read [parameter documentation|url:doc/codkep/parameters]).
+.
+Despite of this you can print the directly received parameters of the page with the following way:
+~~~php
+//Prints the get parameters at the end of the page
+d2($_GET);
+// or post parameters.
+d2($_POST);
+~~~

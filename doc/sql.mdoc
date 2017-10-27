@@ -1,0 +1,387 @@
+= Sql =
+
+
+
+Allows the use of different database servers, while provides unified code base and error handling.
+<br/>
+The sql module uses [php pdo extension|url:http://php.net/manual/en/book.pdo.php],
+thus your php have to the PDO installed.
+<br/>
+The main functions of sql module is:
+ - Manage of sql [connect/disconnect|url:#connect]
+ - [Execute sql commands|url:#sqlexec]
+ - Manage [transactions|url:#transactions]
+ - Sql [error handling|url:#errorhandling]
+ - [Manage sql schema|url:#schemeedit]/other module requirements
+
+
+#settings#
+== Sql database settings ==
+
+
+
+In order to connect an sql database you have to place the appropriate
+connection settings to [site settings|url:doc/codkep/modules#site_settings] in ***_settings.php***
+
+~~~php
+    global $db;
+.
+    //mandatory to connect:
+    $db->servertype = "mysql";
+    $db->host = "127.0.0.1";
+    $db->name = "web_example_db";
+    $db->user = "web_db_user";
+    $db->password = "secretpass1";
+.
+    //optional settings:
+    $db->schema_editor_password = "secretpass2"; //empty means disabled!
+    $db->schema_editor_allowed_for_admin = true;
+    //$db->schema_editor_allowed_only_for_login = 'superadmin';
+~~~
+
+Mandatory settings
+ - ***$db->servertype***
+  - Specifies the server type. Possible values:
+   - "mysql" - to connect mysql or mariadb
+   - "pgsql" - to connect postgresql
+   - "none" - to disable sql connection
+ - ***$db->host***
+  - The hostname or IP address where the sql database is available
+ - ***$db->name***
+  - The name of the database on the sql server
+ - ***$db->user***
+  - The username to connect
+ - ***$db->password***
+  - The password for the specified user
+
+Optional settings
+ - ***$db->schema_editor_password***
+  - Specifies a password for the [schema editor page|url:#schemeedit].
+  \ Empty string will disable of accessing this page with password. (See next setting)
+ - ***$db->schema_editor_allowed_for_admin***
+  - If this value is set true an authenticated admin user can access the schema editor page without any further password.
+ - ***$db->schema_editor_allowed_only_for_login***
+  - If this value is set, only the user with the specified login can access the schema editor page
+  \ without any further password. (Have to enable the ***$db->schema_editor_allowed_for_admin***)
+
+
+#connect#
+== Connect and disconnect ==
+
+
+
+_Before first time connect to an sql database please check your php have the appropriate sql driver available!_
+.
+**If your sql setting are correctly set in ***_settings.php*** the CodKep will automatically connect**
+**to the specified database. It means that usually does not need to explicit call connect and disconnect function!**
+.
+Connect to the sql database
+.
+@@@sql_connect()@@@
+.
+Disconnects the current opened database
+.
+@@@sql_disconnect()@@@
+.
+The connect and disconnect functions does not have parameters. The connection is done according to the settings
+([see above|url:#settings]).<br/>
+If the connection is failed the execution is automatically redirected to
+the ***sql_connection_error*** sql error handling
+[location|url:doc/codkep/routes], which print the sql error message by default.
+.
+An sql connection error as looks in a browser:
+.
+{file:sqlconnect_error.png|css:border: 2px solid #999;|title:Sql connect error}
+.
+You can test if a database opened or by checking the value of ***$db->open*** variable. Usually does not necessary to
+check this, because all further sql related functions will done this, or do correct error handling.
+.
+*Note: On successful sql connect the ***HOOK_sql_connected*** [hook|url:doc/codkep/hooks] is activated*
+
+
+
+#sqlexec#
+== Execute SQL commands ==
+
+
+
+You can execute arbitrary sql command by the following function:
+.
+@@@sql_exec($sql, $parameters = array(), $errormsg = '')@@@
+.
+ - ***$sql*** parameter
+  - The prepared sql statement to run. It can accept named placeholders.
+ - ***$parameters*** parameter
+  - An array of values to substitute into the query.
+  \ If the query uses placeholders, this is an associative array in any order.
+ - ***$errormsg*** parameter
+  - An optional custom error message, which printed on sql error handling page when the execution failed by any reason.
+
+This function returns an executed pdo object. See [php pdo documentation|url:http://php.net/manual/en/book.pdo.php]
+
+~~~php
+$r1 = sql_exec('SELECT name FROM users;');
+.
+$login = 'alice';
+$r2 = sql_exec('SELECT name FROM users WHERE login=:login;' , [':login' => $login] );
+.
+$secret = 'secretpassword';
+sql_exec('UPDATE users SET pwd=:password WHERE login=:login;',
+         [':login' => $login,
+          ':password' => $secret],
+          'Cannot set the password');
+~~~
+
+In case of error occurred the function returns NULL.
+
+Usually does not need to do error handling because the function do automatically.
+.
+See [error handling section|url:#errorhandling] to learn how to handle errors.
+
+----------------------------------------------------------------------------
+@@@sql_exec_noredirect($sql, $parameters = array())@@@
+.
+Same function as ***sql_exec*** but newer do any redirection in case of error.
+Useful when sql used in some special hooks where the redirection is not possible or would create a loop.
+
+----------------------------------------------------------------------------
+@@@sql_exec_fetch($sql, $parameters = array(), $errormsg = '')@@@
+.
+Executes and fetch an sql command.
+The parameters and the error handle works similar way as [sql_exec|url:#sqlexec] the only difference
+is that this function calls fetch on the executed statement, consequently returns an array instead of pdo object.
+.
+It returns an executed and fetched php array. (An associative array of the first record of the result)
+~~~php
+$arr = sql_exec_fetch('SELECT name FROM users WHERE login=:login;' , [':login' => $login] );
+print "Name:".$arr['name'];
+~~~
+This function raise error when the result is empty. (In the example above, when the $login is not found
+in users table the function will fail) If you would like to allow the empty result use the
+***sql_exec_fetchN*** instead of this.
+.
+See [error handling section|url:#errorhandling] to learn how to handle errors.
+
+----------------------------------------------------------------------------
+@@@sql_exec_fetchN($sql, $parameters = array(), $errormsg = '')@@@
+.
+Executes and fetch an sql command.
+The parameters and the error handle works similar way as [sql_exec|url:#sqlexec] the only
+difference is that this function calls fetch on the executed statement,
+consequently returns an array instead of pdo object. Allows empty result.
+
+It returns an executed and fetched array.
+~~~php
+$arr = sql_exec_fetch('SELECT name FROM users WHERE login=:login;' , [':login' => $login] );
+
+print "Name:". (empty($arr) ? "Unknown" : $arr['name']);
+
+~~~
+See [error handling section|url:#errorhandling] to learn how to handle errors.
+
+----------------------------------------------------------------------------
+@@@sql_exec_single($sql, $parameters = array(), $errormsg = '')@@@
+.
+Executes and fetch an sql command and returns the first field of the first received record.
+It returns a single value. This function is useful if a single value is queried from the database.
+
+~~~php
+print "Time:";
+print sql_exec_single('SELECT current_time;');
+
+~~~
+See [error handling section|url:#errorhandling] to learn how to handle errors.
+
+
+----------------------------------------------------------------------------
+@@@sql_exec_fetchAll($sql, $parameters = array(), $errormsg = '', $fetch_names_only = false)@@@
+.
+Executes an sql command and call ***fetchAll()*** on it.
+It means that this function returns an array containing all of the result set rows.
+In a nutshell the result is array of associative arrays of resulted records.
+.
+If ***$fetch_names_only*** parameter is false the ***fetchAll*** function called with ***fetch_style=PDO::FETCH_NAMED***
+otherwise the default mode ***PDO::FETCH_BOTH*** is used.
+To understand this see [PDO fetchAll() documentation|url:http://php.net/manual/en/pdostatement.fetchall.php].
+
+~~~php
+print "<ul>";
+$allres = sql_exec_fetchAll('SELECT name FROM users;');
+foreach($allres as $res)
+ print "<li>".$res['name']."</li>";
+print "</ul>";
+~~~
+See [error handling section|url:#errorhandling]
+
+
+
+#transactions#
+== Sql transactions ==
+
+
+
+It's possible to use sql transactions, the sql module have helper functions to do this.
+The transaction manage functions works on the current database connections.
+.
+Functions to manage transactions
+- ***sql_transaction()*** Start a new sql transaction.
+- ***sql_commit()*** Commits the current transaction.
+- ***sql_rollback()*** Rollbacks the current transaction.
+- ***sql_commit_if_needed()*** Commits the current transaction if exists. Otherwise do nothing.
+- ***sql_rollback_if_needed()*** Rollbacks the current transaction if exists. Otherwise do nothing.
+
+Every transaction should begin by calling ***sql_transaction()***. There is no way to nest sql transactions,
+thus every ***sql_transaction()*** should proceed some other function which rollback or commits the transaction.
+.
+_Note: If you start a new transaction in another opened transaction the system will raise an error message_
+.
+Example to use transactions
+~~~php
+//Example to use transactions
+sql_transaction();
+sql_exec("UPDATE systable SET value=:val WHERE key=:key;",
+         [':key' => $key,
+          ':val' => $value]);
+//In case the update failed the execution is redirected to error handling page,
+//thus the sql_commit won't executed
+sql_commit();
+~~~
+Without automatic error redirection
+~~~php
+$db->auto_error_page = false;
+sql_transaction();
+sql_exec("UPDATE systable SET value=:val WHERE key=:key;",
+         [':key' => $key,
+          ':val' => $value]);
+if($db->error)
+{
+    sql_rollback();
+    //other error handling
+    return;
+}
+sql_commit();
+~~~
+
+If you have started transaction the ***$db->transaction*** value is ***true*** otherwise is ***false***.
+
+
+
+#errorhandling#
+== Error handling ==
+
+
+
+Most sql related function can failed by any reasons.
+Every time you call a functions of sql module the following processes will be done:
+
+# Set ***$db->error*** to ***false*** and ***$db->errormsg*** to empty
+# Set the ***$db->lastsql*** value to the command will be executed
+# Do the sql related work
+ - In case of success, will normally exit
+ - In case of error
+  # Set ***$db->error*** to ***true***
+  # Fill the ***$db->errormsg*** with an available error message.
+  # By default do an automatic redirection to an sql error page.
+  \ It means that the execution won't continue after the failed function call.
+
+In a nutshell usually you does not have to care about error handling
+because the site will automatically stop the execution in case of error,
+and will do a redirection to an sql error page and show an error message.
+.
+An example of an error:
+.
+{file:sqlerror.png|css:border: 2px solid #999;|title:Sql connect error}
+.
+In case of error the following sql error routes are used:
+|Functions        | path |
+|---              | ---  |
+|sql_connect(), sql_disconnect()|sql_connection_error|
+|sql_exec_*(), sql_transaction(), sql_commit(), sql_rollback(), etc... |sql_error|
+
+You can disable the automatic error redirection by set the ***$db->auto_error_page*** to ***false***.
+If you do this way you should check the value of ***$db->error*** after every sql command.
+.
+In case you disabled the automatic error redirection and you handle and error, you can always
+find the available error message in ***$db->errormsg*** and the last executed sql command in ***$db->lastsql*** variables.
+
+
+
+#schemeedit#
+== Schema editor ==
+
+
+
+The CodKep core is not depend on sql, it means that the CodKep itself does not have any sql schema requirements.<br/>
+On the other hand some modules have some schema requirements, to achieve his functionalities.
+(Some system modules like user, node or file also have sql schema requirements)
+.
+The CodKep's sql module has a schema editor page, which can check the schema requirements of the active modules,
+and can update the schema if necessary.
+.
+__The schema editor is available on [sqlschema|url:sqlschema] internal location.__
+<small>
+- http://yoursite.com/index.php?q=sqlschema
+- http://yoursite.com/sqlschema (if clean url's enabled)
+</small>
+
+A schema editor page looks like similar way:
+{file:schemaeditor.png}
+.
+In order to reach schema editor page, you should set the schema editor password or admin access.<br/>
+See [sql settings|url:#settings]
+
+
+#definesqlreq#
+=== Define sql schema requirements ===
+
+
+The modules can define their sql schema requirements by implementing ***HOOK_required_sql_schema***
+[hook|url:doc/codkep/hooks].
+This hook does not receive parameters, it returns an associative array which describe the required schema.
+.
+The structure of return array of the following
+ - "An identifier name" =
+  - "tablename" = "sql table name"
+  - "columns" =
+   - "column name 1" => "SQL type"
+   - "column name 2" => "SQL type"
+   - etc...
+
+It looks like this way in a real example:
+~~~php
+//Implemented "required_sql_schema" of meetroom module.
+function hook_meetroom_required_sql_schema()
+{
+    $t = array();
+    $t['meetroom_module_meetings_table'] =
+        [
+            "tablename" => 'meetings',
+            "columns" => [
+                'id'        => 'SERIAL',
+                'room'      => 'VARCHAR(3)',
+                'takeby'    => 'VARCHAR(16)',
+                'title'     => 'VARCHAR(256)',
+                'prior'     => 'NUMERIC(3)',
+                'modd'      => 'TIMESTAMP',
+                'mdate'     => 'DATE',
+                'mstart'    => 'VARCHAR(8)',
+                'mend'      => 'VARCHAR(8)',
+            ],
+        ];
+
+    return $t;
+}
+~~~
+
+If you implement the ***HOOK_required_sql_schema*** hook with a correct return value,
+the schema requirements will display in [schema editor page|url:sqlschema] and the
+requirements can be met with some clicks.
+
+== Hooks ==
+
+The following [hooks|url:doc/codkep/hooks] can be implement to interact with sql module.
+| Hook                                | Description |
+| ---                                 | ---         |
+| HOOK_required_sql_schema()          | Define SQL schema requirements of a module   |
+| HOOK_sql_connected()                | Runs after the sql connection is established |
+| HOOK_execute_sql($sql,$parameters)  | Runs before an sql command is executed. It received the sql command and parameters but cannot modify its.|
