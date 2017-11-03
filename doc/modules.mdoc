@@ -7,10 +7,22 @@ Before you start, make sure your web server is running and php enabled.
 <br/>
 __The CodKep requires at least PHP 5.4.0 version.__
 .
-To install the CodKep you only need to do is download the CodKep sources and extract to your webserver's root.
+To install the CodKep you only need to do is obtain the CodKep sources and extract to your webserver's
+root into a "sys" directory and make a symlink from sys/index.php to /index.php.
+See [directories section|url:#directories] for further explanations.
+.
+ With the downloaded release package (Contains the sys with the symlink):
 ~~~code
 # In case the webserver's root is /var/www/html
-$sudo tar xzvf codkep-XYZ.tar.gz -C /var/www/html
+$ tar xzvf codkep-XYZ.tar.gz -C /var/www/html
+~~~
+
+Or using the [github.com|url:https://github.com/hyper-prog/codkep] repository (contains the sys directory only)
+~~~code
+# In case the webserver's root is /var/www/html
+$ cd /var/www/html
+/var/www/html$ git clone https://github.com/hyper-prog/codkep.git sys
+/var/www/html$ ln -s sys/index.php index.php
 ~~~
 If the php is enabled on your web server, you can reach your website.
 You should see the start page of CodKep.
@@ -30,7 +42,12 @@ which holds the settings of the new site.
 
 See the [Site settings, configuration|url:doc/codkep/modules#site_settings] chapter
 to learn how to create ***_settings.php***. Thereafter read the [modules|url:doc/codkep/modules#modules] chapter
-to create ***_modules.php***.
+to create ***_modules.php***. You can also set up the SQL connection in ***_settings.php***.
+.
+The last step of the installation is usually the creating of sql schema.
+The codkep's sql module have a schema check page which can check and update the sql schema of the database.
+Its available under the "[sqlschema|url:sqlschema]" internal [route|url:/doc/codkep/routes].
+([Documentation of sqlchema page|url:doc/codkep/sql#schemeedit])
 
 #directories#
 == Directories ==

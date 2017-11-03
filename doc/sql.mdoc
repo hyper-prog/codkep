@@ -311,12 +311,13 @@ find the available error message in ***$db->errormsg*** and the last executed sq
 
 
 
-The CodKep core is not depend on sql, it means that the CodKep itself does not have any sql schema requirements.<br/>
-On the other hand some modules have some schema requirements, to achieve his functionalities.
+The CodKep core itself is not depend on sql, it means that the CodKep inner core does not have any sql schema requirements.<br/>
+On the other hand further system and user modules can have some sql schema requirements, to achieve their functionality.
 (Some system modules like user, node or file also have sql schema requirements)
 .
 The CodKep's sql module has a schema editor page, which can check the schema requirements of the active modules,
-and can update the schema if necessary.
+and can update the schema if necessary. **After a clean codkep install the schema editor can build the initial**
+**database structure for the codkep's sql related system modules.**
 .
 __The schema editor is available on [sqlschema|url:sqlschema] internal location.__
 <small>
