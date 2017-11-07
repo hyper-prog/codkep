@@ -49,12 +49,16 @@ class HtmlTable
     {
         if(isset($o['formatter']) && $o['formatter'])
             $this->ena_f = true;
+        if(isset($o['type']) && $o['type'] == 'uni')
+            $o = table_options_translator($o,[],true);
         $this->o = array_merge($this->o,$o);
         return $this;
     }
 
     public function nrow(array $opts=array())
     {
+        if(isset($opts['type']) && $opts['type'] == 'uni')
+            $opts = table_options_translator($opts,[],true);
         if($this->tr_open)
             array_push($this->b,'</tr>');
         array_push($this->b,
@@ -218,6 +222,9 @@ class ExcelXmlDocument
     private $colwarray;
     private $orientation;
     private $hc_cc;
+    private $in_header_row;
+    private $table_options;
+    private $row_options;
 
     public function __construct($n = 'Generated excel xml table')
     {
@@ -235,7 +242,10 @@ class ExcelXmlDocument
         $this->rowh = 0;
         $this->colwarray = [];
         $this->orientation = "";
-        $this->hc_cc=0;
+        $this->hc_cc=0; // header|cell, 0-no 1-header 2-cell
+        $this->in_header_row = false;
+        $this->table_options = [];
+        $this->row_options = [];
     }
 
     public function setHtmlHeaders($filename)
@@ -253,27 +263,28 @@ class ExcelXmlDocument
     /** Does nothing, for compatibility reasons only */
     public function opts(array $opts)
     {
+        $this->table_options = $opts;
         return $this;
     }
 
-    public function nrow($count = 1)
+    public function nrow(array $opts=array())
     {
-        if($count <= 0)
-            return;
         if($this->r_open)
             $this->endRow();
-        $this->beginRow();
-        if($count > 1)
-            for($i = 1 ; $i < $count ; $i++)
-            {
-                if($this->r_open)
-                    $this->endRow();
-                $this->beginRow();
-            }
+        $this->beginRow($opts);
         return $this;
     }
 
-    private function beginRow()
+    public function nrows($count = 1,array $opts=array())
+    {
+        if($count <= 0)
+            return $this;
+        for($i = 0 ; $i < $count ; $i++)
+            $this->nrow($opts);
+        return $this;
+    }
+
+    private function beginRow(array $opts=array())
     {
         if($this->r_open)
             return;
@@ -284,6 +295,7 @@ class ExcelXmlDocument
         $this->c_index = 1;
         $this->c_emptycellbefore = false;
         $this->rowcount++;
+        $this->row_options = $opts;
     }
 
     private function endRow()
@@ -306,6 +318,8 @@ class ExcelXmlDocument
         $this->row = '';
         $this->rowh = 0;
         $this->r_open = false;
+        $this->row_options = [];
+        $this->in_header_row = false;
     }
 
     function cell($c = '',array $opts=array())
@@ -313,12 +327,17 @@ class ExcelXmlDocument
         if(!$this->r_open)
             $this->beginRow();
 
+        if(isset($opts['ashead']) && $opts['ashead'])
+            $this->in_header_row = true;
+
         if($this->hc_cc == 1 && !isset($opts['ashead']))
         {
             $this->hc_cc = 2;
-            $this->nrow();
+            if($this->in_header_row) //We only need to start a new row when already in header
+                $this->nrow();
         }
 
+        $opts = array_merge($this->table_options,$this->row_options,$opts);
         if(isset($opts['height']) && $opts['height'] != '')
             if($this->rowh < $opts['height'])
                 $this->rowh = $opts['height'];
@@ -598,7 +617,7 @@ class ExcelXmlDocument
 
 /** Transforms ExcelXmlDocument cell options to HtmlTable cell options
  *  @package forms */
-function table_options_translator(array $opts,array $additional = array())
+function table_options_translator(array $opts,array $additional = array(),$style_and_class_only_mode = false)
 {
     $o = array();
     $style = '';
@@ -669,10 +688,13 @@ function table_options_translator(array $opts,array $additional = array())
     $o['style'] = $style;
     if(isset($opts['class']))
         $o['class'] = $opts['class'];
-    if(isset($opts['align']))
-        $o['align'] = $opts['align'];
-    if(isset($opts['colspan']))
-        $o['colspan'] = $opts['colspan'];
+    if(!$style_and_class_only_mode)
+    {
+        if (isset($opts['align']))
+            $o['align'] = $opts['align'];
+        if (isset($opts['colspan']))
+            $o['colspan'] = $opts['colspan'];
+    }
     $o = array_merge($o,$additional);
     return $o;
 }

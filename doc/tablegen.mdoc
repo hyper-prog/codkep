@@ -49,7 +49,7 @@ __Methods of HtmlTable class:__
    - ***"class"=string*** the css class of the table
    - ***"style"=string*** the style attribute of the table (Custom css code of the table)
    - ***"formatter"=true*** enable some additional functionality of cell's string formatting.
- - @@@nrow(array $opts)@@@
+ - @@@nrow(array $opts = array())@@@
   - Start a new row in table. Every time when this function called a new row will generated in table.
   \ If this function called two times an empty row is generated.
   \ The function can receive an associative array where the values can be:
@@ -121,9 +121,13 @@ __Methods of ExcelXmlDocument class:__
  - Give the name of the spreadsheet. This name will be the name of the spreadsheet visible in the bottom tabs of excel.
 - @@@setTitle($title)@@@
  - Same as ***name($name)***
-- @@@nrow($count = 1)@@@
+- @@@nrow(array $opts = array())@@@
+ - Start a new row in table. Every time when this function called will
+ \ generate a new row in table.
+ \ The ***$opts*** array passed here will be the default options of cells located in the following row.
+- @@@nrows($count = 1,array $opts = array())@@@
  - Start ***$count*** new row in table. Every time when this function called will
- \ generate ***$count*** number new row in table.
+ \ generate ***$count*** new row in table.
 - @@@cell($c = '', array $opts = array())@@@
  - Sets the next cell of the table. The ***$opts*** detailed later.
 - @@@cells(array $cs, array $opts = array())@@@
@@ -140,12 +144,15 @@ __Methods of ExcelXmlDocument class:__
  - Set the default printable format of the spreadsheet to landscape.
 - @@@get()@@@
  - Generates the xml code of the spreadsheet.
-- @@@opts(array $o)@@@
- - This function does nothing, it exists for compatibility reasons with HtmlTable.
+- @@@opts(array $opts)@@@
+ - This function sets a default options of the table cells.
+ \ The options set in ***nrow()*** function will overwrite these, while the options passed
+ \ in ***cell()*** and ***head()*** will overwrite both.
+
 
 #exmlstyleopts#
-The ***$opts*** parameter of the ***cell()***,***cells()***,***cellss()*** and ***head()***,***heads()*** function is
-an associative array with the following possible options:
+The ***$opts*** parameter of the ***opts()***,***cell()***,***cells()***,***cellss()*** and ***head()***,***heads()*** and
+***nrow()*** function is an associative array with the following possible options:
 
 - ***"height" => height_number*** - The height of the cell's row
 - ***"width" => width_number*** - The width of the cell's row
@@ -270,10 +277,13 @@ You can use the ***table_options_translator()*** function to translate the cell 
 to options works with cells of ***HtmlTable***.
 Most option are translated to CSS style to the html table looks similar as spreadsheet.
 .
-@@@table_options_translator(array $opts,array $additional = array())@@@
+@@@table_options_translator(array $opts,array $additional = array(),$sac_omode = false)@@@
 <br/>
-The ***$opts*** array will be translated to ***HtmlTable*** options. The ***$additional*** parameter can hold other
-options which will be added to the result array.
+The parameters of the function:
+- The ***$opts*** array will be translated into ***HtmlTable*** options.
+- The ***$additional*** parameter can hold other options which will be added to the result array.
+- If the ***$sac_omode*** parameter is true, the function only translate options which generate "style" and "class"
+\ typed options.
 <br>
 The return array of this function is directly usable as cell option in HtmlTable's methods.
 .
