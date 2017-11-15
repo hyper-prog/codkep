@@ -516,6 +516,16 @@ function ajax_add_html($selector,$content)
     $sys_data->content->commands[] = ['html',$selector,$content];
 }
 
+/** Creates an ajax (jQuery) 'append' command and adds to the output queue.
+ *
+ *  Only use in ajax handler. ( _defineroute 'type'=>'ajax' )
+ *  @package core */
+function ajax_add_append($selector,$content)
+{
+    global $sys_data;
+    $sys_data->content->commands[] = ['append',$selector,$content];
+}
+
 /** Creates an ajax (jQuery) 'css' command and adds to the output queue.
  *
  *  Only use in ajax handler. ( _defineroute 'type'=>'ajax' )
