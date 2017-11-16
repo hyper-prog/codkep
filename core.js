@@ -61,6 +61,8 @@ function processAjaxResponse(data)
             jQuery(obj[i][1]).html(obj[i][2]);
         if(obj[i][0] == "append")
             jQuery(obj[i][1]).append(obj[i][2]);
+        if(obj[i][0] == "remove")
+            jQuery(obj[i][1]).remove();
         if(obj[i][0] == "val")
             jQuery(obj[i][1]).val(obj[i][2]);
         if(obj[i][0] == "addClass")

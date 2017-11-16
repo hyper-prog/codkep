@@ -528,6 +528,16 @@ function ajax_add_append($selector,$content)
     $sys_data->content->commands[] = ['append',$selector,$content];
 }
 
+/** Creates an ajax (jQuery) 'remove' command and adds to the output queue.
+ *
+ *  Only use in ajax handler. ( _defineroute 'type'=>'ajax' )
+ *  @package core */
+function ajax_add_remove($selector)
+{
+    global $sys_data;
+    $sys_data->content->commands[] = ['remove',$selector];
+}
+
 /** Creates an ajax (jQuery) 'css' command and adds to the output queue.
  *
  *  Only use in ajax handler. ( _defineroute 'type'=>'ajax' )
