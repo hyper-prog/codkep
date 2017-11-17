@@ -199,18 +199,18 @@ The hook receives the following three parameters:
  # ***$account*** Determine the permission of this account (user node)
 
  The hook have to return one value of these defines:
-  - ***NODE_ACCESS_IGNORE*** - Ignore the answer
-  - ***NODE_ACCESS_ALLOW*** - Allow the operation specified by parameters
-  - ***NODE_ACCESS_DENY*** - Deny the operation specified by parameters
+  - ***FILE_ACCESS_IGNORE*** - Ignore the answer
+  - ***FILE_ACCESS_ALLOW*** - Allow the operation specified by parameters
+  - ***FILE_ACCESS_DENY*** - Deny the operation specified by parameters
 
-In case there is no ***HOOK_file_access*** in the system or received NODE_ACCESS_IGNORE value the system
+In case there is no ***HOOK_file_access*** in the system or received FILE_ACCESS_IGNORE value the system
 will deny every request except the following default allowed:
 # Allows everything for admin users.
 # Allows new file creation for authenticated users.
 # Allows to view public files. (Pointless to disable it.)
 # Allows delete/view to the file owner/uploader.
 .
-*Note: The NODE_ACCESS_DENY is always stronger than NODE_ACCESS_ALLOW, if both received the result will NODE_ACCESS_DENY*
+*Note: The FILE_ACCESS_DENY is always stronger than FILE_ACCESS_ALLOW, if both received the result will FILE_ACCESS_DENY*
 .
 Samples:
 ~~~code
@@ -218,10 +218,10 @@ Samples:
  function hook_mymodule_file_access($file,$op,$account)
  {
     if($op == 'view')
-        return NODE_ACCESS_ALLOW;
+        return FILE_ACCESS_ALLOW;
     if($acc->auth && $acc->role >= ROLE_EDITOR)
-        return NODE_ACCESS_ALLOW;
-    return NODE_ACCESS_IGNORE;
+        return FILE_ACCESS_ALLOW;
+    return FILE_ACCESS_IGNORE;
  }
 ~~~
 .
@@ -240,9 +240,9 @@ Calculate the permission of the operation on the secure file of the parameter pa
  - ***$account*** Determine the permission of this account (user node)
 
  The return value of this function can be:
-  - ***NODE_ACCESS_IGNORE***
-  - ***NODE_ACCESS_ALLOW***
-  - ***NODE_ACCESS_DENY***
+  - ***FILE_ACCESS_IGNORE***
+  - ***FILE_ACCESS_ALLOW***
+  - ***FILE_ACCESS_DENY***
 .
 
 #fhooktrick#
@@ -296,12 +296,12 @@ You can use the ***HOOK_file_image_sizeclass($fileobject,$sizeclass)*** [hook|ur
 has the specified size class available.
 .
 The ***HOOK_file_image_sizeclass*** should one of this value:
- - ***NODE_ACCESS_IGNORE***
- - ***NODE_ACCESS_ALLOW***
- - ***NODE_ACCESS_DENY***
+ - ***FILE_ACCESS_IGNORE***
+ - ***FILE_ACCESS_ALLOW***
+ - ***FILE_ACCESS_DENY***
 .
 In case a size class is defined (by ***register_image_sizeclass***) and the ***HOOK_file_image_sizeclass*** hook will
-return ***NODE_ACCESS_ALLOW*** the codkep will generate a scaled version of the file:
+return ***FILE_ACCESS_ALLOW*** the codkep will generate a scaled version of the file:
 - In "secure" type:
  - The scaled images are stored in a size class named subdirectory under the directory of the original files.
  - The scaled images are generated in time when they accessed. The image serving function will check if a scaled
@@ -328,8 +328,8 @@ function hook_mymodule_file_image_sizeclass($fileobject,$sizeclass)
 {
     //We will allow the scaling only for image files stored in 'customerportraits' directory
     if($fileobject->subdir == 'customerportraits')
-        return NODE_ACCESS_ALLOW;
-    return NODE_ACCESS_DENY;
+        return FILE_ACCESS_ALLOW;
+    return FILE_ACCESS_DENY;
 }
 .
 //We will use the scaled images in this page callback function
@@ -348,7 +348,7 @@ function show_user_list()
 ~~~
 
 *Note 1: If the ***urlResized($sizeclass)*** method is called on a file which has size classes disabled*
-*(One ***HOOK_file_image_sizeclass*** returns ***NODE_ACCESS_DENY*** on it) the original file url will returned.*
+*(One ***HOOK_file_image_sizeclass*** returns ***FILE_ACCESS_DENY*** on it) the original file url will returned.*
 *It means that the CodKep won't do error handling if non available size class requested instead serve the original (unscaled) file.*
 .
 *Node 2: In case a file is removed by the ***remove()*** method the system will check every available size class of the file*

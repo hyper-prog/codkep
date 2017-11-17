@@ -1,0 +1,107 @@
+/* Default CSS for comments */
+
+.commentblk_default_style .fullcommentblock_width { width: 100%; }
+.commentblk_default_style .addcommentblock_width  { width: 100%; }
+@media only screen and (min-width: 600px) {
+    .commentblk_default_style .fullcommentblock_width {width: 90%;}
+    .commentblk_default_style .addcommentblock_width  {width: 90%;}
+}
+@media only screen and (min-width: 800px) {
+    .commentblk_default_style .fullcommentblock_width {width: 70%;}
+    .commentblk_default_style .addcommentblock_width  {width: 70%;}
+}
+.commentblk_default_style .comment_module_fullc_area {
+    margin: auto;
+    padding: 10px;
+}
+.commentblk_default_style .commentitem {
+    border-top: 1px solid #9c9c9c;
+    margin-bottom: 2px;
+    padding: 2px 4px 1px 4px;
+}
+.commentblk_default_style .commentername {
+    float: left;
+    font-size: 80%;
+    padding-right: 10px;
+    font-weight: bold;
+    color: #3c763d;
+}
+.commentblk_default_style .timeofcomm {
+    float: right;
+    font-size: 80%;
+    color: #6d6d6d;
+}
+.commentblk_default_style .comment_delete_ajax_lnk {
+    font-size: 80%;
+    float: right;
+    text-decoration: none;
+    color: #4c4c4c;
+    margin-left: 10px;
+}
+.commentblk_default_style .comment_delete_ajax_lnk:hover {
+    color: #4c4cac;
+}
+.commentblk_default_style .commentheader::after {
+    content: '';
+    display: block;
+    clear: both;
+}
+.commentblk_default_style .bodytext {
+    position: relative;
+    width: 95%;
+    left: 5%;
+}
+.commentblk_default_style .addnew_c_form {
+    margin: auto;
+    padding: 0;
+    text-align:center;
+    vertical-align: bottom;
+}
+.commentblk_default_style .addnew_c_form .cadder_form_cmts {
+    text-align: center;
+}
+.commentblk_default_style .cadder_visible_parts {
+     margin: auto;
+     display: flex;
+     padding: 0;
+}
+.commentblk_default_style .addnew_c_form input,
+.commentblk_default_style .addnew_c_form textarea
+{
+    top: 0;
+    position: relative;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-sizing: border-box;
+    box-shadow: 0 3px 6px 0 rgba(0,0,0,0.6);
+}
+.commentblk_default_style .addnew_c_form textarea {
+    width: 80%;
+    padding: 3px;
+    border: 3px solid #bbbbbb;
+    border-radius: 15px 0px 0px 15px;
+    background-color: #dddddd;
+    resize: none;
+}
+.commentblk_default_style .addnew_c_form textarea:focus {
+    outline:0px !important;
+    -webkit-appearance:none;
+}
+.commentblk_default_style .addnew_c_form input {
+    width: 20%;
+    border-radius: 0px 15px 15px 0px;
+    border: 3px solid #bbbbbb;
+    background-color: #bbbbbb;
+    font-weight: bold;
+}
+.commentblk_default_style .addnew_c_form input:focus {
+    outline:0px !important;
+    -webkit-appearance:none;
+}
+.commentblk_default_style .addnew_c_form input:hover {
+    background-color: #9999ff;
+    cursor: pointer;
+}
+
+/* end css */

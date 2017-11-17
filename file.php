@@ -5,8 +5,12 @@
  *
  *
  * File module
- *  Required modules: core,sql
+ *  Required modules: core,sql,user
  */
+
+define('FILE_ACCESS_IGNORE',0);
+define('FILE_ACCESS_ALLOW',1);
+define('FILE_ACCESS_DENY',2);
 
 /** @ignore
  * File module default settings. You can change this values in your site/_settings.php */
@@ -178,7 +182,7 @@ class File
         $this->subdir = $subdir;
         $this->name = $name;
 
-        if(file_access($this,'create',$user) != NODE_ACCESS_ALLOW)
+        if(file_access($this,'create',$user) != FILE_ACCESS_ALLOW)
         {
             load_loc('error',t('You don\'t have the required permission to create the file'),t('Permission denied'));
             return 'Permission denied';
@@ -288,7 +292,7 @@ class File
         if($this->ufi == NULL)
             return;
 
-        if(file_access($this,'delete',$user) != NODE_ACCESS_ALLOW)
+        if(file_access($this,'delete',$user) != FILE_ACCESS_ALLOW)
         {
             load_loc('error',t('You don\'t have the required permission to remove this file'),t('Permission denied'));
             return 'Permission denied';
@@ -302,7 +306,7 @@ class File
         {
             global $sys_data;
             foreach($sys_data->image_file_sizeclass_list as $sc => $sc_sizes)
-                if(file_image_sizeclass($this,$sc) == NODE_ACCESS_ALLOW)
+                if(file_image_sizeclass($this,$sc) == FILE_ACCESS_ALLOW)
                     unlink($this->scCacheFilePath($sc));
         }
 
@@ -363,7 +367,7 @@ class File
         par_def('sc','text1ns');
         if($name_in_url == $this->name)
         {
-            if(file_access($this,'view',$user) != NODE_ACCESS_ALLOW)
+            if(file_access($this,'view',$user) != FILE_ACCESS_ALLOW)
             {
                 run_hook('file_denied',$this,$user);
                 goto_loc('file/disabled_content');
@@ -374,7 +378,7 @@ class File
                 $sc = par('sc');
                 if(array_key_exists($sc,$sys_data->image_file_sizeclass_list) &&
                    $this->sizeClassesAllowed() &&
-                   file_image_sizeclass($this,$sc) == NODE_ACCESS_ALLOW )
+                   file_image_sizeclass($this,$sc) == FILE_ACCESS_ALLOW )
                 {
                     header('Content-Type:'.$this->mime);
                     return $this->getContentInSizeClass($sc);
@@ -410,7 +414,7 @@ class File
 
             if(array_key_exists($sizeclass,$sys_data->image_file_sizeclass_list) &&
                $this->sizeClassesAllowed() &&
-               file_image_sizeclass($this,$sizeclass) == NODE_ACCESS_ALLOW )
+               file_image_sizeclass($this,$sizeclass) == FILE_ACCESS_ALLOW )
             {
                 $resized_img_path = $this->scCacheFilePath($sizeclass,false);
                 if(file_exists($resized_img_path))
@@ -431,27 +435,27 @@ class File
 function file_access($file,$op,$account)
 {
     if(!in_array($op,['create','delete','view']))
-        return NODE_ACCESS_DENY;
+        return FILE_ACCESS_DENY;
     $far = run_hook('file_access',$file,$op,$account);
-    if(in_array(NODE_ACCESS_DENY,$far))
-        return NODE_ACCESS_DENY;
-    if(in_array(NODE_ACCESS_ALLOW,$far))
-        return NODE_ACCESS_ALLOW;
+    if(in_array(FILE_ACCESS_DENY,$far))
+        return FILE_ACCESS_DENY;
+    if(in_array(FILE_ACCESS_ALLOW,$far))
+        return FILE_ACCESS_ALLOW;
 
     //Default file permissions:
     // Allows everything for admins
     if($account->role == ROLE_ADMIN)
-        return NODE_ACCESS_ALLOW;
+        return FILE_ACCESS_ALLOW;
     // Allows creation for authenticated users
     if($op == 'create' && $account->auth)
-        return NODE_ACCESS_ALLOW;
+        return FILE_ACCESS_ALLOW;
     // Allows to view public files (pointless to disable it)
     if($op == 'view' && $file->type == 'public')
-        return NODE_ACCESS_ALLOW;
+        return FILE_ACCESS_ALLOW;
     // Allows delete/view to the owner/uploader
     if($account->auth && $account->login == $file->uploader)
-        return NODE_ACCESS_ALLOW;
-    return NODE_ACCESS_DENY;
+        return FILE_ACCESS_ALLOW;
+    return FILE_ACCESS_DENY;
 }
 
 function register_image_sizeclass($name,$w,$h)
@@ -463,12 +467,12 @@ function register_image_sizeclass($name,$w,$h)
 function file_image_sizeclass($file,$sizeclass)
 {
     $far = run_hook('file_image_sizeclass',$file,$sizeclass);
-    if(in_array(NODE_ACCESS_DENY,$far))
-        return NODE_ACCESS_DENY;
-    if(in_array(NODE_ACCESS_ALLOW,$far))
-        return NODE_ACCESS_ALLOW;
+    if(in_array(FILE_ACCESS_DENY,$far))
+        return FILE_ACCESS_DENY;
+    if(in_array(FILE_ACCESS_ALLOW,$far))
+        return FILE_ACCESS_ALLOW;
     //Default:
-    return NODE_ACCESS_DENY;
+    return FILE_ACCESS_DENY;
 }
 
 function file_load($ufi,$disable_show_error = false)
