@@ -55,6 +55,9 @@ function hook_hu_init()
         'You don\'t have the required permission to create the file' => 'Nincs meg a megfelelő jogosultságod, hogy a létrehozd a fájlt',
         'Login disabled' => 'Bejelentkezés letíltva',
         'Failed to log in! Wrong user name or password.' => 'Bejelentkezés nem sikerült! Rossz a felhasználó név vagy a jelszó.',
+        'Just now' => 'Éppen most',
+        'Delete this comment' => 'Töröld ezt a megjegyzést',
+        'Send' => 'Elküld',
     ]);
 
     add_t_array('hu',[
