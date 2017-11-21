@@ -256,7 +256,8 @@ function pc_speedform_builder()
                                             'This case the sql value will NULL. Otherwise only a select box will appears so the user '.
                                             'have to select a value.');
 
-    p_gral_item(2,'par_sec'       ,BTYPE_TEXT,BSEC_FUNC);
+    p_gral_item(2,'par_sec'       ,BTYPE_TEXT,BSEC_FUNC,[],'Set custom parameter security class other than default');
+    p_gral_item(2,'htmlname'      ,BTYPE_TEXT,BSEC_FUNC,[],'Set special html form and parameter name other than default sql name. Use this to avoid html parameter name collisions.');
     p_gral_item(2,'sqlcreatetype' ,BTYPE_TEXT,BSEC_FUNC,[],'You can set a custom sql type on create the table');
 
     p_gral_item(2,'check_regex'   ,BTYPE_OPEN,BSEC_VALID);

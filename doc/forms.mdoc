@@ -1787,6 +1787,7 @@ do data validation etc.
 | Index name       | Description |Values |
 | ---              | --- |
 | ***par_sec***    |(background-color: #ffbb55;) Set the [security class|url:doc/codkep/parameters#par_define] of the parameter, which controls the possible values of the field | [A security class name|url:doc/codkep/parameters#securityclasses] |
+| ***htmlname***   |(background-color: #ffbb55;) You can redefine the name of the html/form parameter. Useful to avoid name collision when more forms used in one page. If this option is specified the form css class names will also appears with this name. The sql identifiers and node and form object value names are unaffected by this. | string |
 | ***sqlcreatetype*** |(background-color: #ffbb55;) You can redefine the default SQL TYPE of the field type in case of sql table creation. If you set a string here, the field will be placed into CREATE TABLE with this type string. | sql string |
 | ***readonly***   |(background-color: #ffbb55;) Set the field to read-only. This option can turn every editable field to a simple read only text. | ***true*** or ***false*** |
 | ***skip***       |(background-color: #ffbb55;) If this option is set the SpeedForm completely skip the field in the specified situation. | ***all***, ***modify***, ***select***, ***update***, ***insert*** |
@@ -1951,12 +1952,31 @@ function sfh_value_gps($strip,$field_def,$op,$value)
 .
 function sfh_gps_form($field_def,$form,$value,$opts)
 {
+    ... //sample codes:
+    $htmlname = $field_def['sql'];
+    if(isset($field_def['htmlname']) && $field_def['htmlname'] != '')
+        $htmlname = $field_def['htmlname'];
+.
     ... //generate the field's related form data here
+    $form->input('text',$htmlname.'_lat',$lat_value,$opts);
+    $form->input('text',$htmlname.'_long',$long_value,$opts);
 }
 .
 function sfh_phs_loadpar($field_def,$tablename)
 {
+    ... //sample codes:
+    $htmlname = $field_def['sql'];
+    if(isset($field_def['htmlname']) && $field_def['htmlname'] != '')
+        $htmlname = $field_def['htmlname'];
+.
+    par_def($htmlname.'_lat', ... );
+    par_def($htmlname.'_long', ... );
+.
     ... //load the parameter(s) here
+    $lat_value =  par($htmlname.'_lat');
+    $long_value =  par($htmlname.'_long');
+    ...
+    return gps($lat_value,$long_value);
 }
 function sfh_dispval_gps($field_def,$value)
 {

@@ -1773,51 +1773,68 @@ function sfh_value_modifieruser($strip,$field_def,$op,$value)
 
 function sfh_static_form($field_def,$form,$value,$opts)
 {
-    $form->text($field_def['sql'],$value,$opts);
+    $htmlname = $field_def['sql'];
+    if(isset($field_def['htmlname']) && $field_def['htmlname'] != '')
+        $htmlname = $field_def['htmlname'];
+    $form->text($htmlname,$value,$opts);
 }
 
 function sfh_submit_form($field_def,$form,$value,$opts)
 {
-    $form->input('submit',$field_def['sql'],$value,$opts);
+    $htmlname = $field_def['sql'];
+    if(isset($field_def['htmlname']) && $field_def['htmlname'] != '')
+        $htmlname = $field_def['htmlname'];
+    $form->input('submit',$htmlname,$value,$opts);
 }
 
 function sfh_key_form($field_def,$form,$value,$opts)
 {
-    $form->hidden($field_def['sql'],$value);
-
+    $htmlname = $field_def['sql'];
+    if(isset($field_def['htmlname']) && $field_def['htmlname'] != '')
+        $htmlname = $field_def['htmlname'];
+    $form->hidden($htmlname,$value);
     if($value != '' && isset($field_def['link']))
     {
         $url = str_replace('<key>',$value,$field_def['link']);
         $linkedvalue = l($value,$url,['class'=>'f_key_linked f_key_link_'.$field_def['sql']]);
         $value = $linkedvalue;
     }
-    $form->text($field_def['sql'],$value,$opts);
+    $form->text($htmlname,$value,$opts);
 }
 
 function sfh_smalltext_form($field_def,$form,$value,$opts)
 {
-    $n = $field_def['sql'];
-    $form->input('text',$n,$value,$opts);
+    $htmlname = $field_def['sql'];
+    if(isset($field_def['htmlname']) && $field_def['htmlname'] != '')
+        $htmlname = $field_def['htmlname'];
+    $form->input('text',$htmlname,$value,$opts);
 }
 
 function sfh_number_form($field_def,$form,$value,$opts)
 {
-    $n = $field_def['sql'];
-    $form->input('number',$n,$value,$opts);
+    $htmlname = $field_def['sql'];
+    if(isset($field_def['htmlname']) && $field_def['htmlname'] != '')
+        $htmlname = $field_def['htmlname'];
+    $form->input('number',$htmlname,$value,$opts);
 }
 
 function sfh_password_form($field_def,$form,$value,$opts)
 {
-    $n = $field_def['sql'];
+    $htmlname = $field_def['sql'];
+    if(isset($field_def['htmlname']) && $field_def['htmlname'] != '')
+        $htmlname = $field_def['htmlname'];
+    //pointless to bring value if converter function is exists thus will reset the value
     if(isset($field_def['converter']) && $field_def['converter'] != '')
         $value = '';
-    $form->input('password',$n,$value,$opts);
+    $form->input('password',$htmlname,$value,$opts);
 }
 
 function sfh_largetext_form($field_def,$form,$value,$opts)
 {
-    $n = $field_def['sql'];
-    $form->textarea($n,$value,
+    $htmlname = $field_def['sql'];
+    if(isset($field_def['htmlname']) && $field_def['htmlname'] != '')
+        $htmlname = $field_def['htmlname'];
+    $form->textarea($htmlname,$value,
                 (isset($field_def['row']) ? $field_def['row'] : 5),
                 (isset($field_def['col']) ? $field_def['col'] : 35),
                 $opts
@@ -1826,47 +1843,59 @@ function sfh_largetext_form($field_def,$form,$value,$opts)
 
 function sfh_select_form($field_def,$form,$value,$opts)
 {
-    $n = $field_def['sql'];
+    $htmlname = $field_def['sql'];
+    if(isset($field_def['htmlname']) && $field_def['htmlname'] != '')
+        $htmlname = $field_def['htmlname'];
     $type = 'select';
     if(isset($field_def['optional']) && $field_def['optional'] == "yes")
         $type = 'optselect';
-    $form->select($type,$n,$value,$field_def['values'],$opts);
+    $form->select($type,$htmlname,$value,$field_def['values'],$opts);
 }
 
 function sfh_select_intrange_form($field_def,$form,$value,$opts)
 {
-    $n = $field_def['sql'];
+    $htmlname = $field_def['sql'];
+    if(isset($field_def['htmlname']) && $field_def['htmlname'] != '')
+        $htmlname = $field_def['htmlname'];
     $values = [];
     for($i = $field_def['start'];$i<=$field_def['end'];++$i)
         $values[$i] = $i;
-    $form->select('select',$n,$value,$values,$opts);
+    $form->select('select',$htmlname,$value,$values,$opts);
 }
 
 function sfh_radio_form($field_def,$form,$value,$opts)
 {
-    $n = $field_def['sql'];
-    $form->select('radio',$n,$value,$field_def['values'],$opts);
+    $htmlname = $field_def['sql'];
+    if(isset($field_def['htmlname']) && $field_def['htmlname'] != '')
+        $htmlname = $field_def['htmlname'];
+    $form->select('radio',$htmlname,$value,$field_def['values'],$opts);
 }
 
 function sfh_check_form($field_def,$form,$value,$opts)
 {
-    $n = $field_def['sql'];
+    $htmlname = $field_def['sql'];
+    if(isset($field_def['htmlname']) && $field_def['htmlname'] != '')
+        $htmlname = $field_def['htmlname'];
     $v = false;
     if($value !== 'off' && ($value || $value == 'on'))
         $v = true;
-    $form->input('checkbox',$n,$v,$opts);
+    $form->input('checkbox',$htmlname,$v,$opts);
 }
 
 function sfh_date_form($field_def,$form,$value,$opts)
 {
-    $n = $field_def['sql'];
-    $form->datefield('date',$n,$value,$opts);
+    $htmlname = $field_def['sql'];
+    if(isset($field_def['htmlname']) && $field_def['htmlname'] != '')
+        $htmlname = $field_def['htmlname'];
+    $form->datefield('date',$htmlname,$value,$opts);
 }
 
 function sfh_dateu_form($field_def,$form,$value,$opts)
 {
-    $n = $field_def['sql'];
-    $form->datefield('dateu',$n,$value,$opts);
+    $htmlname = $field_def['sql'];
+    if(isset($field_def['htmlname']) && $field_def['htmlname'] != '')
+        $htmlname = $field_def['htmlname'];
+    $form->datefield('dateu',$htmlname,$value,$opts);
 }
 
 function sfh_date_lpar($field_def,$tablename)
@@ -1878,17 +1907,21 @@ function sfh_date_lpar($field_def,$tablename)
     $vm = 0;
     $vd = 0;
 
-    par_def($field_def['sql'].'_year' ,$speedform_handlers[$field_def['type']]['par_sec']);
-    par_def($field_def['sql'].'_month',$speedform_handlers[$field_def['type']]['par_sec']);
-    par_def($field_def['sql'].'_day'  ,$speedform_handlers[$field_def['type']]['par_sec']);
+    $htmlname = $field_def['sql'];
+    if(isset($field_def['htmlname']) && $field_def['htmlname'] != '')
+        $htmlname = $field_def['htmlname'];
 
-    if(par_ex($field_def['sql'].'_year') &&
-       par_ex($field_def['sql'].'_month') &&
-       par_ex($field_def['sql'].'_day')  )
+    par_def($htmlname.'_year' ,$speedform_handlers[$field_def['type']]['par_sec']);
+    par_def($htmlname.'_month',$speedform_handlers[$field_def['type']]['par_sec']);
+    par_def($htmlname.'_day'  ,$speedform_handlers[$field_def['type']]['par_sec']);
+
+    if(par_ex($htmlname.'_year') &&
+       par_ex($htmlname.'_month') &&
+       par_ex($htmlname.'_day')  )
     {
-        $vy = par($field_def['sql'].'_year');
-        $vm = par($field_def['sql'].'_month');
-        $vd = par($field_def['sql'].'_day');
+        $vy = par($htmlname.'_year');
+        $vm = par($htmlname.'_month');
+        $vd = par($htmlname.'_day');
         return "$vy-$vm-$vd";
     }
     return NULL;
@@ -1903,21 +1936,25 @@ function sfh_dateu_lpar($field_def,$tablename)
     $vm = 0;
     $vd = 0;
 
-    par_def($field_def['sql'].'_year' ,$speedform_handlers[$field_def['type']]['par_sec']);
-    par_def($field_def['sql'].'_month',$speedform_handlers[$field_def['type']]['par_sec']);
-    par_def($field_def['sql'].'_day'  ,$speedform_handlers[$field_def['type']]['par_sec']);
-    par_def($field_def['sql'].'_set'  ,'bool');
+    $htmlname = $field_def['sql'];
+    if(isset($field_def['htmlname']) && $field_def['htmlname'] != '')
+        $htmlname = $field_def['htmlname'];
 
-    if(par_is($field_def['sql'].'_set','on'))
+    par_def($htmlname.'_year' ,$speedform_handlers[$field_def['type']]['par_sec']);
+    par_def($htmlname.'_month',$speedform_handlers[$field_def['type']]['par_sec']);
+    par_def($htmlname.'_day'  ,$speedform_handlers[$field_def['type']]['par_sec']);
+    par_def($htmlname.'_set'  ,'bool');
+
+    if(par_is($htmlname.'_set','on'))
         return 'u';
 
-    if(par_ex($field_def['sql'].'_year') &&
-       par_ex($field_def['sql'].'_month') &&
-       par_ex($field_def['sql'].'_day')  )
+    if(par_ex($htmlname.'_year') &&
+       par_ex($htmlname.'_month') &&
+       par_ex($htmlname.'_day')  )
     {
-        $vy = par($field_def['sql'].'_year');
-        $vm = par($field_def['sql'].'_month');
-        $vd = par($field_def['sql'].'_day');
+        $vy = par($htmlname.'_year');
+        $vm = par($htmlname.'_month');
+        $vd = par($htmlname.'_day');
         return "$vy-$vm-$vd";
     }
     return NULL;
@@ -1926,12 +1963,16 @@ function sfh_dateu_lpar($field_def,$tablename)
 function sfh_key_loadpar($field_def,$tablename)
 {
     global $speedform_handlers;
-    par_def($field_def['sql'],(isset($field_def['par_sec']) ? $field_def['par_sec'] : $speedform_handlers[$field_def['type']]['par_sec']));
-    if(par_ex($field_def['sql']))
+
+    $htmlname = $field_def['sql'];
+    if(isset($field_def['htmlname']) && $field_def['htmlname'] != '')
+        $htmlname = $field_def['htmlname'];
+    par_def($htmlname,(isset($field_def['par_sec']) ? $field_def['par_sec'] : $speedform_handlers[$field_def['type']]['par_sec']));
+    if(par_ex($htmlname))
     {
-        if(par_is($field_def['sql'],isset($field_def['default']) ? $field_def['default'] : '' ))
+        if(par_is($htmlname,isset($field_def['default']) ? $field_def['default'] : '' ))
             return '';
-        return par($field_def['sql']);
+        return par($htmlname);
     }
 }
 
@@ -1955,13 +1996,18 @@ function sfh_value_timestamp($strip,$field_def,$op,$value)
 
 function sfh_timestamp_form($field_def,$form,$value,$opts)
 {
-    $form->hidden($field_def['sql'],$value);
-    $form->text($field_def['sql'],$value,$opts);
+    $htmlname = $field_def['sql'];
+    if(isset($field_def['htmlname']) && $field_def['htmlname'] != '')
+        $htmlname = $field_def['htmlname'];
+    $form->hidden($htmlname,$value);
+    $form->text($htmlname,$value,$opts);
 }
 
 function sfh_sqlchoose_form($field_def,$form,$value,$opts)
 {
-    $n = $field_def['sql'];
+    $htmlname = $field_def['sql'];
+    if(isset($field_def['htmlname']) && $field_def['htmlname'] != '')
+        $htmlname = $field_def['htmlname'];
 
     $type = 'select';
     if(isset($field_def['optional']) && $field_def['optional'] == "yes")
@@ -1975,7 +2021,7 @@ function sfh_sqlchoose_form($field_def,$form,$value,$opts)
     $ra = sql_exec_fetchAll("SELECT $keyname,$showpart FROM $ctable $where_order_part");
     foreach($ra as $r)
         $values[$r[0]] = $r[1];
-    $form->select($type,$n,$value,$values,$opts);
+    $form->select($type,$htmlname,$value,$values,$opts);
 }
 
 function sfh_number_validator($field_def,$value)
@@ -1989,17 +2035,23 @@ function sfh_number_validator($field_def,$value)
 
 function sfh_file_form($field_def,$form,$value,$opts)
 {
-    $n = $field_def['sql'];
-    $form->upload($n,$value,$opts);
+    $htmlname = $field_def['sql'];
+    if(isset($field_def['htmlname']) && $field_def['htmlname'] != '')
+        $htmlname = $field_def['htmlname'];
+    $form->upload($htmlname,$value,$opts);
 }
 
 function sfh_check_lpar($field_def,$tablename)
 {
     global $speedform_handlers;
-    par_def($field_def['sql'], (isset($field_def['par_sec']) ? $field_def['par_sec'] : $speedform_handlers[$field_def['type']]['par_sec']));
-    if (par_ex($field_def['sql']))
+
+    $htmlname = $field_def['sql'];
+    if(isset($field_def['htmlname']) && $field_def['htmlname'] != '')
+        $htmlname = $field_def['htmlname'];
+    par_def($htmlname,(isset($field_def['par_sec']) ? $field_def['par_sec'] : $speedform_handlers[$field_def['type']]['par_sec']));
+    if(par_ex($htmlname))
     {
-        $v = par($field_def['sql']);
+        $v = par($htmlname);
         if($v === 'off')
             $v = false;
         if($v === 'on')
@@ -2012,28 +2064,32 @@ function sfh_check_lpar($field_def,$tablename)
 function sfh_file_lpar($field_def,$tablename)
 {
     global $speedform_handlers;
-    par_def($field_def['sql'],(isset($field_def['par_sec']) ? $field_def['par_sec'] : $speedform_handlers[$field_def['type']]['par_sec']));
 
-    if($_FILES[$field_def['sql']]['error'] == UPLOAD_ERR_OK)
+    $htmlname = $field_def['sql'];
+    if(isset($field_def['htmlname']) && $field_def['htmlname'] != '')
+        $htmlname = $field_def['htmlname'];
+    par_def($htmlname,(isset($field_def['par_sec']) ? $field_def['par_sec'] : $speedform_handlers[$field_def['type']]['par_sec']));
+
+    if($_FILES[$htmlname]['error'] == UPLOAD_ERR_OK)
     {
         if(isset($field_def['filetypes']))
         {
             $req_filetypes = explode(';', $field_def['filetypes']);
-            if(!in_array($_FILES[$field_def['sql']]['type'], $req_filetypes))
+            if(!in_array($_FILES[$htmlname]['type'], $req_filetypes))
             {
                 load_loc('error',
                     t('The uploaded file type is "_upltype_" not in "_reqtype_". Please upload the allowed kind of file',
-                        ['_upltype_' => $_FILES[$field_def['sql']]['type'],
+                        ['_upltype_' => $_FILES[$htmlname]['type'],
                             '_reqtype_' => $field_def['filetypes']]),
                     t('Form validation error'));
             }
         }
 
-        if(in_array($_FILES[$field_def['sql']]['type'],
+        if(in_array($_FILES[$htmlname]['type'],
             ['image/jpeg', 'image/png', 'image/tiff', 'image/gif']
         ))
         {
-            $check = getimagesize($_FILES[$field_def['sql']]["tmp_name"]);
+            $check = getimagesize($_FILES[$htmlname]["tmp_name"]);
             if($check === false)
                 load_loc('error', t('The uploaded file type is not image file. Please upload image file'),
                     t('Form validation error'));
@@ -2042,7 +2098,7 @@ function sfh_file_lpar($field_def,$tablename)
         return 'deferred_new_ufi';
     }
 
-    if(par_is($field_def['sql'].'_delete','delete'))
+    if(par_is($htmlname.'_delete','delete'))
         return '';
     return NULL; //Will not set, the previous will left in table
 }
@@ -2051,20 +2107,23 @@ function sfh_file_lpar_deferred($field_def,$tablename)
 {
     global $speedform_handlers;
 
-    if($_FILES[$field_def['sql']]['error'] == UPLOAD_ERR_OK)
+    $htmlname = $field_def['sql'];
+    if(isset($field_def['htmlname']) && $field_def['htmlname'] != '')
+        $htmlname = $field_def['htmlname'];
+    if($_FILES[$htmlname]['error'] == UPLOAD_ERR_OK)
     {
         //File type validations done in sfh_file_lpar()
 
         $f = new File(isset($field_def['container']) ? $field_def['container'] : 'public');
-        $f->addFromTemp($_FILES[$field_def['sql']]['name'],
-            $_FILES[$field_def['sql']]["tmp_name"],
-            (isset($field_def['subdir']) ? $field_def['subdir'] : ''),
-            ['sql' => $field_def['sql'], 'table' => $tablename]
+        $f->addFromTemp($_FILES[$htmlname]['name'],
+                        $_FILES[$htmlname]["tmp_name"],
+                        (isset($field_def['subdir']) ? $field_def['subdir'] : ''),
+                        ['sql' => $field_def['sql'], 'htmlname' => $htmlname, 'table' => $tablename]
         );
         return $f->ufi;
     }
 
-    if(par_is($field_def['sql'].'_delete','delete'))
+    if(par_is($htmlname.'_delete','delete'))
         return '';
     return NULL; //Will not set, the previous will left in table
 }
@@ -2262,9 +2321,13 @@ class SpeedForm
         {
             if($f['type'] == 'submit')
             {
-                par_def($f['sql'],'text5');
+                $htmlname = $f['sql'];
+                if(isset($f['htmlname']) && $f['htmlname'] != '')
+                    $htmlname = $f['htmlname'];
+
+                par_def($htmlname,'text5');
                 if( ($action == 'submit' || !isset($f['in_mode']) || $action == $f['in_mode']) &&
-                    par_is($f['sql'],$f['default'])
+                    par_is($htmlname,$f['default'])
                   )
                     return true;
             }
@@ -2278,8 +2341,12 @@ class SpeedForm
         {
             if($f['type'] == 'submit' && $f['sql'] == $sql)
             {
-                par_def($f['sql'],'text5');
-                if(par_is($f['sql'],$f['default']))
+                $htmlname = $f['sql'];
+                if(isset($f['htmlname']) && $f['htmlname'] != '')
+                    $htmlname = $f['htmlname'];
+
+                par_def($htmlname,'text5');
+                if(par_is($htmlname,$f['default']))
                     return true;
             }
         }
@@ -2295,9 +2362,13 @@ class SpeedForm
             $fnc = $speedform_handlers[$f['type']]['sqlname'];
             $sqlname = call_user_func($fnc,$f,'UPDATE');
 
+            $htmlname = $f['sql'];
+            if(isset($f['htmlname']) && $f['htmlname'] != '')
+                $htmlname = $f['htmlname'];
+
             if($f['type'] == 'file')
             {
-                par_def($f['sql'].'_delete','text1ns');
+                par_def($htmlname.'_delete','text1ns');
             }
 
             if($sqlname != '')
@@ -2316,17 +2387,17 @@ class SpeedForm
                     $skip = false;
                     if(isset($f['optional']) && $f['optional'] == "yes")
                     {
-                        par_def($f['sql'] . '_sts', 'text1ns');
-                        if(par_is($f['sql'] . '_sts', 'null'))
+                        par_def($htmlname . '_sts', 'text1ns');
+                        if(par_is($htmlname . '_sts', 'null'))
                         {
                             $skip = true;
                             $this->values[$f['sql']] = '';
                         }
                     }
-                    par_def($f['sql'], (isset($f['par_sec']) ? $f['par_sec'] : $speedform_handlers[$f['type']]['par_sec']));
-                    if (par_ex($f['sql']) && !$skip)
+                    par_def($htmlname, (isset($f['par_sec']) ? $f['par_sec'] : $speedform_handlers[$f['type']]['par_sec']));
+                    if (par_ex($htmlname) && !$skip)
                     {
-                        $v = par($f['sql']);
+                        $v = par($htmlname);
                         if(isset($f['converter']) && $f['converter'] != '')
                             $v = call_user_func($f['converter'],$v);
                         $this->values[$f['sql']] = $v;
@@ -2358,6 +2429,10 @@ class SpeedForm
             $fnc = $speedform_handlers[$f['type']]['sqlname'];
             $sqlname = call_user_func($fnc,$f,'UPDATE');
 
+            $htmlname = $f['sql'];
+            if(isset($f['htmlname']) && $f['htmlname'] != '')
+                $htmlname = $f['htmlname'];
+
             if($sqlname != '')
             {
                 $lp = NULL;
@@ -2376,7 +2451,7 @@ class SpeedForm
             //In the special case the field is file
             if($f['type'] == 'file')
             {
-                if(par_is($f['sql'].'_delete','delete'))
+                if(par_is($htmlname.'_delete','delete'))
                     array_push($files_marked_to_delete,$f['sql']);
             }
         }
@@ -2961,8 +3036,16 @@ class Table_SpeedFormFormFormmater extends HtmlFormFormatter
     {
         foreach($this->def['fields'] as $f)
         {
-            if($f['sql'] == $name || (isset($f['table']) && $name == $f['table'].'.'.$f['sql']))
-                return $f;
+            if(isset($f['htmlname']) && $f['htmlname'] != '')
+            {
+                if($f['htmlname'] == $name || (isset($f['table']) && $name == $f['table'] . '.' . $f['htmlname']))
+                    return $f;
+            }
+            else
+            {
+                if($f['sql'] == $name || (isset($f['table']) && $name == $f['table'] . '.' . $f['sql']))
+                    return $f;
+            }
         }
         return array();
     }
@@ -3082,8 +3165,16 @@ class Div_SpeedFormFormFormmater extends HtmlFormFormatter
     {
         foreach($this->def['fields'] as $f)
         {
-            if($f['sql'] == $name || (isset($f['table']) && $name == $f['table'].'.'.$f['sql']))
-                return $f;
+            if(isset($f['htmlname']) && $f['htmlname'] != '')
+            {
+                if($f['htmlname'] == $name || (isset($f['table']) && $name == $f['table'] . '.' . $f['htmlname']))
+                    return $f;
+            }
+            else
+            {
+                if($f['sql'] == $name || (isset($f['table']) && $name == $f['table'] . '.' . $f['sql']))
+                    return $f;
+            }
         }
         return array();
     }
