@@ -17,10 +17,10 @@ $site_config->enable_speeformbuilder = true;
 
 global $db;
 
-$db->servertype = "none";
+$db->servertype = "none"; // "mysql" , "pgsql"
 $db->host = "127.0.0.1";
-$db->name = "web";
-$db->user = "root";
-$db->password = "root";
+$db->name = "web_database";
+$db->user = "db_user";
+$db->password = "password_of_db_user";
 $db->schema_editor_password = ""; //empty means disabled!
 $db->schema_editor_allowed_for_admin = true;
