@@ -1154,18 +1154,18 @@ class HtmlForm
             {
                 if($dta['type'] == 'dateu')
                     $unknown = true;
-                $parts[1] = 1969;
+                $parts[1] = 1899;
                 $parts[2] = 0;
                 $parts[3] = 0;
             }
             $t = '<select name="'.$dta['name'].'_year" id="'.$custom_id.'_sel_y">';
-            for($i=1970;$i<2100;++$i)
+            for($i=1900;$i<2050;++$i)
             {
                 $s = $parts[1] == $i ? ' selected' : '';
-                $t .= "<option value=\"$i\"$s>".($i==1969 ? ' ' : $i )."</option>";
+                $t .= "<option value=\"$i\"$s>".($i==1899 ? ' ' : $i )."</option>";
             }
-            $s = $parts[1] == 1969 ? ' selected' : '';
-            $t .= "<option value=\"1969\"$s> </option>";
+            $s = $parts[1] == 1899 ? ' selected' : '';
+            $t .= "<option value=\"1899\"$s> </option>";
             $t .= '</select>';
             $t .= '<select name="'.$dta['name'].'_month" id="'.$custom_id.'_sel_m">';
             for($i=1;$i<13;++$i)
@@ -1271,7 +1271,7 @@ class HtmlForm
             {
                 if($dta['type'] == 'dateu')
                     $unknown = true;
-                $parts[1] = 1969;
+                $parts[1] = 1899;
                 $parts[2] = 0;
                 $parts[3] = 0;
             }
@@ -1903,7 +1903,7 @@ function sfh_date_lpar($field_def,$tablename)
     global $speedform_handlers;
 
     $v = '';
-    $vy = 1969;
+    $vy = 1899;
     $vm = 0;
     $vd = 0;
 
@@ -1932,7 +1932,7 @@ function sfh_dateu_lpar($field_def,$tablename)
     global $speedform_handlers;
 
     $v = '';
-    $vy = 1969;
+    $vy = 1899;
     $vm = 0;
     $vd = 0;
 

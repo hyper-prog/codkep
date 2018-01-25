@@ -150,7 +150,7 @@ function forms_set_reset_unknown_date($idstr)
         document.getElementById($idstr+'_sel_y').disabled = true;
         document.getElementById($idstr+'_sel_m').disabled = true;
         document.getElementById($idstr+'_sel_d').disabled = true;
-        document.getElementById($idstr+'_sel_y').value = 1969;
+        document.getElementById($idstr+'_sel_y').value = 1899;
         document.getElementById($idstr+'_sel_m').value = 0;
         document.getElementById($idstr+'_sel_d').value = 0;
         return;
@@ -164,7 +164,7 @@ function forms_set_reset_unknown_date($idstr)
     {
         var today = new Date();
         if(forms_save_array[$idstr+'_sel_y'] == undefined ||
-           forms_save_array[$idstr+'_sel_y'] == 1969)
+           forms_save_array[$idstr+'_sel_y'] == 1899)
             forms_save_array[$idstr+'_sel_y'] = today.getFullYear();
         if(forms_save_array[$idstr+'_sel_m'] == undefined ||
            forms_save_array[$idstr+'_sel_m'] == 0)
