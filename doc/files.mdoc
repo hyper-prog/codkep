@@ -379,7 +379,7 @@ The following [hooks|url:doc/codkep/hooks] can be implement to interact with fil
 
 | Hook                                 | Description |
 | ---                                  | ---         |
-| HOOK_file_access($file,$op,$account) | Controls the access to a secured file. Read the [file access section|url:#fileaccess] for details. |
+| HOOK_file_access($file,$op,$account) | Controls the access to a secured file. Read the [file access section|url:#fileaccess] for details. <br/> The value of ***$op*** can be ***view,create,delete*** |
 | HOOK_file_denied($f,$user)           | Runs before the user will redirect to access denied page. Possible to change the standard "not found" message. |
 | HOOK_file_uploaded($obj)             | Runs when a file is uploaded, stored in sql. You can see an example [here|url:#fhooktrick]. |
 | HOOK_upload_filename_alter($obj)     | Runs when a file is uploaded and the local fs name is determined.  You can see an example [here|url:#fhooktrick]. |

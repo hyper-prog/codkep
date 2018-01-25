@@ -633,7 +633,7 @@ function sys_node_view_uni($node)
     {
         if(!$user->auth && $site_config->node_unauth_triggers_login)
             require_auth();
-        run_hook("node_not_permitted_action",$node,'view',$user);
+        run_hook("node_operation_not_permitted",$node,$op,$user);
         load_loc('error',t('You don\'t have the required permission to access this node'),t('Permission denied'));
         return 'Permission denied';
     }
@@ -667,7 +667,7 @@ function sys_node_edit_uni($node)
     {
         if(!$user->auth && $site_config->node_unauth_triggers_login)
             require_auth();
-        run_hook("node_not_permitted_action",$node,$action_to_check,$user);
+        run_hook("node_operation_not_permitted",$node,$op,$user);
         load_loc('error', t('You don\'t have the required permission to access this node'), t('Permission denied'));
         return 'Permission denied';
     }
@@ -715,7 +715,7 @@ function sys_node_delete_uni($node)
     {
         if(!$user->auth && $site_config->node_unauth_triggers_login)
             require_auth();
-        run_hook("node_not_permitted_action",$node,$action_to_check,$user);
+        run_hook("node_operation_not_permitted",$node,$op,$user);
         load_loc('error', t('You don\'t have the required permission to delete this node'), t('Permission denied'));
         return 'Permission denied';
     }
@@ -751,7 +751,7 @@ function sys_node_create_callback()
     {
         if(!$user->auth && $site_config->node_unauth_triggers_login)
             require_auth();
-        run_hook("node_not_permitted_action",$node,'create',$user);
+        run_hook("node_operation_not_permitted",$node,$op,$user);
         load_loc('error',t('You don\'t have the required permission to create this node'),t('Permission denied'));
         return 'Permission denied';
     }

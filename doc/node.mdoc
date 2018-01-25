@@ -139,9 +139,11 @@ See [custom node object chapter|url:#customnodeobject]:
 - @@@m_before_form($op)@@@
  - Called immediately before node's from generated.
  - The returned text will be prepend to the node view/create/edit/delete form.
+ - The value of ***$op*** can be ***view,add,edit,delete***
 - @@@m_after_form($op)@@@
  - Called immediately after node's from generated.
  - The returned text will be append to the node view/create/edit/delete form.
+ - The value of ***$op*** can be ***view,add,edit,delete***
 - @@@m_form_code_generation($form,$ro)@@@
  - Generates the html codes from the (previously generated) ***$form*** object
  \ with the appropriate ***$ro*** (readonly) mode.
@@ -776,12 +778,10 @@ The following [hooks|url:doc/codkep/hooks] can be implement to interact with nod
 | HOOK_load_nodedefclass($obj)         | Invoked before the Node module loads a node-type class from the specified file. |
 | HOOK_nodetype_alter_NODETYPE($obj)   | You can change the definition of the specified node type by this hook. |
 | HOOK_node_loaded($pass,$nid,$type,$join_id) | Runs immediately after a node is loaded |
-| HOOK_node_form_before($node,$op)     | This hook can put some content before the node add/edit/view/delete forms ($op: view,edit,add,delete) |
-| HOOK_node_form_after($node,$op)      | This hook can put some content after the node add/edit/view/delete forms |
-| HOOK_node_access($node,$op,$account) | This hook controls the access to a node |
-| HOOK_node_access_NODETYPE($node,$op,$account) | This hook controls the access to a node which type is NODETYPE |
-
-| HOOK_node_not_permitted_action($node,$op,$account) | This hook run when the operation is blocked. It useful to do redirection to your custom error handling page. It is called immediately before the CodKep goes to it's own error page. |
+| HOOK_node_form_before($node,$op)     | This hook can put some content before the node add/edit/view/delete forms <br/> The value of ***$op*** can be ***view,add,edit,delete*** |
+| HOOK_node_form_after($node,$op)      | This hook can put some content after the node add/edit/view/delete forms <br/> The value of ***$op*** can be ***view,add,edit,delete***|
+| HOOK_node_access($node,$op,$account) | This hook controls the access to a node <br/> The value of ***$op*** can be ***view,create,update,delete*** |
+| HOOK_node_access_NODETYPE($node,$op,$account) | This hook controls the access to a node which type is NODETYPE <br/> The value of ***$op*** can be ***view,create,update,delete*** |
 
 | HOOK_node_will_update($node)         | This hook runs immediately before a node is updated. If you do redirect in this hook, the operation will be cancelled. |
 | HOOK_node_before_save($obj)          | Runs before the node is saved |
@@ -794,4 +794,5 @@ The following [hooks|url:doc/codkep/hooks] can be implement to interact with nod
 | HOOK_node_inserted($obj)             | Runs immediately after a node is inserted |
 
 | HOOK_node_before_action($node,$op,$user) | Runs on node view/add/edit/delete before the form is generated. |
-| HOOK_node_operation_done($type,$op,$nid) | This hook runs after an operation is done on some node. This hook is useful to do some redirection. |
+| HOOK_node_operation_done($type,$op,$nid) | This hook runs after an operation is done on some node. This hook is useful to do some redirection. <br/> The value of ***$op*** can be ***view,add,edit,delete*** |
+| HOOK_node_operation_not_permitted($node,$op,$account) | This hook run when the operation is not permitted/blocked. It useful to do redirection to your custom error handling page. It is called immediately before the CodKep goes to it's own error page. <br/> The value of ***$op*** can be ***view,add,edit,delete*** |
