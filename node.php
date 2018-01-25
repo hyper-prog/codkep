@@ -662,7 +662,12 @@ function sys_node_edit_uni($node)
     }
     $action_to_check = 'view';
     if($node->get_speedform_object()->in_action('update') || $site_config->node_access_early_block_actions)
+    {
+        if($node->get_speedform_object()->in_action('update'))
+            $node->get_speedform_object()->load_parameters();
+
         $action_to_check = 'update';
+    }
     if(NODE_ACCESS_ALLOW != node_access($node, $action_to_check, $user))
     {
         if(!$user->auth && $site_config->node_unauth_triggers_login)
@@ -674,7 +679,6 @@ function sys_node_edit_uni($node)
 
     if($node->get_speedform_object()->in_action('update'))
     {
-        $node->get_speedform_object()->load_parameters();
         run_hook("node_will_update",$node);
         $node->save();
         run_hook("node_operation_done",$node->node_type,$op,$node->node_nid);
@@ -750,7 +754,12 @@ function sys_node_create_callback()
 
     $action_to_check = 'precreate';
     if($node->get_speedform_object()->in_action('insert') || $site_config->node_access_early_block_actions)
+    {
+        if($node->get_speedform_object()->in_action('insert'))
+            $node->get_speedform_object()->load_parameters();
+
         $action_to_check = 'create';
+    }
     if(NODE_ACCESS_ALLOW != node_access($node,$action_to_check,$user))
     {
         if(!$user->auth && $site_config->node_unauth_triggers_login)
@@ -761,7 +770,7 @@ function sys_node_create_callback()
     }
     if($node->get_speedform_object()->in_action('insert'))
     {
-        $node->get_speedform_object()->load_parameters();
+        run_hook("node_will_create",$node);
         $nid = $node->insert();
         run_hook("node_operation_done",$node->node_type,$op,$node->node_nid);
         goto_loc("node/$nid");
@@ -939,6 +948,12 @@ function _HOOK_node_before_action() {}
 function _HOOK_node_operation_done() {}
 
 /**
+ * This hook runs if the operation is not permitted.
+ * This hook is useful to do some redirections to custom error pages
+ * @package node */
+function _HOOK_node_operation_not_permitted() {}
+
+/**
  * This hook runs immediately before a node is updated.
  * If you do redirect in this hook, the operation will be cancelled.
  * @package node */
@@ -949,5 +964,11 @@ function _HOOK_node_will_update() {}
  * If you do redirect in this hook, the operation will be cancelled.
  * @package node */
 function _HOOK_node_will_delete() {}
+
+/**
+ * This hook runs immediately before a node is created.
+ * If you do redirect in this hook, the operation will be cancelled.
+ * @package node */
+function _HOOK_node_will_create() {}
 
 // end.

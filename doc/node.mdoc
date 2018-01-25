@@ -797,6 +797,7 @@ The following [hooks|url:doc/codkep/hooks] can be implement to interact with nod
 | HOOK_node_will_delete($node)         | This hook runs immediately before a node is deleted. If you do redirect in this hook, the operation will be cancelled. |
 | HOOK_node_deleted($nid,$type,$join_id) | Runs immediately after a node is deleted |
 
+| HOOK_node_will_create($obj)          | This hook runs immediately before a node is created. If you do redirect in this hook, the operation will be cancelled. |
 | HOOK_node_before_insert($obj)        | Runs before the node is inserted |
 | HOOK_node_inserted($obj)             | Runs immediately after a node is inserted |
 
