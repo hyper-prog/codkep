@@ -136,7 +136,7 @@ function hook_node_defineroute()
 
 function node_access($node,$op,$account)
 {
-    if(!in_array($op,['create','delete','update','view']))
+    if(!in_array($op,['create','precreate','delete','update','view']))
         return NODE_ACCESS_DENY;
     $na = run_hook('node_access',$node,$op,$account);
     $ns = run_hook('node_access_'.$node->node_type,$node,$op,$account);
@@ -150,8 +150,8 @@ function node_access($node,$op,$account)
     // Allows everything for admins
     if($account->role == ROLE_ADMIN)
         return NODE_ACCESS_ALLOW;
-    // Allows view for everyone. (You can disable by send DENY from a hook.)
-    if($op == 'view')
+    // Allows view and precreate for everyone. (You can disable by send DENY from a hook.)
+    if($op == 'view' || $op == 'precreate')
         return NODE_ACCESS_ALLOW;
     return NODE_ACCESS_DENY;
 }
@@ -747,7 +747,11 @@ function sys_node_create_callback()
     $op = 'add';
     $type = par('nodetype');
     $node = Node::getNodeInstanceByType($type);
-    if(NODE_ACCESS_ALLOW != node_access($node,'create',$user))
+
+    $action_to_check = 'precreate';
+    if($node->get_speedform_object()->in_action('insert') || $site_config->node_access_early_block_actions)
+        $action_to_check = 'create';
+    if(NODE_ACCESS_ALLOW != node_access($node,$action_to_check,$user))
     {
         if(!$user->auth && $site_config->node_unauth_triggers_login)
             require_auth();

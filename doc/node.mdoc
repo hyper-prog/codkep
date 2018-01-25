@@ -388,6 +388,7 @@ Both hook receives same three parameters:
  # ***$node*** The examined node object. The system queries the permissions for this node.
  # ***$op*** The system queries the permission for this operation. Possible values are:
   - ***"create"***
+  - ***"precreate"*** (On loading the empty form to get the user input before create)
   - ***"delete"***
   - ***"update"***
   - ***"view"***
@@ -401,13 +402,18 @@ Both hook receives same three parameters:
 In case **there is no any permission set hook** in the system or received only the NODE_ACCESS_IGNORE value
 the system will deny every request except the following **default allow**ed:
 # Allows everything for admin users.
-# Allows to view for everyone. (It can disabled anytime by sending NODE_ACCESS_DENY from a node_access hook.)
+# Allows to view and precreate for everyone. (It can disabled anytime by sending NODE_ACCESS_DENY from a node_access hook.)
 .
 *Note1: The NODE_ACCESS_DENY is always stronger than NODE_ACCESS_ALLOW,*
 *if both received the result will NODE_ACCESS_DENY*
 .
-*Node2: The node permissions are only checked when the users access nodes by the Node module's UI.*
+*Note2: The node permissions are only checked when the users access nodes by the Node module's UI.*
 *There is no permission check if a node accessed from program code!*
+.
+*Note3: The precreate ***$op*** is used when the system show an empty form to the user to fill before create a node.*
+*In case you allow precreate and deny create the user can fill an empty form but cannot insert it when submitted.*
+*The other case you deny precreate the user neither can load the empty form.*
+
 .
 Samples:
 ~~~code
@@ -440,6 +446,7 @@ Calculate the permission of the operation on the node of the parameter passed ac
  - ***$node*** Determine the permission on this node
  - ***$op*** Determine the permission for this operation. Possible values are:
   - ***"create"***
+  - ***"precreate"***
   - ***"delete"***
   - ***"update"***
   - ***"view"***
@@ -780,8 +787,8 @@ The following [hooks|url:doc/codkep/hooks] can be implement to interact with nod
 | HOOK_node_loaded($pass,$nid,$type,$join_id) | Runs immediately after a node is loaded |
 | HOOK_node_form_before($node,$op)     | This hook can put some content before the node add/edit/view/delete forms <br/> The value of ***$op*** can be ***view,add,edit,delete*** |
 | HOOK_node_form_after($node,$op)      | This hook can put some content after the node add/edit/view/delete forms <br/> The value of ***$op*** can be ***view,add,edit,delete***|
-| HOOK_node_access($node,$op,$account) | This hook controls the access to a node <br/> The value of ***$op*** can be ***view,create,update,delete*** |
-| HOOK_node_access_NODETYPE($node,$op,$account) | This hook controls the access to a node which type is NODETYPE <br/> The value of ***$op*** can be ***view,create,update,delete*** |
+| HOOK_node_access($node,$op,$account) | This hook controls the access to a node <br/> The value of ***$op*** can be ***view,create,precreate,update,delete*** |
+| HOOK_node_access_NODETYPE($node,$op,$account) | This hook controls the access to a node which type is NODETYPE <br/> The value of ***$op*** can be ***view,create,precreate,update,delete*** |
 
 | HOOK_node_will_update($node)         | This hook runs immediately before a node is updated. If you do redirect in this hook, the operation will be cancelled. |
 | HOOK_node_before_save($obj)          | Runs before the node is saved |
