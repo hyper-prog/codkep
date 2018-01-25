@@ -757,9 +757,8 @@ The node settings which can set [in site settings|url:doc/codkep/modules#site_se
 
 | name                                                     | default                             | description |
 |---                                                       |--                                   | ---                              |---          |
-|<small> ***$site_config->node_unauth_triggers_login*** </small> |<small> false  </small> | In case of this option is ***true*** and an unauthenticated user try to access a node which needs authenticated user to access the CodKep automatically redirects to the login page. |
-
-
+|<small> ***$site_config->node_unauth_triggers_login*** </small>      |<small> false  </small>   | In case of this option is ***true*** and an unauthenticated user try to access a node which needs authenticated user to access the CodKep automatically redirects to the login page. |
+|<small> ***$site_config->node_access_early_block_actions*** </small> |<small> false  </small>   | If this value is true the system will block the first (loading) view of a node before the a not permitted update/insert/delete request. Otherwise only the not permitted action is blocked. |
 
 
 #nodehooks#
@@ -781,6 +780,8 @@ The following [hooks|url:doc/codkep/hooks] can be implement to interact with nod
 | HOOK_node_form_after($node,$op)      | This hook can put some content after the node add/edit/view/delete forms |
 | HOOK_node_access($node,$op,$account) | This hook controls the access to a node |
 | HOOK_node_access_NODETYPE($node,$op,$account) | This hook controls the access to a node which type is NODETYPE |
+
+| HOOK_node_not_permitted_action($node,$op,$account) | This hook run when the operation is blocked. It useful to do redirection to your custom error handling page. It is called immediately before the CodKep goes to it's own error page. |
 
 | HOOK_node_will_update($node)         | This hook runs immediately before a node is updated. If you do redirect in this hook, the operation will be cancelled. |
 | HOOK_node_before_save($obj)          | Runs before the node is saved |

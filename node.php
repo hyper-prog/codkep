@@ -20,6 +20,7 @@ function hook_node_boot()
 {
     global $site_config;
     $site_config->node_unauth_triggers_login = false;
+    $site_config->node_access_early_block_actions = false;
 
     global $sys_data;
     $sys_data->node_types = array();
@@ -632,6 +633,7 @@ function sys_node_view_uni($node)
     {
         if(!$user->auth && $site_config->node_unauth_triggers_login)
             require_auth();
+        run_hook("node_not_permitted_action",$node,'view',$user);
         load_loc('error',t('You don\'t have the required permission to access this node'),t('Permission denied'));
         return 'Permission denied';
     }
@@ -658,13 +660,18 @@ function sys_node_edit_uni($node)
         load_loc('error',t('The requested node is not found'),t('Not found'));
         return 'Not found';
     }
-    if(NODE_ACCESS_ALLOW != node_access($node,'update',$user))
+    $action_to_check = 'view';
+    if($node->get_speedform_object()->in_action('update') || $site_config->node_access_early_block_actions)
+        $action_to_check = 'update';
+    if(NODE_ACCESS_ALLOW != node_access($node, $action_to_check, $user))
     {
         if(!$user->auth && $site_config->node_unauth_triggers_login)
             require_auth();
-        load_loc('error',t('You don\'t have the required permission to access this node'),t('Permission denied'));
+        run_hook("node_not_permitted_action",$node,$action_to_check,$user);
+        load_loc('error', t('You don\'t have the required permission to access this node'), t('Permission denied'));
         return 'Permission denied';
     }
+
     if($node->get_speedform_object()->in_action('update'))
     {
         $node->get_speedform_object()->load_parameters();
@@ -700,13 +707,19 @@ function sys_node_delete_uni($node)
         load_loc('error',t('The requested node is not found'),t('Not found'));
         return 'Not found';
     }
-    if(NODE_ACCESS_ALLOW != node_access($node,'delete',$user))
+
+    $action_to_check = 'view';
+    if($node->get_speedform_object()->in_action('delete') || $site_config->node_access_early_block_actions)
+        $action_to_check = 'delete';
+    if(NODE_ACCESS_ALLOW != node_access($node, $action_to_check, $user))
     {
         if(!$user->auth && $site_config->node_unauth_triggers_login)
             require_auth();
-        load_loc('error',t('You don\'t have the required permission to delete this node'),t('Permission denied'));
+        run_hook("node_not_permitted_action",$node,$action_to_check,$user);
+        load_loc('error', t('You don\'t have the required permission to delete this node'), t('Permission denied'));
         return 'Permission denied';
     }
+
     if($node->get_speedform_object()->in_action('delete'))
     {
         run_hook("node_will_delete",$node);
@@ -738,6 +751,7 @@ function sys_node_create_callback()
     {
         if(!$user->auth && $site_config->node_unauth_triggers_login)
             require_auth();
+        run_hook("node_not_permitted_action",$node,'create',$user);
         load_loc('error',t('You don\'t have the required permission to create this node'),t('Permission denied'));
         return 'Permission denied';
     }
