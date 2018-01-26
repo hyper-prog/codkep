@@ -195,6 +195,9 @@ function pc_speedform_builder()
     p_gral_item(0,'show'         ,BTYPE_SEL  ,BSEC_FUNC,['required'=>true,'values' => ['table','div']],'The formatter mode of the form. Html table or divs');
     p_gral_item(0,'fields'       ,BTYPE_OPEN ,BSEC_FUNC,[],'Add fields to the form object');
     p_gral_item(0,'classname'    ,BTYPE_TEXT ,BSEC_FUNC,[],'If you specify node type you can tell a classname, which a subclass of Node. The node instances created with this type.');
+    p_gral_item(0,'access_earlyblock'    ,BTYPE_SELB ,BSEC_FUNC,['values' => ['true','false']],'If this value is true the system will block the first phase (loading to view) of a node before the a not permitted update/insert/delete request.');
+    p_gral_item(0,'access_loadp_before_create_perm',BTYPE_SELB ,BSEC_FUNC,['values' => ['true','false']],'If this value is true the node create page will load the html parameters before the node_access check is executed.');
+    p_gral_item(0,'access_loadp_before_update_perm',BTYPE_SELB ,BSEC_FUNC,['values' => ['true','false']],'If this value is true the node edit page will load the html parameters before the node_access check is executed.');
     p_gral_item(0,'view_callback',BTYPE_TEXT ,BSEC_FUNC,[],'If you specify node type you can tell a php fuction name here to view the node');
     p_gral_item(0,'view_phpfile' ,BTYPE_TEXT ,BSEC_FUNC,[],'If you specify node type you can tell a php file name here to view the node');
 

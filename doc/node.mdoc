@@ -759,16 +759,15 @@ data table manipulations. (See the original codes of this methods to understand 
 #nodesettings#
 == Settings of the nodes ==
 
-
-
 The node settings which can set [in site settings|url:doc/codkep/modules#site_settings].
 .
 
 | name                                                     | default                             | description |
 |---                                                       |--                                   | ---                              |---          |
 |<small> ***$site_config->node_unauth_triggers_login*** </small>      |<small> false  </small>   | In case of this option is ***true*** and an unauthenticated user try to access a node which needs authenticated user to access the CodKep automatically redirects to the login page. |
-|<small> ***$site_config->node_access_early_block_actions*** </small> |<small> false  </small>   | If this value is true the system will block the first (loading) view of a node before the a not permitted update/insert/delete request. Otherwise only the not permitted action is blocked. |
 
+**Many node settings can change in node definition structure to make possible to set different features for each node type.**
+**You can view this settings in forms module documentation [here|url:doc/codkep/forms#ddeftoplevel].** (Purple block)
 
 #nodehooks#
 == Hooks ==

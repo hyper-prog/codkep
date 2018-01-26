@@ -20,7 +20,6 @@ function hook_node_boot()
 {
     global $site_config;
     $site_config->node_unauth_triggers_login = false;
-    $site_config->node_access_early_block_actions = false;
 
     global $sys_data;
     $sys_data->node_types = array();
@@ -557,6 +556,31 @@ class Node
         }
     }
 
+    public function get_access_property($prop)
+    {
+        if($prop == "earlyblock")
+        {
+            if(isset($this->dataspeedform->def['access_earlyblock']) &&
+               $this->dataspeedform->def['access_earlyblock'] )
+                return true;
+            return false;
+        }
+        if($prop == "lparbeforecreate")
+        {
+            if(isset($this->dataspeedform->def['access_loadp_before_create_perm'] ) &&
+               $this->dataspeedform->def['access_loadp_before_create_perm'] )
+                return true;
+            return false;
+        }
+        if($prop == "lparbeforupdate")
+        {
+            if(isset($this->dataspeedform->def['access_loadp_before_update_perm']) &&
+                $this->dataspeedform->def['access_loadp_before_update_perm'] )
+                return true;
+            return false;
+        }
+    }
+
     public function get_display_value($fieldname)
     {
         return $this->dataspeedform->get_display_value($fieldname);
@@ -661,9 +685,9 @@ function sys_node_edit_uni($node)
         return 'Not found';
     }
     $action_to_check = 'view';
-    if($node->get_speedform_object()->in_action('update') || $site_config->node_access_early_block_actions)
+    if($node->get_speedform_object()->in_action('update') || $node->get_access_property("earlyblock"))
     {
-        if($node->get_speedform_object()->in_action('update'))
+        if($node->get_speedform_object()->in_action('update') && $node->get_access_property("lparbeforupdate"))
             $node->get_speedform_object()->load_parameters();
 
         $action_to_check = 'update';
@@ -679,6 +703,8 @@ function sys_node_edit_uni($node)
 
     if($node->get_speedform_object()->in_action('update'))
     {
+        if(!$node->get_access_property("lparbeforupdate"))
+            $node->get_speedform_object()->load_parameters();
         run_hook("node_will_update",$node);
         $node->save();
         run_hook("node_operation_done",$node->node_type,$op,$node->node_nid);
@@ -713,7 +739,7 @@ function sys_node_delete_uni($node)
     }
 
     $action_to_check = 'view';
-    if($node->get_speedform_object()->in_action('delete') || $site_config->node_access_early_block_actions)
+    if($node->get_speedform_object()->in_action('delete') || $node->get_access_property("earlyblock"))
         $action_to_check = 'delete';
     if(NODE_ACCESS_ALLOW != node_access($node, $action_to_check, $user))
     {
@@ -753,9 +779,9 @@ function sys_node_create_callback()
     $node = Node::getNodeInstanceByType($type);
 
     $action_to_check = 'precreate';
-    if($node->get_speedform_object()->in_action('insert') || $site_config->node_access_early_block_actions)
+    if($node->get_speedform_object()->in_action('insert') || $node->get_access_property("earlyblock"))
     {
-        if($node->get_speedform_object()->in_action('insert'))
+        if($node->get_speedform_object()->in_action('insert') && $node->get_access_property("lparbeforecreate"))
             $node->get_speedform_object()->load_parameters();
 
         $action_to_check = 'create';
@@ -770,6 +796,8 @@ function sys_node_create_callback()
     }
     if($node->get_speedform_object()->in_action('insert'))
     {
+        if(!$node->get_access_property("lparbeforecreate"))
+            $node->get_speedform_object()->load_parameters();
         run_hook("node_will_create",$node);
         $nid = $node->insert();
         run_hook("node_operation_done",$node->node_type,$op,$node->node_nid);
