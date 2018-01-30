@@ -489,7 +489,7 @@ function builderFieldRenumber(index,change)
 
     builderShowData(true);
     buiderUpdateControlPanel();
-    builderEditShow(curr['##pi']);
+    builderEditShow(parent['##i']);
     return;
 }
 
