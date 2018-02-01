@@ -7,7 +7,7 @@ provides interfaces for add delete edit or view this typed nodes.
 .
 Every *node has a **n**ode **id**entifier* ***nid*** which unique between nodes and can used to access the node.
 .
-The CodKep provides internal [routes|url:doc/codkep/routes] to manage nodes
+The CodKep provides built-in [routes|url:doc/codkep/routes] to manage nodes
 - ***node/{nid}*** - View/display node
 - ***node/{nid}/view*** - View/display node
 - ***node/{nid}/edit*** - Edit the node
@@ -783,23 +783,23 @@ The following [hooks|url:doc/codkep/hooks] can be implement to interact with nod
 | HOOK_objectnodetype()                | Define one or more node type with dynamic loaded classes. |
 | HOOK_load_nodedefclass($obj)         | Invoked before the Node module loads a node-type class from the specified file. |
 | HOOK_nodetype_alter_NODETYPE($obj)   | You can change the definition of the specified node type by this hook. |
-| HOOK_node_loaded($pass,$nid,$type,$join_id) | Runs immediately after a node is loaded |
-| HOOK_node_form_before($node,$op)     | This hook can put some content before the node add/edit/view/delete forms <br/> The value of ***$op*** can be ***view,add,edit,delete*** |
-| HOOK_node_form_after($node,$op)      | This hook can put some content after the node add/edit/view/delete forms <br/> The value of ***$op*** can be ***view,add,edit,delete***|
-| HOOK_node_access($node,$op,$account) | This hook controls the access to a node <br/> The value of ***$op*** can be ***view,create,precreate,update,delete*** |
-| HOOK_node_access_NODETYPE($node,$op,$account) | This hook controls the access to a node which type is NODETYPE <br/> The value of ***$op*** can be ***view,create,precreate,update,delete*** |
+| HOOK_node_loaded($pass,$nid,$type,$join_id) | Runs immediately after a node is loaded. This hook can change the node data by the $pass pass parameter.  |
+| HOOK_node_form_before($node,$op)     | This hook can put some content before the node add/edit/view/delete forms <br/> The value of ***$op*** can be ***view,add,edit,delete***. The string returned by this hook will be inserted before the form. |
+| HOOK_node_form_after($node,$op)      | This hook can put some content after the node add/edit/view/delete forms <br/> The value of ***$op*** can be ***view,add,edit,delete***. The string returned by this hook will be inserted after the form. |
+| HOOK_node_access($node,$op,$account) | This hook controls the access to a node <br/> The value of ***$op*** can be ***view,create,precreate,update,delete***.  |
+| HOOK_node_access_NODETYPE($node,$op,$account) | This hook controls the access to a node which type is NODETYPE <br/> The value of ***$op*** can be ***view,create,precreate,update,delete***. |
 
-| HOOK_node_will_update($node)         | This hook runs immediately before a node is updated. If you do redirect in this hook, the operation will be cancelled. |
-| HOOK_node_before_save($obj)          | Runs before the node is saved |
-| HOOK_node_saved($obj)                | Runs immediately after a node is saved |
+| HOOK_node_will_update($node)         | This hook runs immediately before a node is updated by the built-in routes of node module. (node/NID/edit or nodeintype/TYPE/JOIN-ID/edit) If you do redirect in this hook, the operation will be cancelled. |
+| HOOK_node_before_save($obj)          | Runs every case before the node is saved. (Even by the node api) |
+| HOOK_node_saved($obj)                | Runs every case immediately after a node is saved. (Even by the node api) |
 
-| HOOK_node_will_delete($node)         | This hook runs immediately before a node is deleted. If you do redirect in this hook, the operation will be cancelled. |
-| HOOK_node_deleted($nid,$type,$join_id) | Runs immediately after a node is deleted |
+| HOOK_node_will_delete($node)         | This hook runs immediately before a node is deleted by the built-in routes of node module. (node/NID/delete or nodeintype/TYPE/JOIN-ID/delete) If you do redirect in this hook, the operation will be cancelled. |
+| HOOK_node_deleted($nid,$type,$join_id) | Runs every case immediately after a node is deleted. (Even by the node api) |
 
-| HOOK_node_will_create($obj)          | This hook runs immediately before a node is created. If you do redirect in this hook, the operation will be cancelled. |
-| HOOK_node_before_insert($obj)        | Runs before the node is inserted |
-| HOOK_node_inserted($obj)             | Runs immediately after a node is inserted |
+| HOOK_node_will_create($obj)          | This hook runs immediately before a node is created by the built-in routes of node module. (node/TYPE/add) If you do redirect in this hook, the operation will be cancelled. |
+| HOOK_node_before_insert($obj)        | Runs every case before the node is inserted. (Even by the node api) |
+| HOOK_node_inserted($obj)             | Runs every case immediately after a node is inserted. (Even by the node api) |
 
-| HOOK_node_before_action($node,$op,$user) | Runs on node view/add/edit/delete before the form is generated. |
+| HOOK_node_before_action($node,$op,$user) | Runs on node view/add/edit/delete before the form is generated by the built-in routes of node module. |
 | HOOK_node_operation_done($type,$op,$nid) | This hook runs after an operation is done on some node. This hook is useful to do some redirection. <br/> The value of ***$op*** can be ***view,add,edit,delete*** |
 | HOOK_node_operation_not_permitted($node,$op,$account) | This hook run when the operation is not permitted/blocked. It useful to do redirection to your custom error handling page. It is called immediately before the CodKep goes to it's own error page. <br/> The value of ***$op*** can be ***view,add,edit,delete*** |
