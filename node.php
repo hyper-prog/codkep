@@ -20,6 +20,7 @@ function hook_node_boot()
 {
     global $site_config;
     $site_config->node_unauth_triggers_login = false;
+    $site_config->node_rest_api_enabled = true;
 
     global $sys_data;
     $sys_data->node_types = array();
@@ -62,6 +63,8 @@ function hook_node_init()
 
 function hook_node_defineroute()
 {
+    global $site_config;
+
     $i = array();
     $i[] = ['path' => 'node/{nid}',
             'callback' => 'sys_node_callback_nid',
@@ -128,6 +131,54 @@ function hook_node_defineroute()
           'nodetype' => ['security'=>'text1ns','source'=>'url','acceptempty'=>false,'default'=>NULL,'required'=>true],
           'joinid'  =>  ['security'=>'text1ns','source'=>'url','acceptempty'=>false,'default'=>NULL,'required'=>true],
         ],
+    ];
+
+    if($site_config->node_rest_api_enabled)
+    {
+        $i[] = [
+          'path' => 'restapi/createnode/{nodetype}', //REST - HTTP POST
+          'parameters' => [
+            'nodetype' => ['security'=>'text1ns','source'=>'url','acceptempty'=>false,'default'=>NULL,'required' => true],
+          ],
+          'callback' => 'sys_node_restapi_type_callback',
+          'type' => 'json',
+        ];
+
+        $i[] = [
+          'path' => 'restapi/node/{nid}', //REST - HTTP GET,PUT,PATCH,DELETE
+          'parameters' => [
+            'nid' =>      ['security'=>'number0','source'=>'url','acceptempty'=>false,'default'=>NULL,'required'=>true],
+          ],
+          'callback' => 'sys_node_restapi_nid_callback',
+          'type' => 'json',
+        ];
+
+        $i[] = [
+          'path' => 'restapi/nodeintype/{nodetype}/{joinid}', //REST - HTTP GET,PUT,PATCH,DELETE
+          'parameters' => [
+            'nodetype' => ['security'=>'text1ns','source'=>'url','acceptempty'=>false,'default'=>NULL,'required'=>true],
+            'joinid' =>   ['security'=>'text1ns','source'=>'url','acceptempty'=>false,'default'=>NULL,'required'=>true],
+          ],
+          'callback' => 'sys_node_restapi_type_join_callback',
+          'type' => 'json',
+        ];
+
+        $i[] = [
+            'path' => 'restapi/nodelist/{nodetype}/{start}/{limit}', //REST - HTTP GET
+            'parameters' => [
+                'nodetype' => ['security'=>'text1ns','source'=>'url','acceptempty'=>false,'default'=>NULL,'required'=>true],
+                'start'    => ['security'=>'number0','source'=>'url','acceptempty'=>false,'default'=>NULL,'required'=>true],
+                'limit'    => ['security'=>'number0','source'=>'url','acceptempty'=>false,'default'=>NULL,'required'=>true],
+            ],
+            'callback' => 'sys_node_restapi_list_callback',
+            'type' => 'json',
+        ];
+    }
+
+    $i[] = [
+        'path' => 'restapi/error',
+        'callback' => 'sys_node_restapi_error_callback',
+        'type' => 'json',
     ];
 
     return $i;
@@ -293,6 +344,42 @@ class Node
 
     function __unset($name)
     {
+    }
+
+    function getDataREST()
+    {
+        $obj = new stdClass();
+        $obj->node_nid = $this->nid;
+        $obj->node_type = $this->type;
+        $obj->node_join_id = $this->join_id;
+        $obj->node_creator = $this->creator;
+        $obj->node_created = $this->created;
+        if($this->dataspeedform !== NULL)
+            foreach($this->dataspeedform->values as $keyname => $value)
+            {
+                $f = $this->dataspeedform->get_field($keyname);
+                if(in_array($f['type'],['static','submit']))
+                    continue;
+                if(!isset($f['no_rest']) || (strpos($f['no_rest'],'r') === false && $f['no_rest'] != 'a'))
+                    $obj->$keyname = $this->dataspeedform->values[$keyname];
+            }
+        return $obj;
+    }
+
+    function setDataREST($object,$opchar) // $opchar = c u
+    {
+        if($this->dataspeedform !== NULL)
+            foreach($this->dataspeedform->values as $keyname => $value)
+            {
+                if(isset($object[$keyname]))
+                {
+                    $f = $this->dataspeedform->get_field($keyname);
+                    if(in_array($f['type'],['static','submit']))
+                        continue;
+                    if(!isset($f['no_rest']) || (strpos($f['no_rest'],$opchar) === false && $f['no_rest'] != 'a'))
+                        $this->dataspeedform->values[$keyname] = $object[$keyname];
+                }
+            }
     }
 
     public function definedFields()
@@ -581,6 +668,24 @@ class Node
         }
     }
 
+    public function get_rest_action_enabled($opchar)
+    {
+        if(!isset($this->dataspeedform->def['rest_enabled']))
+            return false;
+        if(strpos($this->dataspeedform->def['rest_enabled'],$opchar) !== false)
+            return true;
+        return false;
+    }
+
+    public function get_ui_action_enabled()
+    {
+        if(!isset($this->dataspeedform->def['disable_ui']))
+            return true;
+        if($this->dataspeedform->def['disable_ui'])
+            return false;
+        return true;
+    }
+
     public function get_display_value($fieldname)
     {
         return $this->dataspeedform->get_display_value($fieldname);
@@ -653,6 +758,11 @@ function sys_node_view_uni($node)
         load_loc('error',t('The requested node is not found'),t('Not found'));
         return 'Not found';
     }
+    if(!$node->get_ui_action_enabled())
+    {
+        load_loc('error',t('You don\'t have the required permission to access this node'),t('Permission denied'));
+        return 'Permission denied';
+    }
     if(NODE_ACCESS_ALLOW != node_access($node,'view',$user))
     {
         if(!$user->auth && $site_config->node_unauth_triggers_login)
@@ -683,6 +793,11 @@ function sys_node_edit_uni($node)
     {
         load_loc('error',t('The requested node is not found'),t('Not found'));
         return 'Not found';
+    }
+    if(!$node->get_ui_action_enabled())
+    {
+        load_loc('error',t('You don\'t have the required permission to access this node'),t('Permission denied'));
+        return 'Permission denied';
     }
     $action_to_check = 'view';
     if($node->get_speedform_object()->in_action('update') || $node->get_access_property("earlyblock"))
@@ -737,7 +852,11 @@ function sys_node_delete_uni($node)
         load_loc('error',t('The requested node is not found'),t('Not found'));
         return 'Not found';
     }
-
+    if(!$node->get_ui_action_enabled())
+    {
+        load_loc('error',t('You don\'t have the required permission to access this node'),t('Permission denied'));
+        return 'Permission denied';
+    }
     $action_to_check = 'view';
     if($node->get_speedform_object()->in_action('delete') || $node->get_access_property("earlyblock"))
         $action_to_check = 'delete';
@@ -778,6 +897,11 @@ function sys_node_create_callback()
     $type = par('nodetype');
     $node = Node::getNodeInstanceByType($type);
 
+    if(!$node->get_ui_action_enabled())
+    {
+        load_loc('error',t('You don\'t have the required permission to access this node'),t('Permission denied'));
+        return 'Permission denied';
+    }
     $action_to_check = 'precreate';
     if($node->get_speedform_object()->in_action('insert') || $node->get_access_property("earlyblock"))
     {
@@ -883,6 +1007,277 @@ function hook_node_check_module_requirements()
     return ob_get_clean();
 }
 
+/* *********************************************
+ * REST API functions
+ * ********************************************* */
+
+function sys_node_restapi_nid_callback()
+{
+    if($_SERVER['REQUEST_METHOD'] == 'GET')
+        return sys_node_restapi_get_nid(par('nid'));
+
+    if($_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'PATCH')
+        return sys_node_restapi_update_nid(par('nid'));
+
+    if($_SERVER['REQUEST_METHOD'] == 'DELETE')
+        return sys_node_restapi_delete_nid(par('nid'));
+
+    load_loc('restapi/error',
+            ['message' => 'REST: Only GET/PUT/PATCH/DELETE methods are allowed here!','code' => '400'],
+            400);
+}
+
+function sys_node_restapi_type_join_callback()
+{
+    if($_SERVER['REQUEST_METHOD'] == 'GET')
+        return sys_node_restapi_get_joinid(par('nodetype'),par('joinid'));
+
+    if($_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'PATCH')
+        return sys_node_restapi_update_joinid(par('nodetype'),par('joinid'));
+
+    if($_SERVER['REQUEST_METHOD'] == 'DELETE')
+        return sys_node_restapi_delete_joinid(par('nodetype'),par('joinid'));
+
+    load_loc('restapi/error',
+        ['message' => 'REST: Only GET/PUT/PATCH/DELETE methods are allowed here!','code' => '400'],
+        400);
+}
+
+function sys_node_restapi_error_callback($passthrough,$response_code)
+{
+    http_response_code($response_code);
+    return ['success' => false,'error' => $passthrough];
+}
+
+function sys_node_check_rest_application_json_cnttype()
+{
+    $contentType = isset($_SERVER["CONTENT_TYPE"]) ? trim($_SERVER["CONTENT_TYPE"]) : '';
+    if(strcasecmp($contentType, 'application/json') != 0)
+        load_loc('restapi/error',
+            ['message' => 'In REST - POST/PUT/PATCH method the content type must be: application/json','code' => '400'],
+            400);
+}
+
+function sys_node_check_rest_valid_nodetype($nodetype)
+{
+    global $sys_data;
+    if(!array_key_exists($nodetype,$sys_data->node_types) && !array_key_exists($nodetype,$sys_data->node_otypes))
+        load_loc('restapi/error',['message' => 'Node not found','code' => '404'],404);
+}
+
+function sys_node_get_rest_decoded_json_from_input()
+{
+    $content = trim(file_get_contents("php://input"));
+    $decoded = json_decode($content, true);
+
+    if(!is_array($decoded))
+        load_loc('restapi/error',['message' => 'Received content contained invalid JSON!','code' => '400'],400);
+
+    return $decoded;
+}
+
+function sys_node_check_rest_node_is_loaded($node)
+{
+    if($node === null || !$node->node_loaded)
+        load_loc('restapi/error',['message' => 'Node not found','code' => '404'],404);
+}
+
+function sys_node_check_rest_action_is_enabled($node,$listaction = false)
+{
+    if($_SERVER['REQUEST_METHOD'] == 'POST' &&
+            !$node->get_rest_action_enabled('c'))
+    {
+        load_loc('restapi/error',['message' => 'Permission denied','code' => '403'],403);
+    }
+    if($_SERVER['REQUEST_METHOD'] == 'GET' && !$listaction &&
+            !$node->get_rest_action_enabled('r'))
+    {
+        load_loc('restapi/error',['message' => 'Permission denied','code' => '403'],403);
+    }
+    if($_SERVER['REQUEST_METHOD'] == 'GET' && $listaction &&
+            !$node->get_rest_action_enabled('l'))
+    {
+        load_loc('restapi/error',['message' => 'Permission denied','code' => '403'],403);
+    }
+    if(($_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'PATCH') &&
+            !$node->get_rest_action_enabled('u'))
+    {
+        load_loc('restapi/error',['message' => 'Permission denied','code' => '403'],403);
+    }
+    if($_SERVER['REQUEST_METHOD'] == 'DELETE' &&
+        !$node->get_rest_action_enabled('d'))
+    {
+        load_loc('restapi/error',['message' => 'Permission denied','code' => '403'],403);
+    }
+
+    run_hook('node_rest_action_before',$node,$_SERVER['REQUEST_METHOD']);
+}
+
+function sys_node_check_rest_node_access_is_allowed($node,$op)
+{
+    global $user;
+    if(NODE_ACCESS_ALLOW != node_access($node, $op, $user))
+    {
+        run_hook("node_operation_not_permitted",$node,$op,$user);
+        load_loc('restapi/error',['message' => 'Permission denied','code' => '403'],403);
+    }
+}
+
+function sys_node_restapi_type_callback()
+{
+    par_def('nodetype','text1ns');
+
+    $type = par('nodetype');
+    if(strcasecmp($_SERVER['REQUEST_METHOD'], 'POST') != 0)
+        load_loc('restapi/error',['message' => 'Bad request!','code' => '400'],400);
+
+    sys_node_check_rest_application_json_cnttype();
+    $decoded = sys_node_get_rest_decoded_json_from_input();
+
+    $node = node_create($type);
+    sys_node_check_rest_action_is_enabled($node);
+    $node->setDataREST($decoded,'c');
+    $sf = $node->get_speedform_object();
+    if($sf->do_validate(false))
+    {
+        d1('Node REST: Received content has data validation error!');
+        load_loc('restapi/error',
+                ['message' => 'Received content has data validation error!',
+                 'code' => '400',
+                 'message-details' => $sf->validate_errortext],400);
+    }
+
+    sys_node_check_rest_node_access_is_allowed($node,'create');
+
+    $nid = $node->insert();
+
+    http_response_code(201);
+    header('Location: ' . url('/node/'.$nid),true,201);
+    return ['success' => true,'node_nid' => $nid];
+}
+
+function sys_node_restapi_get_nid($nid)
+{
+    $node = node_load($nid);
+    sys_node_check_rest_node_is_loaded($node);
+    sys_node_check_rest_action_is_enabled($node);
+    sys_node_check_rest_node_access_is_allowed($node,'view');
+
+    http_response_code(200);
+    return ['success' => true,'node' => $node->getDataREST()];
+}
+
+function sys_node_restapi_get_joinid($nodetype,$join_id)
+{
+    sys_node_check_rest_valid_nodetype($nodetype);
+    $node = node_load_intype($join_id,$nodetype);
+    sys_node_check_rest_node_is_loaded($node);
+    sys_node_check_rest_action_is_enabled($node);
+    sys_node_check_rest_node_access_is_allowed($node,'view');
+
+    http_response_code(200);
+    return ['success' => true,'node' => $node->getDataREST()];
+}
+
+function sys_node_restapi_update_nid($nid)
+{
+    sys_node_check_rest_application_json_cnttype();
+    $decoded = sys_node_get_rest_decoded_json_from_input();
+
+    $node = node_load($nid);
+    sys_node_check_rest_node_is_loaded($node);
+    sys_node_check_rest_action_is_enabled($node);
+    sys_node_check_rest_node_access_is_allowed($node,'update');
+
+    $node->setDataREST($decoded,'u');
+    $sf = $node->get_speedform_object();
+    if($sf->do_validate(false))
+    {
+        d1('Node REST: Received content has data validation error!');
+        load_loc('restapi/error',
+               ['message' => 'Received content has data validation error!',
+                'code' => '400',
+                'message-details' => $sf->validate_errortext],400);
+    }
+    $node->save();
+    http_response_code(200);
+    return ['success' => true,'node_nid' => $node->node_nid];
+}
+
+function sys_node_restapi_update_joinid($nodetype,$join_id)
+{
+    sys_node_check_rest_valid_nodetype($nodetype);
+    sys_node_check_rest_application_json_cnttype();
+    $decoded = sys_node_get_rest_decoded_json_from_input();
+
+    $node = node_load_intype($join_id,$nodetype);
+    sys_node_check_rest_node_is_loaded($node);
+    sys_node_check_rest_action_is_enabled($node);
+    sys_node_check_rest_node_access_is_allowed($node,'update');
+
+    $node->setDataREST($decoded,'u');
+    $sf = $node->get_speedform_object();
+    if($sf->do_validate(false))
+    {
+        d1('Node REST: Received content has data validation error!');
+        load_loc('restapi/error',
+               ['message' => 'Received content has data validation error!',
+                'code' => '400',
+                'message-details' => $sf->validate_errortext],400);
+    }
+
+    $node->save();
+    http_response_code(200);
+    return ['success' => true,'node_nid' => $node->node_nid];
+}
+
+function sys_node_restapi_delete_nid($nid)
+{
+    $node = node_load($nid);
+    sys_node_check_rest_node_is_loaded($node);
+    sys_node_check_rest_action_is_enabled($node);
+    sys_node_check_rest_node_access_is_allowed($node,'delete');
+
+    $node->remove();
+    http_response_code(200);
+    return ['success' => true,'node_nid' => 'deleted'];
+}
+
+function sys_node_restapi_delete_joinid($nodetype,$join_id)
+{
+    sys_node_check_rest_valid_nodetype($nodetype);
+    $node = node_load_intype($join_id,$nodetype);
+    sys_node_check_rest_node_is_loaded($node);
+    sys_node_check_rest_action_is_enabled($node);
+    sys_node_check_rest_node_access_is_allowed($node,'delete');
+
+    $node->remove();
+    http_response_code(200);
+    return ['success' => true,'node_nid' => 'deleted'];
+}
+
+function sys_node_restapi_list_callback()
+{
+    $nodetype = par('nodetype');
+    $start = par('start');
+    $limit = par('limit');
+
+    sys_node_check_rest_valid_nodetype($nodetype);
+
+    $samle_node = node_create($nodetype);
+    sys_node_check_rest_action_is_enabled($samle_node,true);
+
+    $count = sql_exec_single("SELECT COUNT(nid) FROM node WHERE type=:nodetype",
+                                [':nodetype' => $nodetype]);
+    $qall = sql_exec("SELECT nid FROM node WHERE type=:nodetype ORDER BY nid LIMIT $start,$limit",
+                                [':nodetype' => $nodetype]);
+    $lst = [];
+    while(($r = $qall->fetch()))
+        $lst[] = $r['nid'];
+
+    http_response_code(200);
+    return ['success' => true,'total_count' => $count,'result_nid_array' => $lst];
+}
 
 function hook_node_documentation($section)
 {
@@ -998,5 +1393,11 @@ function _HOOK_node_will_delete() {}
  * If you do redirect in this hook, the operation will be cancelled.
  * @package node */
 function _HOOK_node_will_create() {}
+
+/**
+ * This hook runs immediately before a node REST request handled.
+ * If you do redirect in this hook, the operation will be cancelled.
+ * @package node */
+function _HOOK_node_rest_action_before() {}
 
 // end.

@@ -1358,6 +1358,8 @@ function sys_route($location,array $args = array())
 
             if(isset($route['type']) && $route['type'] == 'raw')
                 $sys_data->content->type = 'raw';
+            if(isset($route['type']) && $route['type'] == 'json')
+                $sys_data->content->type = 'json';
             if(isset($route['type']) && $route['type'] == 'ajax')
                 $sys_data->content->type = 'ajax';
 
@@ -1379,12 +1381,17 @@ function sys_route($location,array $args = array())
             }
 
             //before_generation
-            if($sys_data->content->type != 'raw')
+            if($sys_data->content->type != 'raw' && $sys_data->content->type != 'json')
                 $sys_data->content->generated .= implode(run_hook("before_generation",$route,$templ));
 
             //main generation
             if(isset($route["callback"]))
-                $sys_data->content->generated .= call_user_func_array($route["callback"],$args);
+            {
+                if($sys_data->content->type == 'raw' || $sys_data->content->type == 'json')
+                    $sys_data->content->generated = call_user_func_array($route["callback"], $args);
+                else
+                    $sys_data->content->generated .= call_user_func_array($route["callback"], $args);
+            }
             if(isset($route["file"]) && file_exists($route["file"]))
             {
                 ob_start();
@@ -1393,7 +1400,7 @@ function sys_route($location,array $args = array())
             }
 
             //after_generation
-            if($sys_data->content->type != 'raw')
+            if($sys_data->content->type != 'raw' && $sys_data->content->type != 'json')
                 $sys_data->content->generated .= implode(run_hook("after_generation",$route,$templ));
 
             if($sys_data->content->type == 'html')
@@ -1415,7 +1422,11 @@ function sys_assemble($c)
 {
     if($c->type == 'raw')
         return $c->generated;
-
+    if($c->type == 'json')
+    {
+        header('Content-Type: application/json');
+        return json_encode($c->generated);
+    }
     if($c->type == 'ajax')
     {
         if($c->generated != '')
@@ -1437,6 +1448,7 @@ function sys_assemble($c)
 /** @ignore Page callback of the "notfound" location */
 function core_notfound_page()
 {
+    http_response_code(404);
     header("HTTP/1.0 404 Not Found");
     set_title(t('Location not found'));
     ob_start();
@@ -1594,6 +1606,7 @@ function generate_authcookie_name()
     if(!valid_http_host($_SERVER['HTTP_HOST']) ||
        preg_match('/^[\:\.0-9]+$/',$_SERVER['REMOTE_ADDR']) !== 1 )
     {
+        http_response_code(400);
         header($_SERVER['SERVER_PROTOCOL'] . ' 400 Bad Request');
         exit;
     }

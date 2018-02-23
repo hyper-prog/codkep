@@ -200,6 +200,8 @@ function pc_speedform_builder()
     p_gral_item(0,'access_loadp_before_update_perm',BTYPE_SELB ,BSEC_FUNC,['values' => ['true','false']],'If this value is true the node edit page will load the html parameters before the node_access check is executed.');
     p_gral_item(0,'view_callback',BTYPE_TEXT ,BSEC_FUNC,[],'If you specify node type you can tell a php fuction name here to view the node');
     p_gral_item(0,'view_phpfile' ,BTYPE_TEXT ,BSEC_FUNC,[],'If you specify node type you can tell a php file name here to view the node');
+    p_gral_item(0,'rest_enabled' ,BTYPE_TEXT ,BSEC_FUNC,[],'You can enable REST API interface for this node type. You can write combinations of lowercase letters here to enable main functions. c - enable create, r - enable read, u - enable update, d - enable delete, l - enable list. You should type crudl here to enable all functions or leave blank to disable all.');
+    p_gral_item(0,'disable_ui'   ,BTYPE_SELB ,BSEC_FUNC,['values' => ['false','true']],'You can disable the user interface of node operations. (Create/Read/Update/Delete) Do it when you only use node from REST and PHP api.');
 
     p_gral_item(0,'color'        ,BTYPE_TEXT ,BSEC_LOOK,[],'The bgcolor of the entire table');
     p_gral_item(0,'before'       ,BTYPE_TEXT ,BSEC_LOOK,[],'Printed before the whole form');
@@ -256,7 +258,7 @@ function pc_speedform_builder()
     p_gral_item(2,'optional'      ,BTYPE_SEL,BSEC_FUNC,['values'=>['yes','no'],'types' => ['sqlnchoose','sqlschoose','txtselect','numselect']],'If the optional=yes '.
                                             'is set the field can accept empty value. '.
                                             'The user can reset the value with a button. '.
-                                            'This case the sql value will NULL. Otherwise only a select box will appears so the user '.
+                                            'This case the sql value will set NULL. Otherwise only a select box will appears so the user '.
                                             'have to select a value.');
 
     p_gral_item(2,'par_sec'       ,BTYPE_TEXT,BSEC_FUNC,[],'Set custom parameter security class other than default');
@@ -287,6 +289,7 @@ function pc_speedform_builder()
     p_gral_item(2,'formatters'    ,BTYPE_SEL  ,BSEC_LOOK,['values' => ['all','before','after','none']]);
 
     p_gral_item(2,'centered'      ,BTYPE_SELB ,BSEC_LOOK,['values' => ['true','false']]);
+    p_gral_item(2,'no_rest'       ,BTYPE_TEXT,BSEC_FUNC,[],'You can disable/bypass this field from REST API actions. You can write combinations of lowercase letters here to bypass this field from main functions. c - create, r - read, u - update, a - all.');
     p_gral_item(2,'script'        ,BTYPE_TEXT ,BSEC_FUNC);
     p_gral_item(2,'converter'     ,BTYPE_TEXT ,BSEC_FUNC,[],'Sets a callback function which convert the form value to db value');
 

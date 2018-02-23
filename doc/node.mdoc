@@ -221,6 +221,7 @@ function hook_mymodule_nodetype()
                 "name" => "samplenode",
                 "table" => "sample",
                 "show" => "table",
+                "rest_enabled" => "crudl", //Enable full REST api
                 "fields" => [
                         10 => [
                             "sql" => "id",
@@ -458,6 +459,94 @@ Calculate the permission of the operation on the node of the parameter passed ac
   - ***NODE_ACCESS_DENY***
 .
 
+#restinterface#
+== REST api for nodes ==
+
+The CodKep can provide an automatic working [REST|url:https://hu.wikipedia.org/wiki/REST] interface for nodes
+which can provide full [CRUD|url:https://en.wikipedia.org/wiki/Create,_read,_update_and_delete]
+for the defined node types without any coding work.<br/>
+To enable REST for a node type you have to do the following:
+
+ - Make sure you not disabled the ***$site_config->node_rest_api_enabled*** variable
+ \ in [site settings|url:doc/codkep/modules#site_settings]. If this variable is ***false*** the REST interface is
+ \ completly disabled. Otherwise this is enabled by default, so probably you don't have to do anything.
+ - Make sure you set ***rest_enabled*** top level attribute of the node type you want to enable the REST in
+ \ [data definition structure array|url:doc/codkep/forms#ddeftoplevel]. This attribute is a *string where*
+ \ every *character* in a string is a REST command to enable:
+  - ***c*** - Enable create of node with the specified type
+   - <small>Enables "***POST /restapi/createnode/{nodetype}***"</small>
+  - ***r*** - Enable read of nodes with the specified type
+   - <small>Enables "***GET /restapi/node/{nid}***"</small>
+   - <small>Enables "***GET /restapi/nodeintype/{nodetype}/{joinid}***"</small>
+  - ***u*** - Enable update of nodes with the specified type
+   - <small>Enables "***PUT /restapi/node/{nid}***"</small>
+   - <small>Enables "***PUT /restapi/nodeintype/{nodetype}/{joinid}***"</small>
+  - ***d*** - Enable delete of nodes with the specified type
+   - <small>Enables "***DELETE /restapi/node/{nid}***"</small>
+   - <small>Enables "***DELETE /restapi/nodeintype/{nodetype}/{joinid}***"</small>
+  - ***l*** - Enable list of nodes with the specified type
+   - <small>Enables "***GET /restapi/nodelist/{nodetype}/{start}/{limit}***"</small>
+ \ You can combine this letters to enable more REST commands.
+  - By default the ***rest_enabled*** attribute is not set
+  \ so **no REST command is allowed for any node type without this settings**.
+  - To enable all REST commands you should set ***"rest_enabled" => "crudl"***
+  - To enable only the read and update REST commands you should set ***"rest_enabled" => "ru"***
+  - To disable every rest command on the node type just leave the ***rest_enabled*** blank
+  \ or completely ignore the settings.
+.
+#restcommands#
+=== Node related REST commands ===
+
+These node related REST interfaces receives [JSON|url:https://hu.wikipedia.org/wiki/JSON] data, and answers with JSON
+too.
+.
+- ***POST /restapi/createnode/{nodetype}*** - Create a new node with the ***nodetype*** type by the posted JSON
+.
+- ***GET /restapi/node/{nid}*** - Get node data in JSON
+- ***PUT /restapi/node/{nid}*** - Modify node data by the posted JSON
+- ***DELETE /restapi/node/{nid}*** - Delete the node
+.
+- ***GET /restapi/nodeintype/{nodetype}/{joinid}*** - Get node data in JSON
+- ***PUT /restapi/nodeintype/{nodetype}/{joinid}*** - Modify node data by the posted JSON
+- ***DELETE /restapi/nodeintype/{nodetype}/{joinid}*** - Delete the node
+.
+- ***GET /restapi/nodelist/{nodetype}/{start}/{limit}*** - Get node type item count and NID list
+.
+*All rest command returns ***application/json*** and the create/update commands also requires json data to post. *
+.
+*All node operations done through REST is processed by [node access system|url:#nodeaccess]. It means that you have*
+*to provide the necessary permissions to done the desired operations.*
+.
+*You can skip some fields of nodes from the REST operations by set the field's ***no_rest*** attribute.*
+*See the [common field attributes|url:doc/codkep/forms#commonattributes] of data definition structure.*
+.
+You can see here a client side javascript function which create a task node through REST interface:
+~~~code
+function create_task(description,cost,deadline)
+{
+    var newtask = new Object();
+    newtask.description = description;
+    newtask.cost = cost;
+    newtask.deadline = deadline;
+.
+    jQuery.ajax({
+        url: 'index.php?q=/restapi/createnode/task',
+        method: 'POST',
+        dataType: 'json',
+        data: JSON.stringify(newtask),
+        contentType: 'application/json',
+        context: document.body,
+        error: function(e) {
+            alert('Error: The task is not created');
+        },
+        success: function(data) {
+            alert('Task node created with nid: ' + data.node_nid );
+        }
+    });
+}
+.
+create_task("Do something",22,"2017-02-11");
+~~~
 
 = A complete example =
 
@@ -765,6 +854,7 @@ The node settings which can set [in site settings|url:doc/codkep/modules#site_se
 | name                                                     | default                             | description |
 |---                                                       |--                                   | ---                              |---          |
 |<small> ***$site_config->node_unauth_triggers_login*** </small>      |<small> false  </small>   | In case of this option is ***true*** and an unauthenticated user try to access a node which needs authenticated user to access the CodKep automatically redirects to the login page. |
+|<small> ***$site_config->node_rest_api_enabled*** </small>           |<small> true  </small>    | If this value is false it completely disable the REST resources related to nodes. |
 
 **Many node settings can change in node definition structure to make possible to set different features for each node type.**
 **You can view this settings in forms module documentation [here|url:doc/codkep/forms#ddeftoplevel].** (Purple block)
@@ -799,6 +889,8 @@ The following [hooks|url:doc/codkep/hooks] can be implement to interact with nod
 | HOOK_node_will_create($obj)          | This hook runs immediately before a node is created by the built-in routes of node module. (node/TYPE/add) If you do redirect in this hook, the operation will be cancelled. |
 | HOOK_node_before_insert($obj)        | Runs every case before the node is inserted. (Even by the node api) |
 | HOOK_node_inserted($obj)             | Runs every case immediately after a node is inserted. (Even by the node api) |
+
+| HOOK_node_rest_action_before($node,$request_method) | Runs immediately before built-it in node REST action. If you do redirect in this hook, the operation will be cancelled. |
 
 | HOOK_node_before_action($node,$op,$user) | Runs on node view/add/edit/delete before the form is generated by the built-in routes of node module. |
 | HOOK_node_operation_done($type,$op,$nid) | This hook runs after an operation is done on some node. This hook is useful to do some redirection. <br/> The value of ***$op*** can be ***view,add,edit,delete*** |
