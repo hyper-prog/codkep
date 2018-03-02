@@ -459,6 +459,8 @@ $def =
  \ (like the txtselect, numselect, sqlchoose) holds a key value not the display value referenced by the key.
  \ You can get the desired display value with this function. Most cases (like field type smalltext and largetext)
  \ this function directly pass the value.
+- @@@get_display_for_external_value($sql,$value)@@@
+ - Returns the display value of the field which name is specified in ***$sql*** parameter for the passed value.
 - @@@set_value($sql,$value)@@@
  - Sets the value of the specified field to ***$value***. The ***$sql*** is the name of the field to set.
 - @@@function in_action($action = 'submit')@@@

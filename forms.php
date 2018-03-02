@@ -2293,13 +2293,18 @@ class SpeedForm
 
     function get_display_value($sql)
     {
+        return $this->get_display_for_external_value($sql,$this->values[$sql]);
+    }
+
+    function get_display_for_external_value($sql,$value)
+    {
         global $speedform_handlers;
 
         $f = $this->get_field($sql);
         if($f == NULL)
             return '';
         $fnc = $speedform_handlers[$f['type']]['dispval'];
-        $dispval = call_user_func($fnc,$f,$this->values[$sql]);
+        $dispval = call_user_func($fnc,$f,$value);
         return $dispval;
     }
 

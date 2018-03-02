@@ -691,6 +691,11 @@ class Node
         return $this->dataspeedform->get_display_value($fieldname);
     }
 
+    public function get_display_for_external_value($fieldname,$value)
+    {
+        return $this->dataspeedform->get_display_for_external_value($fieldname,$value);
+    }
+
     public function get_speedform_object()
     {
         return $this->dataspeedform;
