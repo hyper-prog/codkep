@@ -3277,6 +3277,49 @@ function speedform_available_types()
     return array_keys($speedform_handlers);
 }
 
+/** Get the field definition part of the data definition array according to the $sqlname */
+function speedform_get_field_array($definition,$sqlname)
+{
+    if(isset($definition['fields']))
+        foreach($definition['fields'] as $f => $v)
+            if($v['sql'] == $sqlname)
+                return $v;
+    return [];
+}
+
+/** Get the field's specific attribute value from the data definition array according to the $sqlname */
+function speedform_get_field_attribute($definition,$sqlname,$attributename)
+{
+    if(isset($definition['fields']))
+        foreach($definition['fields'] as $f => $v)
+            if($v['sql'] == $sqlname)
+            {
+                if(isset($definition['fields'][$f][$attributename]))
+                    return $definition['fields'][$f][$attributename];
+                return null;
+            }
+    return null;
+}
+
+/** Get the field's display value to the passed value */
+function speedform_get_field_display_value($definition,$sqlname,$value)
+{
+    global $speedform_handlers;
+    $f = speedform_get_field_array($definition,$sqlname);
+    if(isset($f['type']))
+        if(array_key_exists($f['type'],$speedform_handlers))
+        {
+            $typedef = $speedform_handlers[$f['type']];
+            if(isset($typedef['dispval']) && $typedef['dispval'] != null && $typedef['dispval'] != '')
+            {
+                $fnc = $speedform_handlers[$f['type']]['dispval'];
+                $dispval = call_user_func($fnc,$f,$value);
+                return $dispval;
+            }
+        }
+    return $value;
+}
+
 /** Change the sort order sql string by option array useable by to_table function
  * @param mixed $sp The original sort parameter string
  * @param array $options The customisation orders of the table by to_table

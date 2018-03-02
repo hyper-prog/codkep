@@ -2014,7 +2014,7 @@ Adding data definitions to the repository:
 
 Get the data from the repository:
 .
-@@@datadef_from_repository($name));@@@
+@@@datadef_from_repository($name);@@@
 <br/>
 - Returns the ***$name*** named data definition structure from the data definition structure repository.
 \ Returns NULL if not found.
@@ -2040,6 +2040,24 @@ function generate_album_pictures_def()
 //using of the structure somewhere in the code:
 $sf = new SpeedForm(datadef_from_repository('album_pictures_def'));
 ~~~
+
+== Helper functions ==
+
+@@@speedform_get_field_array($definition,$sqlname)@@@
+<br/>
+The function search and returns the definition array part of the field from the parameter passed ***$definition***
+structure according to the ***$sqlname*** parameter. Returns empty array if not found.
+.
+@@@speedform_get_field_attribute($definition,$sqlname,$attributename)@@@
+<br/>
+The function search and returns the specified attribute of specified field from the parameter passed ***$definition***
+structure according to the ***$sqlname*** and ***$attribute*** parameter. Returns ***null*** if not found.
+.
+@@@speedform_get_field_display_value($definition,$sqlname,$value)@@@
+<br/>
+The function converts the ***$value*** parameter to a display value according to the ***$definition*** data definition
+structure and the ***$sqlname*** field parameter. Returns the passed value unchanged if not success.
+.
 
 == Hooks ==
 

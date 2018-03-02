@@ -1279,6 +1279,38 @@ function sys_node_restapi_list_callback()
     return ['success' => true,'total_count' => $count,'result_nid_array' => $lst];
 }
 
+/* ******************************************************************************* */
+function node_get_definition_of_nodetype($type)
+{
+    global $sys_data;
+    if(array_key_exists($type,$sys_data->node_types))
+        return $sys_data->node_types[$type];
+    if(array_key_exists($type,$sys_data->node_otypes))
+    {
+        $definerclass = $sys_data->node_otypes[$type]['defineclass'];
+        return $definerclass::$definition;
+    }
+    return null;
+}
+
+function node_get_field_array($type,$sqlname)
+{
+    $d = node_get_definition_of_nodetype($type);
+    return speedform_get_field_array($d,$sqlname);
+}
+
+function node_get_field_attribute($type,$sqlname,$attributename)
+{
+    $d = node_get_definition_of_nodetype($type);
+    return speedform_get_field_attribute($d,$sqlname,$attributename);
+}
+
+function node_get_field_display_value($type,$sqlname,$value)
+{
+    $d = node_get_definition_of_nodetype($type);
+    return speedform_get_field_display_value($d,$sqlname,$value);
+}
+
 function hook_node_documentation($section)
 {
     $docs = [];

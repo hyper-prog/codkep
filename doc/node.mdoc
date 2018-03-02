@@ -201,6 +201,27 @@ Delete the specified node.
 Returns the sql table creation string of the node (CREATE TABLE)
 .
 
+@@@node_get_definition_of_nodetype($type)@@@
+<br/>
+The function returns the data definition structure of the node type in ***$type*** parameter.
+Returns ***null*** if not found.
+.
+@@@node_get_field_array($type,$sqlname)@@@
+<br/>
+The function search and returns the definition array part of the field of the node type in ***$type***
+parameter according to the ***$sqlname*** parameter. Returns empty array if not found.
+.
+@@@node_get_field_attribute($type,$sqlname,$attributename)@@@
+<br/>
+The function search and returns the specified attribute of specified field of the node type in ***$type***
+parameter according to the ***$sqlname*** and ***$attribute*** parameter. Returns ***null*** if not found.
+.
+@@@node_get_field_display_value($type,$sqlname,$value)@@@
+<br/>
+The function converts the ***$value*** parameter to a display value in node type ***$type***
+in field ***$sqlname***. Returns the passed value unchanged if not success.
+.
+
 
 #definenode#
 == Defining a node ==
