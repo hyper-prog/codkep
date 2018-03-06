@@ -181,6 +181,12 @@ function hook_node_defineroute()
         'type' => 'json',
     ];
 
+    $i[] = [
+        'path' => 'restapi/internalerror',
+        'callback' => 'sys_node_restapi_sql_error_callback',
+        'type' => 'json',
+    ];
+
     return $i;
 }
 
@@ -1018,6 +1024,8 @@ function hook_node_check_module_requirements()
 
 function sys_node_restapi_nid_callback()
 {
+    sys_node_set_rest_redefine_sql_error_handlers();
+
     if($_SERVER['REQUEST_METHOD'] == 'GET')
         return sys_node_restapi_get_nid(par('nid'));
 
@@ -1034,6 +1042,8 @@ function sys_node_restapi_nid_callback()
 
 function sys_node_restapi_type_join_callback()
 {
+    sys_node_set_rest_redefine_sql_error_handlers();
+
     if($_SERVER['REQUEST_METHOD'] == 'GET')
         return sys_node_restapi_get_joinid(par('nodetype'),par('joinid'));
 
@@ -1054,13 +1064,26 @@ function sys_node_restapi_error_callback($passthrough,$response_code)
     return ['success' => false,'error' => $passthrough];
 }
 
+function sys_node_restapi_sql_error_callback()
+{
+    http_response_code(500);
+    return ['success' => false,'error' => 'sql'];
+}
+
+function sys_node_set_rest_redefine_sql_error_handlers()
+{
+    global $db;
+    $db->error_locations['connection_error'] = 'restapi/internalerror';
+    $db->error_locations['generic_error'   ] = 'restapi/internalerror';
+}
+
 function sys_node_check_rest_application_json_cnttype()
 {
     $contentType = isset($_SERVER["CONTENT_TYPE"]) ? trim($_SERVER["CONTENT_TYPE"]) : '';
     if(strcasecmp($contentType, 'application/json') != 0)
         load_loc('restapi/error',
-            ['message' => 'In REST - POST/PUT/PATCH method the content type must be: application/json','code' => '400'],
-            400);
+            ['message' => 'In REST - POST/PUT/PATCH method the content type must be: application/json','code' => '406'],
+            406);
 }
 
 function sys_node_check_rest_valid_nodetype($nodetype)
@@ -1130,6 +1153,8 @@ function sys_node_check_rest_node_access_is_allowed($node,$op)
 
 function sys_node_restapi_type_callback()
 {
+    sys_node_set_rest_redefine_sql_error_handlers();
+
     par_def('nodetype','text1ns');
 
     $type = par('nodetype');
@@ -1263,6 +1288,8 @@ function sys_node_restapi_delete_joinid($nodetype,$join_id)
 
 function sys_node_restapi_list_callback()
 {
+    sys_node_set_rest_redefine_sql_error_handlers();
+
     $nodetype = par('nodetype');
     $start = par('start');
     $limit = par('limit');

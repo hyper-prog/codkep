@@ -3392,6 +3392,8 @@ function to_table($dataobj,array $options=array(),array &$results = NULL)
     $beforetext = '';
     $aftertext = '';
 
+    if($dataobj === null)
+        return '';
     if(is_array($dataobj))
         $is_array = true;
     if(is_object($dataobj) && get_class($dataobj) == "PDOStatement")

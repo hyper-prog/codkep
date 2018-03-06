@@ -303,7 +303,22 @@ If you do this way you should check the value of ***$db->error*** after every sq
 .
 In case you disabled the automatic error redirection and you handle and error, you can always
 find the available error message in ***$db->errormsg*** and the last executed sql command in ***$db->lastsql*** variables.
-
+.
+By default two default built in error handling [route|url:doc/codkep/routes] exists in CodKep the:
+- ***"sql_connection_error"*** for connection errors
+- ***"sql_error"*** for other sql related errors
+You can redefine this error targets in case you need a special kind of error handling. For example: In case you
+create REST interfaces you need to send special HTTP response code and error message instead of built in methods.
+(Which responds with http/html of course)
+Redefining of this error targets can be done by
+the ***$db->error_locations*** global variable the following way:
+~~~php
+global $db;
+.
+$db->error_locations['connection_error'] = 'my_sql_connection_error_route';
+$db->error_locations['generic_error'   ] = 'my_sql_generic_error_route';
+~~~
+*Of course you need to define these routes above and associate with your callbacks as described [here|url:doc/codkep/routes].*
 
 
 #schemeedit#

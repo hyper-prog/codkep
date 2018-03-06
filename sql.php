@@ -31,10 +31,15 @@ function hook_sql_boot()
     $db->schema_editor_password = ""; //empty means disabled!
     $db->schema_editor_allowed_for_admin = true;
 
+    $db->error_locations = [
+        'connection_error' => 'sql_connection_error',
+        'generic_error'    => 'sql_error',
+    ];
+
     $db->tr = [
-        'timestamp_noupd'   => ['mysql' => 'DATETIME',              'pgsql' => 'TIMESTAMP', ],
-        'current_timestamp' => ['mysql' => 'CURRENT_TIMESTAMP',     'pgsql' => 'now()',     ],
-        'longtext_type'     => ['mysql' => 'LONGTEXT'         ,     'pgsql' => 'TEXT',      ],
+        'timestamp_noupd'   => ['mysql' => 'DATETIME'         ,     'pgsql' => 'TIMESTAMP', ],
+        'current_timestamp' => ['mysql' => 'CURRENT_TIMESTAMP',     'pgsql' => 'now()'    , ],
+        'longtext_type'     => ['mysql' => 'LONGTEXT'         ,     'pgsql' => 'TEXT'     , ],
     ];
 }
 
@@ -90,7 +95,7 @@ function sql_connect()
         $db->error = true;
 
         if($db->auto_error_page)
-            load_loc('sql_connection_error');
+            load_loc($db->error_locations['connection_error']);
         return;
     }
     run_hook('sql_connected');
@@ -118,7 +123,7 @@ function sql_disconnect()
         $db->error = true;
 
         if($db->auto_error_page)
-            load_loc('sql_connection_error');
+            load_loc($db->error_locations['connection_error']);
     }
 }
 
@@ -134,7 +139,7 @@ function sql_exec($sql,$parameters=array(),$errormsg='')
                         t("There is no opened database connection!");
         $db->error = true;
         if($db->auto_error_page)
-            load_loc('sql_error');
+            load_loc($db->error_locations['generic_error']);
         return NULL;
     }
 
@@ -152,7 +157,7 @@ function sql_exec($sql,$parameters=array(),$errormsg='')
         $db->errormsg = ($db->errormsg == '' ? '' : $db->errormsg . '<br/>') . $e->getMessage();
         $db->error = true;
         if($db->auto_error_page)
-            load_loc('sql_error');
+            load_loc($db->error_locations['generic_error']);
         return NULL;
     }
     return $stmt;
@@ -201,7 +206,7 @@ function sql_exec_fetch($sql,$parameters=array(),$errormsg='')
                         t('Cannot fetch data (no valid result)');
         $db->error = true;
         if($db->auto_error_page)
-            load_loc('sql_error');
+            load_loc($db->error_locations['generic_error']);
         return array();
     }
     return $r;
@@ -232,7 +237,7 @@ function sql_exec_single($sql,$parameters=array(),$errormsg='')
                         t('Cannot fetch data (no valid result)');
         $db->error = true;
         if($db->auto_error_page)
-            load_loc('sql_error');
+            load_loc($db->error_locations['generic_error']);
         return NULL;
     }
     return $r[0];
@@ -259,7 +264,7 @@ function sql_exec_fetchAll($sql,$parameters=array(),$errormsg='',$fetch_names_on
                         t('Cannot fetch data (no valid result)');
         $db->error = true;
         if($db->auto_error_page)
-            load_loc('sql_error');
+            load_loc($db->error_locations['generic_error']);
         return array();
     }
     return $r;
@@ -275,7 +280,7 @@ function sql_transaction()
                         t('Cannot start a new transaction in an already opened transaction!');
         $db->error = true;
         if($db->auto_error_page)
-            load_loc('sql_error');
+            load_loc($db->error_locations['generic_error']);
         return;
     }
 
@@ -288,7 +293,7 @@ function sql_transaction()
         $db->errormsg = ($db->errormsg == '' ? '' : $db->errormsg . '<br/>');
         $db->error = true;
         if($db->auto_error_page)
-            load_loc('sql_error');
+            load_loc($db->error_locations['generic_error']);
     }
 
     $db->transaction = true;
@@ -305,7 +310,7 @@ function sql_commit()
                         t('Cannot commit, there is no opened transaction!');
         $db->error = true;
         if($db->auto_error_page)
-            load_loc('sql_error');
+            load_loc($db->error_locations['generic_error']);
         return;
     }
 
@@ -318,7 +323,7 @@ function sql_commit()
         $db->errormsg = ($db->errormsg == '' ? '' : $db->errormsg . '<br/>');
         $db->error = true;
         if($db->auto_error_page)
-            load_loc('sql_error');
+            load_loc($db->error_locations['generic_error']);
     }
 
     $db->transaction = false;
@@ -335,7 +340,7 @@ function sql_rollback()
                         t('Cannot rollback, there is no opened transaction!');
         $db->error = true;
         if($db->auto_error_page)
-            load_loc('sql_error');
+            load_loc($db->error_locations['generic_error']);
         return;
     }
 
@@ -348,7 +353,7 @@ function sql_rollback()
         $db->errormsg = ($db->errormsg == '' ? '' : $db->errormsg . '<br/>');
         $db->error = true;
         if($db->auto_error_page)
-            load_loc('sql_error');
+            load_loc($db->error_locations['generic_error']);
     }
     $db->transaction = false;
 }
