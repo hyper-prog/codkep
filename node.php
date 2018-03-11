@@ -187,6 +187,12 @@ function hook_node_defineroute()
         'type' => 'json',
     ];
 
+    $i[] = [
+        'path' => 'restapi/options',
+        'callback' => 'sys_node_restapi_options_callback',
+        'type' => 'raw',
+    ];
+
     return $i;
 }
 
@@ -1024,6 +1030,9 @@ function hook_node_check_module_requirements()
 
 function sys_node_restapi_nid_callback()
 {
+    if($_SERVER['REQUEST_METHOD'] == 'OPTIONS')
+        load_loc("restapi/options");
+
     sys_node_set_rest_redefine_sql_error_handlers();
 
     if($_SERVER['REQUEST_METHOD'] == 'GET')
@@ -1042,6 +1051,9 @@ function sys_node_restapi_nid_callback()
 
 function sys_node_restapi_type_join_callback()
 {
+    if($_SERVER['REQUEST_METHOD'] == 'OPTIONS')
+        load_loc("restapi/options");
+
     sys_node_set_rest_redefine_sql_error_handlers();
 
     if($_SERVER['REQUEST_METHOD'] == 'GET')
@@ -1062,6 +1074,14 @@ function sys_node_restapi_error_callback($passthrough,$response_code)
 {
     http_response_code($response_code);
     return ['success' => false,'error' => $passthrough];
+}
+
+function sys_node_restapi_options_callback()
+{
+    http_response_code(200);
+    core_set_cors_headers();
+    header("Content-type: httpd/unix-directory");
+    return "Allow: GET,PUT,PATCH,DELETE,OPTIONS';";
 }
 
 function sys_node_restapi_sql_error_callback()
@@ -1157,11 +1177,15 @@ function sys_node_restapi_type_callback()
 
     par_def('nodetype','text1ns');
 
+    if(strcasecmp($_SERVER['REQUEST_METHOD'], 'OPTIONS') == 0)
+        load_loc("restapi/options");
+
     $type = par('nodetype');
     if(strcasecmp($_SERVER['REQUEST_METHOD'], 'POST') != 0)
         load_loc('restapi/error',['message' => 'Bad request!','code' => '400'],400);
 
     sys_node_check_rest_application_json_cnttype();
+    core_set_cors_headers();
     $decoded = sys_node_get_rest_decoded_json_from_input();
 
     $node = node_create($type);
@@ -1192,6 +1216,7 @@ function sys_node_restapi_get_nid($nid)
     sys_node_check_rest_node_is_loaded($node);
     sys_node_check_rest_action_is_enabled($node);
     sys_node_check_rest_node_access_is_allowed($node,'view');
+    core_set_cors_headers();
 
     http_response_code(200);
     return ['success' => true,'node' => $node->getDataREST()];
@@ -1204,6 +1229,7 @@ function sys_node_restapi_get_joinid($nodetype,$join_id)
     sys_node_check_rest_node_is_loaded($node);
     sys_node_check_rest_action_is_enabled($node);
     sys_node_check_rest_node_access_is_allowed($node,'view');
+    core_set_cors_headers();
 
     http_response_code(200);
     return ['success' => true,'node' => $node->getDataREST()];
@@ -1218,6 +1244,7 @@ function sys_node_restapi_update_nid($nid)
     sys_node_check_rest_node_is_loaded($node);
     sys_node_check_rest_action_is_enabled($node);
     sys_node_check_rest_node_access_is_allowed($node,'update');
+    core_set_cors_headers();
 
     $node->setDataREST($decoded,'u');
     $sf = $node->get_speedform_object();
@@ -1244,6 +1271,7 @@ function sys_node_restapi_update_joinid($nodetype,$join_id)
     sys_node_check_rest_node_is_loaded($node);
     sys_node_check_rest_action_is_enabled($node);
     sys_node_check_rest_node_access_is_allowed($node,'update');
+    core_set_cors_headers();
 
     $node->setDataREST($decoded,'u');
     $sf = $node->get_speedform_object();
@@ -1267,6 +1295,7 @@ function sys_node_restapi_delete_nid($nid)
     sys_node_check_rest_node_is_loaded($node);
     sys_node_check_rest_action_is_enabled($node);
     sys_node_check_rest_node_access_is_allowed($node,'delete');
+    core_set_cors_headers();
 
     $node->remove();
     http_response_code(200);
@@ -1280,6 +1309,7 @@ function sys_node_restapi_delete_joinid($nodetype,$join_id)
     sys_node_check_rest_node_is_loaded($node);
     sys_node_check_rest_action_is_enabled($node);
     sys_node_check_rest_node_access_is_allowed($node,'delete');
+    core_set_cors_headers();
 
     $node->remove();
     http_response_code(200);
@@ -1294,7 +1324,14 @@ function sys_node_restapi_list_callback()
     $start = par('start');
     $limit = par('limit');
 
+    if(strcasecmp($_SERVER['REQUEST_METHOD'], 'OPTIONS') == 0)
+        load_loc("restapi/options");
+
+    if(strcasecmp($_SERVER['REQUEST_METHOD'], 'GET') != 0)
+        load_loc('restapi/error',['message' => 'Bad request!','code' => '400'],400);
+
     sys_node_check_rest_valid_nodetype($nodetype);
+    core_set_cors_headers();
 
     $samle_node = node_create($nodetype);
     sys_node_check_rest_action_is_enabled($samle_node,true);

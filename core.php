@@ -45,6 +45,8 @@ function hook_core_boot()
 
     $site_config->authcookie_name_salt  = 'Ux8W-pO5zeY+@ews';
 
+    $site_config->cors_requests_enabled_hosts  = '';
+
     $translations = array();
     //------------------------------------------------
 
@@ -1445,6 +1447,17 @@ function sys_assemble($c)
            $c->html_end;
 }
 
+/** Set CORS headers according to the $site_config->cors_requests_enabled_hosts settings */
+function core_set_cors_headers()
+{
+    global $site_config;
+    if($site_config->cors_requests_enabled_hosts != '')
+    {
+        header("Access-Control-Allow-Origin: ".$site_config->cors_requests_enabled_hosts);
+        header("Access-Control-Allow-Methods: GET,POST,PUT,PATCH,DELETE,OPTIONS");
+        header("Access-Control-Allow-Headers: Content-Type");
+    }
+}
 /** @ignore Page callback of the "notfound" location */
 function core_notfound_page()
 {

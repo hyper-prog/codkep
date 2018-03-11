@@ -571,6 +571,11 @@ function create_task(description,cost,deadline)
 create_task("Do something",22,"2017-02-11");
 ~~~
 
+*Note: If you need [CORS|url:https://en.wikipedia.org/wiki/Cross-origin_resource_sharing]*
+*(Cross-Origin Resource Sharing) in the built-in rest services you need to set*
+* the ***$site_config->cors_requests_enabled_hosts*** variable in [site settings|url:doc/codkep/modules#site_settings].*
+* In your own rest callbacks you also need to call the  ***core_set_cors_headers()*** function to set the needed CORS headers.*
+
 = A complete example =
 
 
