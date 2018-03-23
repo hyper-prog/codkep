@@ -164,7 +164,6 @@ class HtmlTable
             return $str;
         if(strpos($str,'#') === FALSE)
             return $str;
-        $s = '';
         $parts = explode('#',$str);
         if(isset($parts[0]) && $parts[0] == 'LINK' && isset($parts[1]) && isset($parts[2]))
         {
@@ -3325,7 +3324,7 @@ function speedform_get_field_display_value($definition,$sqlname,$value)
     return $value;
 }
 
-/** Change the sort order sql string by option array useable by to_table function
+/** Change the sort order sql string by option array usable by to_table function
  * @param mixed $sp The original sort parameter string
  * @param array $options The customisation orders of the table by to_table
  * @return string Returns the modified sort string

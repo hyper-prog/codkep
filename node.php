@@ -418,11 +418,7 @@ class Node
         $this->m_before_insert();
 
         sql_transaction();
-        global $db;
-        global $user;
-
         $this->join_id = $this->insert_data();
-
         $ptempl = $this->preferred_theme === NULL ? 'NULL' : "'$this->preferred_theme'";
         sql_exec("INSERT INTO node(type,join_id,ptempl,creator,created)
                   VALUES(:ttype,:tjoin_id,:ptempl,:tcreator,".sql_t('current_timestamp').")",
@@ -433,7 +429,6 @@ class Node
         $this->nid = sql_exec_single("SELECT nid FROM node WHERE type=:ttype AND join_id=:tjoin_id",
                             [':ttype' => $this->type,
                              ':tjoin_id' => $this->join_id]);
-
         sql_commit();
 
         $this->m_after_insert();
@@ -452,7 +447,6 @@ class Node
 
     public static function load($nid = NULL,$trunk = false)
     {
-        global $sys_data;
         if($nid === NULL)
             return NULL;
         if($nid !== NULL)
