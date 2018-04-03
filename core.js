@@ -207,6 +207,68 @@ function forms_click_selreset(id)
     jQuery('#reset_'+id).hide();
 }
 
+function dialogDragElement(elmnt)
+{
+    var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    document.getElementsByClassName('ck_dialog_header')[0].onmousedown = dragMouseDown;
+    function dragMouseDown(e)
+    {
+        e = e || window.event;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+    }
+
+    function elementDrag(e)
+    {
+        e = e || window.event;
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+        elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+     }
+
+    function closeDragElement()
+    {
+        document.onmouseup = null;
+        document.onmousemove = null;
+    }
+}
+
+function popup_ckdialog()
+{
+    console.log("Popupping dialog...");
+    dialogDragElement(document.getElementsByClassName("ck_dialog_body")[0]);
+
+    // Get the modal
+    var modal = document.getElementsByClassName('ck_modalpane')[0];
+    var modalin = document.getElementsByClassName('ck_dialog_body')[0];
+
+    // Get the <span> element that closes the modal
+    var span = document.getElementsByClassName("ck_dialog_close")[0];
+
+    // When the user clicks the button, open the modal
+    modal.style.display = "block";
+    modalin.style.display = "block";
+
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function() {
+        console.log('Dialog close');
+        modal.style.display = "none";
+        modalin.style.display = "none";
+    }
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            // But we don't want this now: modal.style.display = "none";
+        }
+    }
+}
+
 jQuery(document).ready(function() {
     initializeAjaxLinks();
 });

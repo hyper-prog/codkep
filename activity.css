@@ -104,4 +104,91 @@
     cursor: pointer;
 }
 
+/* ************ POPUP DIALOG CSS ******************** */
+.ck_modalpane {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+.ck_dialog_body {
+    display: none;
+    position: absolute;
+    z-index: 9;
+    text-align: center;
+    border: 1px solid #d3d3d3;
+    background-color: #fefefe;
+    box-shadow: 0 5px 10px 0 rgba(0,0,20,0.6),0 8px 25px 0 rgba(0,0,20,0.5);
+    top: 5%;
+    width: 80%;
+    left: 10%;
+    height: auto;
+
+    -webkit-animation-name: animatetop;
+    -webkit-animation-duration: 0.4s;
+    animation-name: animatetop;
+    animation-duration: 0.3s
+}
+.ck_dialog_prec {
+    display: block;
+    height: auto;
+}
+.ck_dialog_content {
+    display: block;
+    height: auto;
+}
+
+/* Add Animation */
+@-webkit-keyframes animatetop {
+    from {top:-500px; opacity:0;}
+    to {top:0; opacity:1;}
+}
+
+@keyframes animatetop {
+    from {top:-300px; opacity:0}
+    to {top:5%; opacity:1}
+}
+
+.ck_dialog_header {
+    display: block;
+    padding: 3px;
+    cursor: pointer;
+    z-index: 10;
+    background-color: #2196F3;
+    color: #fff;
+}
+.ck_dialog_close {
+    display: block;
+    margin: 0;
+    color: white;
+    float: right;
+    font-weight: bold;
+    width: 1em;
+    padding: 4px;
+    border-radius: 5px;
+    background-color: #0255F0;
+}
+
+.ck_dialog_title {
+    color: white;
+    float: left;
+    font-weight: bold;
+    padding: 3px 5px 3px 15px;
+}
+
+.ck_dialog_close:hover,
+.ck_dialog_close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+    background-color: #ff2020;
+}
+
 /* end css */

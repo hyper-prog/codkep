@@ -230,6 +230,7 @@ function flex_body($content,$route)
     print "     <div class=\"content\">\n";
     print $content->generated;
     print "     </div> <!-- .content --> \n";
+    print "     <div id=\"dialog_placeholder\"></div>";
 
     print "    </div> <!-- .section -->\n"; //SecMainC-e
     print "    <div class=\"c\"></div>\n";
