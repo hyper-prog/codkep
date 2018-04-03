@@ -734,6 +734,35 @@ class Node
     public function m_form_code_generation($form,$ro)  { return $form->get($ro); }
 }
 
+function node_query($nodetype)
+{
+    $d = node_get_definition_of_nodetype($nodetype);
+    if($d === null)
+        return null;
+
+    $pkn = '';
+    foreach($d['fields'] as $idx => $f)
+        if ($f['type'] == 'keys' || $f['type'] == 'keyn')
+        {
+            $pkn = $f['sql'];
+            break;
+        }
+
+    if($pkn == '')
+        return null;
+    $q = db_query('node');
+    $q->get(['node','nid'],'node_nid');
+    $q->get(['node','type'],'node_type');
+    $q->get(['node','join_id'],'node_join_id');
+    $q->get([$nodetype,$pkn]);
+    $q->join($d['table'],$nodetype,
+        cond('and')
+            ->ff(['node','join_id'],[$nodetype,$pkn],'=')
+            ->fv(['node','type'],$nodetype,'=')
+    );
+    return $q;
+}
+
 function node_create($type)
 {
     global $sys_data;

@@ -31,6 +31,8 @@ function hook_sql_boot()
     $db->schema_editor_password = ""; //empty means disabled!
     $db->schema_editor_allowed_for_admin = true;
 
+    $db->qinterface_default_db_handler_class = 'DatabaseQuerySql';
+
     $db->error_locations = [
         'connection_error' => 'sql_connection_error',
         'generic_error'    => 'sql_error',
@@ -40,6 +42,7 @@ function hook_sql_boot()
         'timestamp_noupd'   => ['mysql' => 'DATETIME'         ,     'pgsql' => 'TIMESTAMP', ],
         'current_timestamp' => ['mysql' => 'CURRENT_TIMESTAMP',     'pgsql' => 'now()'    , ],
         'longtext_type'     => ['mysql' => 'LONGTEXT'         ,     'pgsql' => 'TEXT'     , ],
+        'regex'             => ['mysql' => 'REGEXP'           ,     'pgsql' => '~'        , ],
     ];
 }
 
@@ -72,6 +75,7 @@ function sql_t($string)
         $t = "mysql";
     return $db->tr[$string][$t];
 }
+
 
 /** Connect to the sql database specified in settings */
 function sql_connect()
@@ -648,6 +652,590 @@ function sql_schema_page()
 
     return ob_get_clean();
 }
+
+/* ========= General database query/mode parts ========= */
+
+/** General database query/modify interface starter function */
+function db_action($action,$container,$alias = '',array $options = [])
+{
+    global $db;
+    return new $db->qinterface_default_db_handler_class($action,$container,$alias,$options);
+}
+
+/** General database query starter function */
+function db_query($container,$alias = '',array $options = [])
+{
+    return db_action('query',$container,$alias,$options);
+}
+
+/** General database insert starter function */
+function db_insert($container,array $options = [])
+{
+    return db_action('insert',$container,'',$options);
+}
+
+/** General database update starter function */
+function db_update($container,array $options = [])
+{
+    return db_action('update',$container,'',$options);
+}
+
+/** General database delete starter function */
+function db_delete($container,array $options = [])
+{
+    return db_action('delete',$container,'',$options);
+}
+
+/** Creates a database condition object */
+function cond($l)
+{
+    return new DatabaseCond($l,false);
+}
+
+/** Creates a database condition object in inverse */
+function not_cond($l)
+{
+    return new DatabaseCond($l,true);
+}
+
+class DatabaseQuery
+{
+    protected $querytype;
+    protected $conf;
+    public function __construct($querytype,$container,$container_alias,array $container_options)
+    {
+        $this->querytype = $querytype;
+        $this->conf = [
+            'cont'       => $container,
+            'cont_alias' => $container_alias,
+            'cont_opts'  => $container_options,
+            'mods'       => [],
+            'gets'       => [],
+            'sets'       => [],
+            'joins'      => [],
+            'conditions' => new DatabaseCond('and'),
+            'sorts'      => [],
+            'start'      => null,
+            'length'     => null,
+        ];
+    }
+
+    public function get_a(array $fieldnames,$container = '',array $options = [])
+    {
+        foreach($fieldnames as $f)
+            $this->get([$container,$f],'',$options);
+        return $this;
+    }
+
+    public function get($fieldspec,$alias = '',array $options = [])
+    {
+        $f = [];
+        if(is_array($fieldspec))
+        {
+            $f['cont'] = $fieldspec[0];
+            $f['name'] = $fieldspec[1];
+        }
+        else
+        {
+            $f['name'] = $fieldspec;
+            $f['cont'] = '';
+        }
+        $f['opts'] = $options;
+        $f['alias'] = $alias;
+        $this->conf['gets'][] = $f;
+        return $this;
+    }
+
+    public function get_clean()
+    {
+        $this->conf['gets'] = [];
+        return $this;
+    }
+
+    public function counting($fieldspec = '',$alias = '')
+    {
+        $this->conf['gets'] = [];
+        if($alias == '')
+            $alias = 'cnt';
+        if($fieldspec == '')
+            $fieldspec = '*';
+        $this->get($fieldspec,$alias,['function' => 'count']);
+        return $this;
+    }
+
+    public function set_fv($fieldspec,$value,array $options = [])
+    {
+        $this->conf['sets'][] = ['name' => $fieldspec,'value' => $value,'type' => 'value','opts' => $options];
+        return $this;
+    }
+
+    public function set_fv_a($field_value_array)
+    {
+        foreach($field_value_array as $n => $v)
+            $this->set_fv($n,$v);
+        return $this;
+    }
+
+    public function set_fe($fieldspec,$expression,array $options = [])
+    {
+        $this->conf['sets'][] = ['name' => $fieldspec,'value' => $expression,'type' => 'expr','opts' => $options];
+        return $this;
+    }
+    public function join($container,$alias,$conditions)
+    {
+        $this->conf['joins'][] =
+            ['type' => 'normal','container' => $container,'alias' => $alias,'conditions' => $conditions];
+        return $this;
+    }
+    public function join_opt($container,$alias,$conditions)
+    {
+        $this->conf['joins'][] =
+            ['type' => 'optional','container' => $container,'alias' => $alias,'conditions' => $conditions];
+        return $this;
+    }
+    public function cond($cond)
+    {
+        $this->conf['conditions']->cond($cond);
+        return $this;
+    }
+    public function cond_ff($fieldspec1,$fieldspec2,$op,array $options = [])
+    {
+        $this->conf['conditions']->ff($fieldspec1,$fieldspec2,$op,$options);
+        return $this;
+    }
+    public function cond_fv($fieldspec,$value,$op,array $options = [])
+    {
+        $this->conf['conditions']->fv($fieldspec,$value,$op,$options);
+        return $this;
+    }
+    public function cond_fe($fieldspec,$expression,$op,array $options = [])
+    {
+        $this->conf['conditions']->fe($fieldspec,$expression,$op,$options);
+        return $this;
+    }
+    public function cond_sql($sqlpart)
+    {
+        $this->conf['conditions']->sql($sqlpart);
+        return $this;
+    }
+
+    public function sort($fieldspec,array $options = [])
+    {
+        $this->conf['sorts'][] = ['field' => $fieldspec,'opts' => $options];
+        return $this;
+    }
+
+    public function start($start)
+    {
+        $this->conf['start'] = $start;
+        return $this;
+    }
+    public function length($length)
+    {
+        $this->conf['length'] = $length;
+        return $this;
+    }
+
+    public function local_cmd()
+    {
+        return '';
+    }
+
+    public function execute(array $eopts = [])
+    {
+        return null;
+    }
+    public function execute_and_fetch(array $eopts = [])
+    {
+        return null;
+    }
+    public function execute_to_row(array $eopts = [])
+    {
+        return [];
+    }
+    public function execute_to_arrays(array $eopts = [])
+    {
+        return [];
+    }
+}
+
+class DatabaseCond
+{
+    public $logic;
+    public $conds;
+    public $not;
+    public function __construct($logic,$not = false)
+    {
+        $this->not = $not;
+        $this->logic = $logic;
+        $this->conds = [];
+    }
+    public function cond($cond)
+    {
+        $this->conds[] = $cond;
+    }
+    public function ff($fieldspec1,$fieldspec2,$op,array $options = [])
+    {
+        $this->conds[] = ['type' => 'ff','op' => $op,'f1' => $fieldspec1,'f2' => $fieldspec2,'opts' => $options];
+        return $this;
+    }
+    public function fv($fieldspec,$value,$op,array $options = [])
+    {
+        $this->conds[] = ['type' => 'fv','op' => $op,'f' => $fieldspec,'v' => $value,'opts' => $options];
+        return $this;
+    }
+    public function fe($fieldspec,$expression,$op,array $options = [])
+    {
+        $this->conds[] = ['type' => 'fe','op' => $op,'f' => $fieldspec,'e' => $expression,'opts' => $options];
+        return $this;
+    }
+    public function sql($sqlpart,array $options = [])
+    {
+        $this->conds[] = ['type' => 'sql','sql' => $sqlpart,'opts' => $options];
+        return $this;
+    }
+}
+
+/* General sql activity clas SQL specific class */
+class DatabaseQuerySql extends DatabaseQuery
+{
+    protected $calculated_query;
+    protected $passed_parameters;
+    protected $phidx;
+
+    protected $valid_operands;
+
+    public function __construct($querytype,$container,$container_alias, array $container_options)
+    {
+        parent::__construct($querytype,$container, $container_alias, $container_options);
+        $this->passed_parameters = [];
+        $this->valid_operands = ['=','!=','>','<','>=','<=','regex'];
+    }
+
+    public function build_sql_query()
+    {
+        $fc = 0;
+        $this->phidx = 1;
+        $this->calculated_query = '';
+        if($this->querytype == 'insert')
+        {
+            $this->calculated_query = "INSERT INTO " . $this->conf['cont'];
+            $np = '(';
+            $vp = ' VALUES(';
+            foreach($this->conf['sets'] as $set)
+            {
+                if($fc > 0)
+                {
+                    $np .= ',';
+                    $vp .= ',';
+                }
+                ++$fc;
+                if($set['type'] == 'value')
+                {
+                    $np .= $set['name'];
+
+                    if(isset($set['opts']['function']) && $set['opts']['function'] != '')
+                        $vp .= $set['opts']['function'] . '(';
+                    $vp .= ':phi_'.$this->phidx;
+                    if(isset($set['opts']['function']) && $set['opts']['function'] != '')
+                    {
+                        if(isset($set['opts']['more_args']) && $set['opts']['more_args'] != '')
+                            $vp .= ','.$set['opts']['more_args'];
+                        $vp .= ')';
+                    }
+
+                    $this->passed_parameters[':phi_'.$this->phidx] = $set['value'];
+                    $this->phidx++;
+                }
+                if($set['type'] == 'expr')
+                {
+                    $np .= $set['name'];
+
+                    if(isset($set['opts']['function']) && $set['opts']['function'] != '')
+                        $vp .= $set['opts']['function'] . '(';
+                    $vp .= $set['value'];
+                    if(isset($set['opts']['function']) && $set['opts']['function'] != '')
+                    {
+                        if(isset($set['opts']['more_args']) && $set['opts']['more_args'] != '')
+                            $vp .= ','.$set['opts']['more_args'];
+                        $vp .= ')';
+                    }
+                }
+            }
+            $this->calculated_query .= $np. ')'.$vp.')';
+        }
+        if($this->querytype == 'query')
+        {
+            $this->calculated_query = "SELECT ";
+            foreach($this->conf['gets'] as $field)
+            {
+                if($fc > 0)
+                    $this->calculated_query .= ',';
+                ++$fc;
+                if(isset($field['opts']['function']) && $field['opts']['function'] != '')
+                    $this->calculated_query .= $field['opts']['function'].'(';
+                if($field['cont'] != '')
+                    $this->calculated_query .= $field['cont'].'.';
+                $this->calculated_query .= $field['name'];
+                if(isset($field['opts']['function']) && $field['opts']['function'] != '')
+                {
+                    if(isset($field['opts']['more_args']) && $field['opts']['more_args'] != '')
+                        $this->calculated_query .= ','.$field['opts']['more_args'];
+                    $this->calculated_query .= ')';
+                }
+                if($field['alias'] != '')
+                    $this->calculated_query .= ' AS '.$field['alias'];
+            }
+            if($fc == 0)
+                $this->calculated_query .= '*';
+
+            $this->calculated_query .= "\nFROM " . $this->conf['cont'];
+
+            if($this->conf['cont_alias'] != '')
+                $this->calculated_query .= ' AS ' . $this->conf['cont_alias'];
+
+            foreach($this->conf['joins'] as $join)
+            {
+                if($join['type'] == 'normal')
+                    $this->calculated_query .= "\nINNER JOIN ".$join['container'];
+                if($join['type'] == 'optional')
+                    $this->calculated_query .= "\nLEFT OUTER JOIN ".$join['container'];
+                if($join['alias'] != '')
+                    $this->calculated_query .= ' AS ' . $join['alias'];
+                $this->calculated_query .= ' ON ' . $this->build_condition_part($join['conditions']);
+            }
+        }
+
+        if($this->querytype == 'update')
+        {
+            $this->calculated_query = "UPDATE " . $this->conf['cont'] . ' SET ';
+            foreach($this->conf['sets'] as $set)
+            {
+                if($fc > 0)
+                    $this->calculated_query .= ',';
+                ++$fc;
+                if($set['type'] == 'value')
+                {
+                    $this->calculated_query .= $set['name'] . '=';
+
+                    if(isset($set['opts']['function']) && $set['opts']['function'] != '')
+                        $this->calculated_query .= $set['opts']['function'] . '(';
+                    $this->calculated_query .= ':phi_'.$this->phidx;
+                    if(isset($set['opts']['function']) && $set['opts']['function'] != '')
+                    {
+                        if(isset($set['opts']['more_args']) && $set['opts']['more_args'] != '')
+                            $this->calculated_query .= ','.$set['opts']['more_args'];
+                        $this->calculated_query .= ')';
+                    }
+
+                    $this->passed_parameters[':phi_'.$this->phidx] = $set['value'];
+                    $this->phidx++;
+                }
+                if($set['type'] == 'expr')
+                {
+                    $this->calculated_query .= $set['name'] . '=';
+                    if(isset($set['opts']['function']) && $set['opts']['function'] != '')
+                        $this->calculated_query .= $set['opts']['function'] . '(';
+                    $this->calculated_query .= $set['value'];
+                    if(isset($set['opts']['function']) && $set['opts']['function'] != '')
+                    {
+                        if(isset($set['opts']['more_args']) && $set['opts']['more_args'] != '')
+                            $this->calculated_query .= ','.$set['opts']['more_args'];
+                        $this->calculated_query .= ')';
+                    }
+                }
+            }
+        }
+
+        if($this->querytype == 'delete')
+        {
+            $this->calculated_query = "DELETE FROM " . $this->conf['cont'];
+        }
+
+        if($this->querytype == 'query' || $this->querytype == 'update' || $this->querytype == 'delete')
+        {
+            $condtext = $this->build_condition_part($this->conf['conditions']);
+            if ($condtext != '')
+                $this->calculated_query .= "\nWHERE " . $condtext;
+        }
+
+        if($this->querytype == 'query')
+        {
+            $sortcount = 0;
+            foreach($this->conf['sorts'] as $sort)
+            {
+                if($sortcount == 0)
+                    $this->calculated_query .= "\nORDER BY ";
+                else
+                    $this->calculated_query .= ',';
+
+                if(isset($sort['opts']['function']) && $sort['opts']['function'] != '')
+                    $this->calculated_query .= $sort['opts']['function'] . '(';
+
+                if(is_array($sort['field']))
+                    $this->calculated_query .= $sort['field'][0] . '.' . $sort['field'][1];
+                else
+                    $this->calculated_query .= $sort['field'];
+
+                if(isset($sort['opts']['function']) && $sort['opts']['function'] != '')
+                {
+                    if(isset($sort['opts']['more_args']) && $sort['opts']['more_args'] != '')
+                        $this->calculated_query .= ','.$sort['opts']['more_args'];
+                    $this->calculated_query .= ')';
+                }
+
+                if(isset($sort['opts']['direction']) && $sort['opts']['direction'] = 'REVERSE')
+                    $this->calculated_query .= ' DESC';
+                ++$sortcount;
+            }
+
+            if($this->conf['length'] !== null)
+                $this->calculated_query .= "\nLIMIT ".$this->conf['length'];
+            if($this->conf['start'] !== null)
+                $this->calculated_query .= "\nOFFSET ".$this->conf['start'];
+        }
+    }
+
+    public function build_condition_part($c)
+    {
+        $qsp = '';
+        foreach($c->conds as $cond)
+        {
+            if(is_object($cond))
+            {
+                if($qsp != '')
+                    $qsp .= ' '.strtoupper($c->logic).' ';
+                if($cond->not)
+                    $qsp .= 'NOT ';
+                $qsp .= '('.$this->build_condition_part($cond).')';
+                continue;
+            }
+            if($qsp != '')
+                $qsp .= ' '.$c->logic.' ';
+            $op = $cond['op'];
+            if($cond['type'] != 'sql')
+                if(in_array($op,$this->valid_operands) !== TRUE)
+                {
+                    throw new Exception('Unknown operand');
+                }
+            if($op == '!=')
+                $op = '<>';
+            if($op == 'regex')
+                $op = sql_t($op);
+            if($cond['type'] == 'ff')
+            {
+                if(isset($cond['opts']['f1function']) && $cond['opts']['f1function'] != '')
+                    $qsp .= $cond['opts']['f1function'] . '(';
+                if(is_array($cond['f1']))
+                    $qsp .= $cond['f1'][0] . '.' . $cond['f1'][1];
+                else
+                    $qsp .= $cond['f1'];
+                if(isset($cond['opts']['f1function']) && $cond['opts']['f1function'] != '')
+                    $qsp .= ')';
+
+                $qsp .= $op;
+
+                if(isset($cond['opts']['f2function']) && $cond['opts']['f2function'] != '')
+                    $qsp .= $cond['opts']['f2function'] . '(';
+                if(is_array($cond['f2']))
+                    $qsp .= $cond['f2'][0] . '.' . $cond['f2'][1];
+                else
+                    $qsp .= $cond['f2'];
+                if(isset($cond['opts']['f2function']) && $cond['opts']['f2function'] != '')
+                    $qsp .= ')';
+            }
+            if($cond['type'] == 'fv')
+            {
+                if(is_array($cond['f']))
+                    $qsp .= $cond['f'][0] . '.' . $cond['f'][1];
+                else
+                    $qsp .= $cond['f'];
+                $qsp .= $op;
+
+                if(isset($cond['opts']['vfunction']) && $cond['opts']['vfunction'] != '')
+                    $qsp .= $cond['opts']['vfunction'] . '(';
+                $qsp .= ':phi_'.$this->phidx;
+                if(isset($cond['opts']['vfunction']) && $cond['opts']['vfunction'] != '')
+                    $qsp .=  ')';
+
+                $this->passed_parameters[':phi_'.$this->phidx] = $cond['v'];
+                $this->phidx++;
+            }
+            if($cond['type'] == 'fe')
+            {
+                if(is_array($cond['f']))
+                    $qsp .= $cond['f'][0] . '.' . $cond['f'][1];
+                else
+                    $qsp .= $cond['f'];
+                $qsp .= $op;
+
+                if(isset($cond['opts']['efunction']) && $cond['opts']['efunction'] != '')
+                    $qsp .= $cond['opts']['efunction'] . '(';
+                $qsp .= $cond['e'];
+                if(isset($cond['opts']['efunction']) && $cond['opts']['efunction'] != '')
+                    $qsp .= ')';
+            }
+            if($cond['type'] == 'sql')
+            {
+                $qsp .= $cond['sql'];
+            }
+        }
+        return $qsp;
+    }
+    public function local_cmd()
+    {
+        $this->build_sql_query();
+        return $this->calculated_query;
+    }
+
+    public function execute(array $eopts = [])
+    {
+        $this->build_sql_query();
+        $errormsg = '';
+        if(isset($eopts['errormsg']))
+            $errormsg = $eopts['errormsg'];
+        if(isset($eopts['noredirect']) && $eopts['noredirect'])
+            return sql_exec_noredirect($this->calculated_query,$this->passed_parameters);
+        return sql_exec($this->calculated_query,$this->passed_parameters,$errormsg);
+    }
+
+    public function execute_and_fetch(array $eopts = [])
+    {
+        $this->build_sql_query();
+        $errormsg = '';
+        if(isset($eopts['errormsg']))
+            $errormsg = $eopts['errormsg'];
+        return sql_exec_fetchN($this->calculated_query,$this->passed_parameters,$errormsg);
+    }
+
+    public function execute_to_row(array $eopts = [])
+    {
+        return $this->execute_and_fetch($eopts);
+    }
+
+    public function execute_to_single(array $eopts = [])
+    {
+        $this->build_sql_query();
+        $errormsg = '';
+        if(isset($eopts['errormsg']))
+            $errormsg = $eopts['errormsg'];
+        return sql_exec_single($this->calculated_query,$this->passed_parameters,$errormsg);
+    }
+
+    public function execute_to_arrays(array $eopts = [])
+    {
+        $this->build_sql_query();
+        $errormsg = '';
+        if(isset($eopts['errormsg']))
+            $errormsg = $eopts['errormsg'];
+        $fetch_names_only = false;
+        if(isset($eopts['fetch_names_only']) && $eopts['fetch_names_only'])
+            $fetch_names_only = true;
+        return sql_exec_fetchAll($this->calculated_query,$this->passed_parameters,$errormsg,$fetch_names_only);
+    }
+}
+
+/* == End of general database query/mode parts == */
 
 function hook_sql_documentation($section)
 {
