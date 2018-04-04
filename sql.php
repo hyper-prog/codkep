@@ -787,10 +787,30 @@ class DatabaseQuery
             ['type' => 'normal','container' => $container,'alias' => $alias,'conditions' => $conditions];
         return $this;
     }
+    public function join_ffe($container,$alias,$field1,$field2)
+    {
+        $this->conf['joins'][] = [
+            'type' => 'normal',
+            'container' => $container,
+            'alias' => $alias,
+            'conditions' => cond('and')->ff($field1,$field2,'='),
+        ];
+        return $this;
+    }
     public function join_opt($container,$alias,$conditions)
     {
         $this->conf['joins'][] =
             ['type' => 'optional','container' => $container,'alias' => $alias,'conditions' => $conditions];
+        return $this;
+    }
+    public function join_opt_ffe($container,$alias,$field1,$field2)
+    {
+        $this->conf['joins'][] = [
+            'type' => 'optional',
+            'container' => $container,
+            'alias' => $alias,
+            'conditions' => cond('and')->ff($field1,$field2,'='),
+        ];
         return $this;
     }
     public function cond($cond)
@@ -896,7 +916,7 @@ class DatabaseCond
     }
 }
 
-/* General sql activity clas SQL specific class */
+/* General sql activity class SQL specific class */
 class DatabaseQuerySql extends DatabaseQuery
 {
     protected $calculated_query;
@@ -1000,7 +1020,7 @@ class DatabaseQuerySql extends DatabaseQuery
                     $this->calculated_query .= "\nINNER JOIN ".$join['container'];
                 if($join['type'] == 'optional')
                     $this->calculated_query .= "\nLEFT OUTER JOIN ".$join['container'];
-                if($join['alias'] != '')
+                if($join['alias'] != '' && $join['alias'] != $join['container'])
                     $this->calculated_query .= ' AS ' . $join['alias'];
                 $this->calculated_query .= ' ON ' . $this->build_condition_part($join['conditions']);
             }
@@ -1116,10 +1136,12 @@ class DatabaseQuerySql extends DatabaseQuery
             if(isset($cond['op']))
                 $op = $cond['op'];
             if($cond['type'] != 'sql')
+            {
+                if($op == '')
+                    throw new Exception('Missing operand');
                 if(in_array($op,$this->valid_operands) !== TRUE)
-                {
                     throw new Exception('Unknown operand');
-                }
+            }
             if($op == '!=')
                 $op = '<>';
             if($op == 'regex')
