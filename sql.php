@@ -991,7 +991,7 @@ class DatabaseQuerySql extends DatabaseQuery
 
             $this->calculated_query .= "\nFROM " . $this->conf['cont'];
 
-            if($this->conf['cont_alias'] != '')
+            if($this->conf['cont_alias'] != '' && $this->conf['cont_alias'] != $this->conf['cont'])
                 $this->calculated_query .= ' AS ' . $this->conf['cont_alias'];
 
             foreach($this->conf['joins'] as $join)
@@ -1112,7 +1112,9 @@ class DatabaseQuerySql extends DatabaseQuery
             }
             if($qsp != '')
                 $qsp .= ' '.$c->logic.' ';
-            $op = $cond['op'];
+            $op = '';
+            if(isset($cond['op']))
+                $op = $cond['op'];
             if($cond['type'] != 'sql')
                 if(in_array($op,$this->valid_operands) !== TRUE)
                 {
