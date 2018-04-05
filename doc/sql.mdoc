@@ -213,6 +213,190 @@ print "</ul>";
 ~~~
 See [error handling section|url:#errorhandling]
 
+#database_query_interface#
+== General database CRUD interface ==
+
+The CodKep's sql module have a database Create/Read/Update/Delete interface which can generate the sql commands
+dynamically. It makes easier to create polimorf database actions, or simply use cleaner look database operations.
+.
+**Demonstration exaples:**
+<table><tr>
+<td>
+~~~code
+sql_exec_single(
+ 'SELECT name FROM students WHERE sid=:sidp',
+ [':sidp' => 5]);
+~~~
+</td><td>
+~~~code
+db_query('students')
+  ->get('name')
+  ->cond_fv('sid',5,'=')
+  ->execute_to_single();
+~~~
+</td>
+</tr><tr>
+<td>
+~~~code
+sql_exec('
+  SELECT name,identifier FROM students
+  INNER JOIN exams ON exams.stid=students.sid
+  WHERE exams.eid=:eidp AND exams.result > :resp
+  ORDER BY name',
+  [':eidp' => 15,':resp' => 1]);
+~~~
+</td><td>
+~~~code
+db_query('students')
+  ->get_a(['name','identifier'])
+  ->join_ffe('exams','','stid','sid')
+  ->cond_fv('eid',15,'=')
+  ->cond_fv('result',1,'>')
+  ->sort('name')
+  ->execute();
+~~~
+</td>
+</tr><tr>
+<td>
+~~~code
+sql_exec('
+  INSERT INTO students(name,bday)
+  VALUES(:namep,:bdayp)',
+  [':namep' => 'Dave',
+   ':bdayp' => '2005-01-03']);
+~~~
+</td><td>
+~~~code
+db_insert('students')
+  ->set_fv_a(['name' => 'Dave',
+              'bday' => '2005-01-03'])
+  ->execute();
+~~~
+</td>
+</tr><tr>
+<td>
+~~~code
+sql_exec('
+  UPDATE exams SET result=:resp
+  WHERE stid=:studentp AND result IS NULL',
+  [':resp' => 3,
+   ':studentp' => 135]);
+~~~
+</td><td>
+~~~code
+db_update('exams')
+  ->set_fv('result',3)
+  ->cond_fv('stid',135,'=')
+  ->cond_fnull('result')
+  ->execute();
+~~~
+
+</td>
+</tr></table>
+
+**Using of the general database interface:**
+.
+The interface has 4 starter function to create the four base operation.
+- @@@db_query($tablename,$alias = '',array $options = [])@@@
+ - Usable for start database queries/reads.
+- @@@db_insert($tablename,array $options = [])@@@
+ - Usable for start database inserts.
+- @@@db_update($tablename,array $options = [])@@@
+ - Usable for start database updates.
+- @@@db_delete($tablename,array $options = [])@@@
+ - Usable for start database deletions.
+
+All four function above returns a ***DatabaseQuery*** descendant object which have many methods to customize/set the
+features of the desired database operation.
+
+=== Methods of DatabaseQuery ===
+
+- @@@get($fieldspec,$alias = '',array $options = [])@@@
+ - Adds exactly one field to the queried fields list
+ - The ***$fieldspec*** parameter specify the field according to [FIELDSPEC specification|url:#fieldspec].
+ - If the ***$alias*** parameter is not empty the field data will be available under this name.
+ \ Otherwise the field name is usable.
+ - Associative array of the field options according to [OPTIONS specification|url:#fieldopts].
+- @@@get_a(array $fieldnames,$container = '',array $options = [])@@@
+ - Adds an **A**rray of fields to the queried fields list
+ - ***$fieldnames*** is an array of strings containing the needed field names.
+ - If the ***$container*** parameter is not empty the specified fields will be assigned to this container (table).
+ - Associative array of the options according to [OPTIONS specification|url:#fieldopts].
+- @@@get_clean()@@@
+ - Erase every field from the queried fields list
+- @@@counting($fieldspec = '',$alias = '')@@@
+ - Erase the queried fields list and add the specified field as COUNT field.
+ - The ***$fieldspec*** parameter specify the field according to [FIELDSPEC specification|url:#fieldspec].
+ - If the ***$alias*** parameter is not empty the COUNT field data will be available under this name.
+ - If no parameter passed the function will count the * fields under name "cnt".
+ \ So it means: COUNT(*) AS cnt
+- @@@set_fv($fieldspec,$value,array $options = [])@@@
+ - **Set** a **F**ield-**V**alue.
+ - Sets a single field's value according to the ***$value*** parameter.
+ \ The value is set through the sql parameter system.
+ - The ***$fieldspec*** parameter specify the field according to [FIELDSPEC specification|url:#fieldspec].
+ - Associative array of the options according to [OPTIONS specification|url:#fieldopts].
+- @@@set_fv_a($field_value_array)@@@
+ - **Set** a **F**ield-**V**alue **A**rray.
+ - Sets an array of field's value according to the parameter passed associative array where the indexes are the field
+ \ names and the values are the desired values to set.
+- @@@set_fe($fieldspec,$expression,array $options = [])@@@
+ - **Set** a **F**ield-**E**xpression.
+ - Sets a single field's value according to the ***$expression*** parameter.
+ \ The expression value is writed directly into the sql query. The parameter system is not used here.
+ - The ***$fieldspec*** parameter specify the field according to [FIELDSPEC specification|url:#fieldspec].
+ - Associative array of the options according to [OPTIONS specification|url:#fieldopts].
+- @@@set_clean()@@@
+ - Erase every field settings from the set fields list. (Erase all effects of ***set_**** functions.)
+- @@@join($container,$alias,$conditions)@@@
+ - ...
+- @@@join_ffe($container,$alias,$field1,$field2)@@@
+ - ...
+- @@@join_opt($container,$alias,$conditions)@@@
+ - ...
+- @@@join_opt_ffe($container,$alias,$field1,$field2)@@@
+ - ...
+- @@@join_clean()@@@
+ - ...
+
+- @@@cond($cond)@@@
+ - ...
+- @@@cond_ff($fieldspec1,$fieldspec2,$op,array $options = [])@@@
+ - ...
+- @@@cond_fv($fieldspec,$value,$op,array $options = [])@@@
+ - ...
+- @@@cond_fe($fieldspec,$expression,$op,array $options = [])@@@
+ - ...
+- @@@cond_fb($fieldspec,array $options = [])@@@
+ - ...
+- @@@cond_fnull($fieldspec,array $options = [])@@@
+ - ...
+- @@@cond_sql($sqlpart)@@@
+ - ...
+- @@@cond_clean()@@@
+ - ...
+
+- @@@sort($fieldspec,array $options = [])@@@
+ - ...
+- @@@sort_clean()@@@
+ - ...
+
+- @@@start($start)@@@
+ - ...
+- @@@length($length)@@@
+ - ...
+- @@@local_cmd()@@@
+ - ...
+- @@@execute(array $eopts = [])@@@
+ - ...
+- @@@execute_and_fetch(array $eopts = [])@@@
+ - ...
+- @@@execute_to_single(array $eopts = [])@@@
+ - ...
+- @@@execute_to_row(array $eopts = [])@@@
+ - ...
+- @@@execute_to_arrays(array $eopts = [])@@@
+ - ...
 
 
 #transactions#

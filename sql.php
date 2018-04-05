@@ -752,6 +752,30 @@ class DatabaseQuery
         return $this;
     }
 
+    public function set_clean()
+    {
+        $this->conf['sets'] = [];
+        return $this;
+    }
+
+    public function join_clean()
+    {
+        $this->conf['joins'] = [];
+        return $this;
+    }
+
+    public function cond_clean()
+    {
+        $this->conf['conditions'] = new DatabaseCond('and');
+        return $this;
+    }
+
+    public function sort_clean()
+    {
+        $this->conf['sorts'] = [];
+        return $this;
+    }
+
     public function counting($fieldspec = '',$alias = '')
     {
         $this->conf['gets'] = [];
