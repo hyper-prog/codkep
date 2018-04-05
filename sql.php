@@ -838,6 +838,11 @@ class DatabaseQuery
         $this->conf['conditions']->fb($fieldspec,$options);
         return $this;
     }
+    public function cond_fnull($fieldspec,array $options = [])
+    {
+        $this->conf['conditions']->fnull($fieldspec,$options);
+        return $this;
+    }
     public function cond_sql($sqlpart)
     {
         $this->conf['conditions']->sql($sqlpart);
@@ -871,6 +876,10 @@ class DatabaseQuery
         return null;
     }
     public function execute_and_fetch(array $eopts = [])
+    {
+        return null;
+    }
+    public function execute_to_single(array $eopts = [])
     {
         return null;
     }
@@ -917,6 +926,11 @@ class DatabaseCond
     public function fb($fieldspec,array $options = [])
     {
         $this->conds[] = ['type' => 'fb','f' => $fieldspec,'opts' => $options];
+        return $this;
+    }
+    public function fnull($fieldspec,array $options = [])
+    {
+        $this->conds[] = ['type' => 'fn','f' => $fieldspec,'opts' => $options];
         return $this;
     }
     public function sql($sqlpart,array $options = [])
@@ -1145,7 +1159,7 @@ class DatabaseQuerySql extends DatabaseQuery
             $op = '';
             if(isset($cond['op']))
                 $op = $cond['op'];
-            if($cond['type'] != 'sql' && $cond['type'] != 'fb')
+            if($cond['type'] != 'sql' && $cond['type'] != 'fb' && $cond['type'] != 'fn')
             {
                 if($op == '')
                     throw new Exception('Missing operand');
@@ -1247,6 +1261,24 @@ class DatabaseQuerySql extends DatabaseQuery
 
                 if(isset($cond['opts']['ffunction']) && $cond['opts']['ffunction'] != '')
                     $qsp .= ')';
+            }
+            if($cond['type'] == 'fn')
+            {
+                if(isset($cond['opts']['opposite']) && $cond['opts']['opposite'])
+                    $qsp .= 'NOT ';
+
+                if(isset($cond['opts']['ffunction']) && $cond['opts']['ffunction'] != '')
+                    $qsp .= $cond['opts']['ffunction'] . '(';
+
+                if(is_array($cond['f']))
+                    $qsp .= $cond['f'][0] . '.' . $cond['f'][1];
+                else
+                    $qsp .= $cond['f'];
+
+                if(isset($cond['opts']['ffunction']) && $cond['opts']['ffunction'] != '')
+                    $qsp .= ')';
+
+                $qsp .= ' IS NULL';
             }
             if($cond['type'] == 'sql')
             {
