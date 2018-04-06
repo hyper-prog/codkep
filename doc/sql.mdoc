@@ -103,10 +103,12 @@ check this, because all further sql related functions will done this, or do corr
 #sqlexec#
 == Execute SQL commands ==
 
-
-
-You can execute arbitrary sql command by the following function:
+You can execute arbitrary sql command by the following functions in this section or you use the
+[general database CRUD interface|url:#database_query_interface] described later.
+These functions here are "low level" sql functions they almost directly pass the sql commands
+to the underlying driver interface.
 .
+
 @@@sql_exec($sql, $parameters = array(), $errormsg = '')@@@
 .
  - ***$sql*** parameter
@@ -217,7 +219,10 @@ See [error handling section|url:#errorhandling]
 == General database CRUD interface ==
 
 The CodKep's sql module have a database Create/Read/Update/Delete interface which can generate the sql commands
-dynamically. It makes easier to create polimorf database actions, or simply use cleaner look database operations.
+dynamically. It makes easier to create polimorf database actions, or simply creates cleaner look database operations.
+<br/>
+This interface uses the CodKep's internal sql functions to execute operations so that the transaction and error handling
+is same that you get in ***sql_exec_**** operations.
 .
 **Demonstration exaples:**
 <table><tr>
@@ -330,6 +335,7 @@ features of the desired database operation.
  - If the ***$alias*** parameter is not empty the COUNT field data will be available under this name.
  - If no parameter passed the function will count the * fields under name "cnt".
  \ So it means: COUNT(*) AS cnt
+
 - @@@set_fv($fieldspec,$value,array $options = [])@@@
  - **Set** a **F**ield-**V**alue.
  - Sets a single field's value according to the ***$value*** parameter.
@@ -348,16 +354,35 @@ features of the desired database operation.
  - Associative array of the options according to [OPTIONS specification|url:#fieldopts].
 - @@@set_clean()@@@
  - Erase every field settings from the set fields list. (Erase all effects of ***set_**** functions.)
+
 - @@@join($container,$alias,$conditions)@@@
- - ...
+ - Join a container/table to this query (INNER JOIN)
+ - The ***$container*** parameter is the name of the table to join.
+ - If the ***$alias*** is not null the passed alias name will be used.
+ - The ***$conditions*** parameter should be a ***DatabaseCond*** object. This object have to describe the connection
+ \ rules.
 - @@@join_ffe($container,$alias,$field1,$field2)@@@
- - ...
+ - Join a container/table easy way when **F**ield **F**ield **E**qual condition is sufficient. (INNER JOIN)
+ - This is a easy to use variable of normal ***join()*** method. It is usable when only a field equal to field typed condition
+ \ is used to join the tables. (***INNER JOIN secondtable ON secondtable.idf=maintable.connf***)
+ - The ***$container*** parameter is the name of the table to join.
+ - If the ***$alias*** is not null the passed alias name will be used.
+ - The ***$field1*** and ***$field2*** parameters are specifies the equal fields according to [FIELDSPEC specification|url:#fieldspec].
 - @@@join_opt($container,$alias,$conditions)@@@
- - ...
+ - Join a container/table **opt**ional way to this query (LEFT OUTER JOIN)
+ - The ***$container*** parameter is the name of the table to join.
+ - If the ***$alias*** is not null the passed alias name will be used.
+ - The ***$conditions*** parameter should be a ***DatabaseCond*** object. This object have to describe the connection
+ \ rules.
 - @@@join_opt_ffe($container,$alias,$field1,$field2)@@@
- - ...
+ - Join a container/table **opt**ional and easy way when **F**ield **F**ield **E**qual condition is sufficient. (INNER JOIN)
+ - This is a easy to use variable of normal ***join_opt()*** method. It is usable when only a field equal to field typed condition
+ \ is used to join the tables.
+ - The ***$container*** parameter is the name of the table to join.
+ - If the ***$alias*** is not null the passed alias name will be used.
+ - The ***$field1*** and ***$field2*** parameters are specifies the equal fields according to [FIELDSPEC specification|url:#fieldspec].
 - @@@join_clean()@@@
- - ...
+ - Erase every connection/join settings from the query. (Erase all effects of ***join_**** functions.)
 
 - @@@cond($cond)@@@
  - ...
