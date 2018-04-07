@@ -221,8 +221,8 @@ See [error handling section|url:#errorhandling]
 The CodKep's sql module have a database Create/Read/Update/Delete interface which can generate the sql commands
 dynamically. It makes easier to create polimorf database actions, or simply creates cleaner look database operations.
 <br/>
-This interface uses the CodKep's internal sql functions to execute operations so that the transaction and error handling
-is same that you get in ***sql_exec_**** operations.
+This interface uses the CodKep's internal sql functions to execute so that the transaction and error handling
+is same that you get in ***sql_exec_**** functions.
 .
 **Demonstration exaples:**
 <table><tr>
@@ -305,7 +305,7 @@ The interface has 4 starter function to create the four base operation.
 - @@@db_query($tablename,$alias = '',array $options = [])@@@
  - Usable for start database queries/reads.
 - @@@db_insert($tablename,array $options = [])@@@
- - Usable for start database inserts.
+ - Usable for start database inserts. (create)
 - @@@db_update($tablename,array $options = [])@@@
  - Usable for start database updates.
 - @@@db_delete($tablename,array $options = [])@@@
@@ -314,6 +314,7 @@ The interface has 4 starter function to create the four base operation.
 All four function above returns a ***DatabaseQuery*** descendant object which have many methods to customize/set the
 features of the desired database operation.
 
+#databasequery#
 === Methods of DatabaseQuery ===
 
 - @@@get($fieldspec,$alias = '',array $options = [])@@@
@@ -321,12 +322,14 @@ features of the desired database operation.
  - The ***$fieldspec*** parameter specify the field according to [FIELDSPEC specification|url:#fieldspec].
  - If the ***$alias*** parameter is not empty the field data will be available under this name.
  \ Otherwise the field name is usable.
- - Associative array of the field options according to [OPTIONS specification|url:#fieldopts].
+ - The ***$options*** parameter is an optional associative array of the field options according
+ \ to [OPTIONS specification|url:#fieldopts].
 - @@@get_a(array $fieldnames,$container = '',array $options = [])@@@
  - Adds an **A**rray of fields to the queried fields list
  - ***$fieldnames*** is an array of strings containing the needed field names.
  - If the ***$container*** parameter is not empty the specified fields will be assigned to this container (table).
- - Associative array of the options according to [OPTIONS specification|url:#fieldopts].
+ - The ***$options*** parameter is an optional associative array of the field options according
+ \ to [OPTIONS specification|url:#fieldopts].
 - @@@get_clean()@@@
  - Erase every field from the queried fields list
 - @@@counting($fieldspec = '',$alias = '')@@@
@@ -341,7 +344,8 @@ features of the desired database operation.
  - Sets a single field's value according to the ***$value*** parameter.
  \ The value is set through the sql parameter system.
  - The ***$fieldspec*** parameter specify the field according to [FIELDSPEC specification|url:#fieldspec].
- - Associative array of the options according to [OPTIONS specification|url:#fieldopts].
+ - The ***$options*** parameter is an optional associative array of the field options according
+ \ to [OPTIONS specification|url:#fieldopts].
 - @@@set_fv_a($field_value_array)@@@
  - **Set** a **F**ield-**V**alue **A**rray.
  - Sets an array of field's value according to the parameter passed associative array where the indexes are the field
@@ -351,7 +355,8 @@ features of the desired database operation.
  - Sets a single field's value according to the ***$expression*** parameter.
  \ The expression value is writed directly into the sql query. The parameter system is not used here.
  - The ***$fieldspec*** parameter specify the field according to [FIELDSPEC specification|url:#fieldspec].
- - Associative array of the options according to [OPTIONS specification|url:#fieldopts].
+ - The ***$options*** parameter is an optional associative array of the field options according
+ \ to [OPTIONS specification|url:#fieldopts].
 - @@@set_clean()@@@
  - Erase every field settings from the set fields list. (Erase all effects of ***set_**** functions.)
 
@@ -360,7 +365,7 @@ features of the desired database operation.
  - The ***$container*** parameter is the name of the table to join.
  - If the ***$alias*** is not null the passed alias name will be used.
  - The ***$conditions*** parameter should be a ***DatabaseCond*** object. This object have to describe the connection
- \ rules.
+ \ rules. See [DatabaseCond|url:#databasecond] class
 - @@@join_ffe($container,$alias,$field1,$field2)@@@
  - Join a container/table easy way when **F**ield **F**ield **E**qual condition is sufficient. (INNER JOIN)
  - This is a easy to use variable of normal ***join()*** method. It is usable when only a field equal to field typed condition
@@ -373,7 +378,7 @@ features of the desired database operation.
  - The ***$container*** parameter is the name of the table to join.
  - If the ***$alias*** is not null the passed alias name will be used.
  - The ***$conditions*** parameter should be a ***DatabaseCond*** object. This object have to describe the connection
- \ rules.
+ \ rules. See [DatabaseCond|url:#databasecond] class
 - @@@join_opt_ffe($container,$alias,$field1,$field2)@@@
  - Join a container/table **opt**ional and easy way when **F**ield **F**ield **E**qual condition is sufficient. (INNER JOIN)
  - This is a easy to use variable of normal ***join_opt()*** method. It is usable when only a field equal to field typed condition
@@ -385,44 +390,207 @@ features of the desired database operation.
  - Erase every connection/join settings from the query. (Erase all effects of ***join_**** functions.)
 
 - @@@cond($cond)@@@
- - ...
+ - Adds a complex condition to the condition lists.
+ - The ***$cond*** parameter have to be a ***DatabaseCond*** object. See [DatabaseCond|url:#databasecond] class
 - @@@cond_ff($fieldspec1,$fieldspec2,$op,array $options = [])@@@
- - ...
+ - Adds a **F**ield to **F**ield type toplevel condition to the condition list.
+ - This function calls the main condition object's ***ff()*** function. See [DatabaseCond|url:#databasecond] class
+ - The ***$fieldspec1*** and ***$fieldspec2*** parameters are specifies the equal fields according to [FIELDSPEC specification|url:#fieldspec].
 - @@@cond_fv($fieldspec,$value,$op,array $options = [])@@@
- - ...
+ - Adds a **F**ield to **V**alue type toplevel condition to the condition list.
+ - This function calls the main condition object's ***fv()*** function. See [DatabaseCond|url:#databasecond] class
+ - The ***$fieldspec*** parameter specify the field according to [FIELDSPEC specification|url:#fieldspec].
 - @@@cond_fe($fieldspec,$expression,$op,array $options = [])@@@
- - ...
+ - Adds a **F**ield to **E**xpression type toplevel condition to the condition list.
+ - This function calls the main condition object's ***fe()*** function. See [DatabaseCond|url:#databasecond] class
+ - The ***$fieldspec*** parameter specify the field according to [FIELDSPEC specification|url:#fieldspec].
 - @@@cond_fb($fieldspec,array $options = [])@@@
- - ...
+ - Adds a **F**ield to **B**ool type toplevel condition to the condition list.
+ - This function calls the main condition object's ***fb()*** function. See [DatabaseCond|url:#databasecond] class
+ - The ***$fieldspec*** parameter specify the field according to [FIELDSPEC specification|url:#fieldspec].
 - @@@cond_fnull($fieldspec,array $options = [])@@@
- - ...
+ - Adds a **F**ield is **null** type toplevel condition to the condition list.
+ - This function calls the main condition object's ***fnull()*** function. See [DatabaseCond|url:#databasecond] class
+ - The ***$fieldspec*** parameter specify the field according to [FIELDSPEC specification|url:#fieldspec].
 - @@@cond_sql($sqlpart)@@@
- - ...
+ - Adds a free textual **SQL** confition text to the condition list.
+ - This function calls the main condition object's ***sql()*** function. See [DatabaseCond|url:#databasecond] class
 - @@@cond_clean()@@@
- - ...
+ - Erase every condition settings from the query/update. (Erase all effects of ***cond_**** functions.)
 
 - @@@sort($fieldspec,array $options = [])@@@
- - ...
+ - Adds a sorter field according to the field specified by ***$fieldspec*** parameter.
+ - The ***$options*** parameter is an optional associative array of the field options according
+ \ to [OPTIONS specification|url:#fieldopts].
+ - You can call this function more time to makes secondary, third, etc. level sorting.
 - @@@sort_clean()@@@
- - ...
+ - Erase every sort settings from the query (Erase all effects of ***sort**** function.)
 
 - @@@start($start)@@@
- - ...
+ - In case of database query this method set the starting offset of the results (Sql OFFSET)
 - @@@length($length)@@@
- - ...
+ - In case of database query this method set the numbers of results (Sql LIMIT)
 - @@@local_cmd()@@@
- - ...
+ - This method will returns the built sql command. This does not need to execute the command, it's only for information
+ \ or debugging purposes.
 - @@@execute(array $eopts = [])@@@
- - ...
+ - Execute the database action and returns an executed pdo object.
+ - The ***$options*** parameter is an optional associative array of the field options according
+ \ to [OPTIONS specification|url:#fieldopts].
 - @@@execute_and_fetch(array $eopts = [])@@@
- - ...
+ - Execute the database action and fetch the results (once). It returns an array resulted by the fetch.
 - @@@execute_to_single(array $eopts = [])@@@
- - ...
+ - Execute the database action and returns the first field of the first received record.
+ \ It returns a single value. This function is useful if a single value is queried from the database.
 - @@@execute_to_row(array $eopts = [])@@@
- - ...
+ - Same as ***execute_and_fetch()***.
 - @@@execute_to_arrays(array $eopts = [])@@@
- - ...
+ - Executes the database query command and call fetchAll() on it. It means that this function returns an array
+ \ containing all of the result set rows. Calls ***sql_exec_fetchAll()*** inside.
 
+The recommended way to create new a condition object (which can be add to the DatabaseQuery ***cond_**** or
+***join_**** methods is to calling one of the following two function:
+- @@@cond($mainconn)@@@
+ - Create a normal condition branch
+ - The ***$mainconn*** can be
+  - ***"and"*** - Set the AND logical connection between the sub conditions added here.
+  - ***"or"*** - Set the OR logical connection between the sub conditions added here.
+- @@@not_cond($mainconn)@@@
+ - Create a denial (opposite) condition branch
+ - The ***$mainconn*** can be
+  - ***"and"*** - Set the AND logical connection between the sub conditions added here.
+  - ***"or"*** - Set the OR logical connection between the sub conditions added here.
+Both function returns a DatabaseCond object. Every DatabaseCond object contains an array of conditions
+(connected with the defined logical relation). You can add sub conditions with the methods of
+DatabaseCond. This sub conditions can be stacked with the ***cond()*** method which also receives a DatabaseCond object.
+.
+#databasecond#
+=== Methods of DatabaseCond ===
+- @@@cond($cond)@@@
+- @@@add($cond)@@@
+ - Adds a (different) completely new sub condition object to the current list.
+- @@@ff($fieldspec1,$fieldspec2,$op,array $options = [])@@@
+ - Adds a **F**ield to **F**ield type condition to the condition list.
+ - Use this method when a field is compared to an another field. You can specify wrapping methods or more operations
+ \ with the ***$options*** parameter, but in base concept field values are compared.
+  - *Example 1*: ***ff(['users','name'],['customer','name'],'=')***
+  - *In SQL 1*: *** users.name = customer.name ***
+  - *Example 2*: ***ff('surname','lastname','>',['f1function'=>'LENGTH','f2function'=>'LENGTH'])***
+  - *In SQL 2*: *** LENGTH(surname) > LENGTH(lastname) ***
+ - Usable operands are: *** = , != , > , < , >= , <= , regex ***
+ - The ***$options*** is an optional associative array contains the options according
+ \ to the [OPTIONS specification|url:#fieldopts]
+- @@@fv($fieldspec,$value,$op,array $options = [])@@@
+ - Adds a **F**ield to **V**alue type condition to the condition list.
+ - Use this method when a field is compared to an external value given from program side.
+ \ You can specify wrapping methods or more operations with the ***$options*** parameter, but in base concept field
+ \ value are compared to an user defined value.
+  - *Example 1*: ***fv(['users','name'],'John Doe','=')***
+  - *In SQL 1*: *** users.name = :placeholder *** and ***[':placeholder' => 'John Doe']***
+  - *Example 2*: ***fv('surname','dave','=',['ffunction'=>'LOWER'])***
+  - *In SQL 2*: *** LOWER(surname) = :placeholder *** and ***[':placeholder' => 'dave']***
+ - Usable operands are: *** = , != , > , < , >= , <= , regex ***
+ - The ***$options*** is an optional associative array contains the options according
+ \ to the [OPTIONS specification|url:#fieldopts]
+- @@@fe($fieldspec,$expression,$op,array $options = [])@@@
+ - Adds a **F**ield to **E**xpression type condition to the condition list.
+ - Use this method when a field is compared to an sql expression.
+ \ You can specify wrapping methods or more operations with the ***$options*** parameter, but in base concept field
+ \ value are compared to an database originated difficult expression.
+  - *Example*: ***fe('itemcount','(height-10)','>')***
+  - *In SQL*: *** itemcount > (height-10) ***
+ - Usable operands are: *** = , != , > , < , >= , <= , regex ***
+ - The ***$options*** is an optional associative array contains the options according
+ \ to the [OPTIONS specification|url:#fieldopts]
+- @@@fb($fieldspec,array $options = [])@@@
+ - Adds a **F**ield to **B**ool type condition to the condition list.
+ - Use this method when a field is tested to be TRUE or FALSE.
+ \ You can specify wrapping methods around the field or do more operations with the ***$options*** parameter,
+ \ but in base concept field value are tested to be logically true or false.
+  - *Example 1*: ***fb(['user','active'])***
+  - *In SQL 1*: *** user.active ***
+  - *Example 2*: ***fb(['user','password'],['ffunction' => 'IS_VALID','opposite' => true])***
+  - *In SQL 2*: *** NOT IS_VALID(user.password) ***
+ - The ***$options*** is an optional associative array contains the options according
+ \ to the [OPTIONS specification|url:#fieldopts]
+- @@@fnull($fieldspec,array $options = [])@@@
+ - Adds a **F**ield is **null** type condition to the condition list.
+ - Use this method when a field is tested to be NULL or NOT NULL.
+ \ You can specify wrapping methods around the field or do more operations with the ***$options*** parameter,
+ \ but in base concept field value are tested to be NULL or NOT NULL.
+   - *Example 1*: ***fnull(['user','password'])***
+   - *In SQL 1*: *** user.password IS NULL ***
+   - *Example 2*: ***fnull(['user','password'],['opposite' => true])***
+   - *In SQL 2*: *** NOT user.password IS NULL ***
+ - The ***$options*** is an optional associative array contains the options according
+ \ to the [OPTIONS specification|url:#fieldopts]
+- @@@sql($sqlpart,array $options = [])@@@
+ - Adds an arbitrary sql command string as a condition. This string will be directly copied to the sql command.
+ \ It is not recommend to use it except the condition is cannot described with methods above.
+ - The ***$options*** is an optional associative array contains the options according
+ \ to the [OPTIONS specification|url:#fieldopts]
+
+Let's see a more complex condition example where more condition object is stacked each other:
+~~~code
+/*
+SELECT name FROM users
+WHERE (gender = 'm' AND name REGEXP '^D') OR
+      (gender = 'f' AND NOT( name REGEXP '^A' OR name REGEXP '^B' ));
+*/
+.
+db_query('users')
+    ->get('name')
+    ->cond(
+            cond('or')
+             ->add( cond('and')
+                     ->fv('gender','m','=')
+                     ->fv('name','^D','regex')
+                  )
+             ->add( cond('and')
+                      ->fv('gender','f','=')
+                      ->add(not_cond('or')
+                             ->fv('name','^A','regex')
+                             ->fv('name','^B','regex'))
+                  )
+          )
+    ->execute_to_arrays()
+~~~
+
+Keep in mind that the built in top level condition object (which default exists in DatabaseQuery to make it possible to add more
+conditions top level) has always AND logic. It's means that you have to add one sub condition object with OR logic to
+achieve top level OR conditions between arguments. You can see this method in the example above.
+.
+Later the node module extends this interface to query nodes more easy way, see
+[node_query()|url:doc/codkep/node#node_query] for more details.
+
+#fieldspec#
+==== The FIELDSPEC typed parameters ====
+Most methods in ***DatabaseQuery*** and ***DatabaseCond*** can receive field specification. This can be done two way:
+ # **A simple string**
+  - This case the string contains the name of the field
+  - *Example*: ***"name"***
+ # **Array of strings**
+  - This case the array should contains two string where the first have to specify the container
+  \ while the second specify the field by name
+  - *Example*: ***["users","apple"]***
+
+#fieldopts#
+==== Options available in methods ====
+Available options in methods. (This options can be mixed together when available)
+| name         | value       | Description | Available here |
+| ---          | ---         | ---       | --- |
+| ***"function"***     | string      | Embrace the value in a function call  | ***set_fv()***, ***set_fe()***, ***get()***, ***get_a()***, ***sort()***   |
+| ***"more_args"***    | string      | Adds additional arguments to the function call  | ***set_fv()***, ***set_fe()***, ***get()***, ***get_a()***, ***sort()***   |
+| ***"direction"***    | "REVERSE"   | Reverse the sorting directions on this field | ***sort()*** |
+| ***"opposite"***     | true        | Negate the condition's result where set | ***cond_ff()***, ***cond_fv()***, ***cond_fe()***, ***cond_fb()***, ***cond_fnull()***, ***ff()***, ***fv()***, ***fe()***, ***fb()***, ***fnull()*** |
+| ***"f1function"***   | string      | Embrace the field 1 in a function call  | ***cond_ff()***, ***ff()*** |
+| ***"f2function"***   | string      | Embrace the field 2 in a function call  | ***cond_ff()***, ***ff()*** |
+| ***"ffunction"***    | string      | Embrace the field in a function call    | ***cond_fv()***, ***cond_fe()***, ***cond_fb()***, ***cond_fnull()***, ***fv()***, ***fe()***, ***fb()***, ***fnull()*** |
+| ***"vfunction"***    | string      | Embrace the value in a function call    | ***cond_fv()***, ***fv()*** |
+| ***"efunction"***    | string      | Embrace the expression in a function call | ***cond_fe()***, ***fe()*** |
+| ***"noredirect"***   | true        | Disable automatic page redirection in case of error | ***execute()*** |
+| ***"errormsg"***     | string      | Custom error message, which is passed to the underlying ***sql_exec_**** functions. See [here|url:#sqlexec] | ***execute()***, ***execute_and_fetch()***, ***execute_to_row()***, ***execute_to_single()***, ***execute_to_arrays()*** |
+| ***"fetch_names_only"*** | true    | This options is set the ***fetch_names_only*** parameter of ***sql_exec_fetchAll()***. See [here|url:#sqlexec] | ***execute_to_arrays()*** |
 
 #transactions#
 == Sql transactions ==
@@ -610,3 +778,7 @@ The following [hooks|url:doc/codkep/hooks] can be implement to interact with sql
 | HOOK_required_sql_schema()          | Define SQL schema requirements of a module   |
 | HOOK_sql_connected()                | Runs after the sql connection is established |
 | HOOK_execute_sql($sql,$parameters)  | Runs before an sql command is executed. It received the sql command and parameters but cannot modify its.|
+| HOOK_begin_generate_sql($object)    | Runs before an sql command is generated by DatabaseQuery descendant class. |
+| HOOK_end_generate_sql($object)      | Runs after an sql command is generated by DatabaseQuery descendant class. |
+| HOOK_sql_show_builtin_connerror_page() | Runs immediately before the built in sql connection error page is delivered. |
+| HOOK_sql_show_builtin_error_page()     | Runs immediately before the built in sql general error page is delivered. |

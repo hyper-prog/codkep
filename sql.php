@@ -388,6 +388,7 @@ function sql_conection_error_page()
     ob_start();
     print "<h2>".t('Sql connection error')."</h2>";
     print $db->errormsg."<br/>";
+    run_hook("sql_show_builtin_connerror_page");
     return ob_get_clean();
 }
 
@@ -406,7 +407,7 @@ function sql_error_page()
             print $t['file'].":".$t['line']." (".$t['function'].")\n";
     }
     print "</pre>";
-
+    run_hook("sql_show_builtin_error_page");
     return ob_get_clean();
 }
 
@@ -931,6 +932,12 @@ class DatabaseCond
     public function cond($cond)
     {
         $this->conds[] = $cond;
+        return $this;
+    }
+    public function add($cond)
+    {
+        $this->conds[] = $cond;
+        return $this;
     }
     public function ff($fieldspec1,$fieldspec2,$op,array $options = [])
     {
@@ -985,6 +992,7 @@ class DatabaseQuerySql extends DatabaseQuery
         $fc = 0;
         $this->phidx = 1;
         $this->calculated_query = '';
+        run_hook("begin_generate_sql",$this);
         if($this->querytype == 'insert')
         {
             $this->calculated_query = "INSERT INTO " . $this->conf['cont'];
@@ -1162,6 +1170,7 @@ class DatabaseQuerySql extends DatabaseQuery
             if($this->conf['start'] !== null)
                 $this->calculated_query .= "\nOFFSET ".$this->conf['start'];
         }
+        run_hook("end_generate_sql",$this);
     }
 
     public function build_condition_part($c)
@@ -1208,7 +1217,7 @@ class DatabaseQuerySql extends DatabaseQuery
                 if(isset($cond['opts']['f1function']) && $cond['opts']['f1function'] != '')
                     $qsp .= ')';
 
-                $qsp .= $op;
+                $qsp .= " $op ";
 
                 if(isset($cond['opts']['f2function']) && $cond['opts']['f2function'] != '')
                     $qsp .= $cond['opts']['f2function'] . '(';
@@ -1235,7 +1244,7 @@ class DatabaseQuerySql extends DatabaseQuery
                 if(isset($cond['opts']['ffunction']) && $cond['opts']['ffunction'] != '')
                     $qsp .= ')';
 
-                $qsp .= $op;
+                $qsp .= " $op ";
 
                 if(isset($cond['opts']['vfunction']) && $cond['opts']['vfunction'] != '')
                     $qsp .= $cond['opts']['vfunction'] . '(';
@@ -1262,7 +1271,7 @@ class DatabaseQuerySql extends DatabaseQuery
                 if(isset($cond['opts']['ffunction']) && $cond['opts']['ffunction'] != '')
                     $qsp .= ')';
 
-                $qsp .= $op;
+                $qsp .= " $op ";
 
                 if(isset($cond['opts']['efunction']) && $cond['opts']['efunction'] != '')
                     $qsp .= $cond['opts']['efunction'] . '(';

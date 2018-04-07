@@ -401,6 +401,38 @@ It means that there is two way to identify a node:
 - by JOIN_ID and TYPE where the JOIN_ID is the primary identifier of the table.
  - Node can load with ***$node = node_load_intype($id,$type);***
 
+#node_query#
+=== Querying node lists from database ===
+
+The CodKep has a [general database CRUD interface|url:doc/codkep/sql#database_query_interface] which helps
+to build database operations. The node module extends this interface to customize it for node queries.
+.
+Helper function to query nodes:
+.
+@@@node_query($nodetype)@@@
+<br/>
+This function receives a ***$nodetype*** textual parameter which the type of the node to query.
+# The function will set the container table of node to query.
+# Joins the node table appropriate way to reach node fields.
+# Adds the base node fields to the queried fields:
+ - ***node_nid*** The node identifier
+ - ***node_type*** The node type
+ - ***node_join_id*** The joined id
+The function returns a [DatabaseQuery|url:doc/codkep/sql#databasequery] object so that all methods can be used
+to extend the database query.
+
+Let's see an example where we search all users who's name is started by "A" letter.
+~~~code
+$results = node_query("user")
+            ->get("name")
+            ->cond_fv("name","^A","regex")
+            ->execute_to_arrays();
+.
+foreach($results as $res)
+{
+    print l($res["name"],'node/'.$res['node_nid']) . " user found. <br/>";
+}
+~~~
 
 #nodeaccess#
 == Node access control ==
