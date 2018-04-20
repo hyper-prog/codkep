@@ -11,9 +11,13 @@
 global $db;
 $db = NULL;
 
+define('ONE_WAY',0);
+define('TWO_WAY',1);
+
 function hook_sql_boot()
 {
     global $db;
+    global $dbquery_autojoins;
     $db = new stdClass();
     $db->open = false;
     $db->error = false;
@@ -32,6 +36,7 @@ function hook_sql_boot()
     $db->schema_editor_allowed_for_admin = true;
 
     $db->qinterface_default_db_handler_class = 'DatabaseQuerySql';
+    $dbquery_autojoins = [[]];
 
     $db->error_locations = [
         'connection_error' => 'sql_connection_error',
@@ -699,6 +704,14 @@ function not_cond($l)
     return new DatabaseCond($l,true);
 }
 
+function db_register_autojoin($join_this_container,$to_this_container,$this_fieldname,$to_fieldname,$mode = ONE_WAY)
+{
+    global $dbquery_autojoins;
+    $dbquery_autojoins[$join_this_container][$to_this_container] = [$this_fieldname,$to_fieldname];
+    if($mode == TWO_WAY)
+        $dbquery_autojoins[$to_this_container][$join_this_container] = [$this_fieldname,$to_fieldname];
+}
+
 class DatabaseQuery
 {
     protected $querytype;
@@ -838,6 +851,70 @@ class DatabaseQuery
         ];
         return $this;
     }
+    public function join_auto($container,$join_to = '',$alias = '')
+    {
+        return $this->uni_join_auto('normal',$container,$join_to,$alias);
+    }
+    public function join_opt_auto($container,$join_to = '',$alias = '')
+    {
+        return $this->uni_join_auto('optional',$container,$join_to,$alias);
+    }
+    protected function uni_join_auto($jointype,$container,$join_to = '',$alias = '')
+    {
+        global $dbquery_autojoins;
+
+        $m_jt = $join_to;
+        $m_ff = '';
+        $m_ft = '';
+        if($m_jt != '' && isset($dbquery_autojoins[$container][$m_jt]))
+        {
+            $m_ff = $dbquery_autojoins[$container][$m_jt][0];
+            $m_ft = $dbquery_autojoins[$container][$m_jt][1];
+            if($m_jt == $this->conf['cont'] && $this->conf['cont_alias'] != '')
+            {
+                $m_jt = $this->conf['cont_alias'];
+            }
+            else
+            {
+                foreach($this->conf['joins'] as $join)
+                    if($m_jt == $join['container'])
+                    {
+                        if($join['alias'] != '')
+                            $m_jt = $join['alias'];
+                        break;
+                    }
+            }
+        }
+
+        if($m_jt == '' && isset($dbquery_autojoins[$container][$this->conf['cont']]))
+        {
+            $m_jt = $this->conf['cont_alias'] != '' ? $this->conf['cont_alias'] : $this->conf['cont'];
+            $m_ff = $dbquery_autojoins[$container][$this->conf['cont']][0];
+            $m_ft = $dbquery_autojoins[$container][$this->conf['cont']][1];
+        }
+
+        if($m_jt == '')
+            foreach($this->conf['joins'] as $join)
+                if(isset($dbquery_autojoins[$container][$join['container']]))
+                {
+                    $m_jt = $join['alias'] != '' ? $join['alias'] : $join['container'];
+                    $m_ff = $dbquery_autojoins[$container][$join['container']][0];
+                    $m_ft = $dbquery_autojoins[$container][$join['container']][1];
+                    break;
+                }
+
+        if($m_jt == '')
+            throw new Exception('Auto join aborted: no match!');
+
+        $this->conf['joins'][] = [
+            'type' => $jointype,
+            'container' => $container,
+            'alias' => $alias,
+            'conditions' => cond('and')->ff([$alias == '' ? $container : $alias,$m_ff],[$m_jt,$m_ft],'='),
+        ];
+        return $this;
+    }
+
     public function cond($cond)
     {
         $this->conf['conditions']->cond($cond);

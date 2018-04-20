@@ -386,6 +386,18 @@ features of the desired database operation.
  - The ***$container*** parameter is the name of the table to join.
  - If the ***$alias*** is not null the passed alias name will be used.
  - The ***$field1*** and ***$field2*** parameters are specifies the equal fields according to [FIELDSPEC specification|url:#fieldspec].
+- @@@join_auto($container,$join_to = '',$alias = '')@@@
+ - Joins a container/table automatically according to pre defined field matches. (Works only on field equal to field
+ \ join conditions)
+ - The ***$join_to*** parameter can specify the table to join. If empty the CodKep try to join to the main container
+ \ first. If not success it walks through the joined tables (in the specification order) until it find a matches.
+ - See ***db_register_autojoin()*** function.
+- @@@join_opt_auto($container,$join_to = '',$alias = '')@@@
+ - Joins a container/table optionally and automatically according to pre defined field matches. (Works only on field equal to field
+ \ join conditions)
+ - The ***$join_to*** parameter can specify the table to join. If empty the CodKep try to join to the main container
+ \ first. If not success it walks through the joined tables (in the specification order) until it find a matches.
+ - See ***db_register_autojoin()*** function.
 - @@@join_clean()@@@
  - Erase every connection/join settings from the query. (Erase all effects of ***join_**** functions.)
 
