@@ -709,7 +709,7 @@ function db_register_autojoin($join_this_container,$to_this_container,$this_fiel
     global $dbquery_autojoins;
     $dbquery_autojoins[$join_this_container][$to_this_container] = [$this_fieldname,$to_fieldname];
     if($mode == TWO_WAY)
-        $dbquery_autojoins[$to_this_container][$join_this_container] = [$this_fieldname,$to_fieldname];
+        $dbquery_autojoins[$to_this_container][$join_this_container] = [$to_fieldname,$this_fieldname];
 }
 
 class DatabaseQuery

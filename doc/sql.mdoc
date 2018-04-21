@@ -390,14 +390,14 @@ features of the desired database operation.
  - Joins a container/table automatically according to pre defined field matches. (Works only on field equal to field
  \ join conditions)
  - The ***$join_to*** parameter can specify the table to join. If empty the CodKep try to join to the main container
- \ first. If not success it walks through the joined tables (in the specification order) until it find a matches.
- - See ***db_register_autojoin()*** function.
+ \ first. If not success it walks through the joined tables (in the specification order) until it finds a matches.
+ - See [***db_register_autojoin()***|url:#autojoin] function.
 - @@@join_opt_auto($container,$join_to = '',$alias = '')@@@
  - Joins a container/table optionally and automatically according to pre defined field matches. (Works only on field equal to field
  \ join conditions)
  - The ***$join_to*** parameter can specify the table to join. If empty the CodKep try to join to the main container
- \ first. If not success it walks through the joined tables (in the specification order) until it find a matches.
- - See ***db_register_autojoin()*** function.
+ \ first. If not success it walks through the joined tables (in the specification order) until it finds a matches.
+ - See [***db_register_autojoin()***|url:#autojoin] function.
 - @@@join_clean()@@@
  - Erase every connection/join settings from the query. (Erase all effects of ***join_**** functions.)
 
@@ -604,9 +604,48 @@ Available options in methods. (This options can be mixed together when available
 | ***"errormsg"***     | string      | Custom error message, which is passed to the underlying ***sql_exec_**** functions. See [here|url:#sqlexec] | ***execute()***, ***execute_and_fetch()***, ***execute_to_row()***, ***execute_to_single()***, ***execute_to_arrays()*** |
 | ***"fetch_names_only"*** | true    | This options is set the ***fetch_names_only*** parameter of ***sql_exec_fetchAll()***. See [here|url:#sqlexec] | ***execute_to_arrays()*** |
 
+#autojoin#
+==== Auto join system ====
+
+You can register table+field pairs in db query system which is usable to join tables with less code.<br/>
+In a properly set environment you only have to tell which table to join, the system will do the field matches according
+to the registrations done with the following function:
+.
+@@@db_register_autojoin($join_this_container, $to_this_container, $this_fieldname, $to_fieldname, $mode = ONE_WAY)@@@
+<br/>
+Registers a new auto join hint in system.
+ - The ***$join_this_container*** parameter is the table A to join.
+ - The ***$to_this_container*** parameter is the table B where to join.
+ - The ***$this_fieldname*** parameter is the matching field of table A.
+ - The ***$to_fieldname*** parameter is the matching field of table B.
+ - If the ***$mode*** parameter is the default ***ONE_WAY*** the join hint is used only when A table joined to B.
+ \ Other ways the ***$mode*** is ***TWO_WAY*** the hint is used both the A->B and B->A directions join.
+
+Example:
+~~~php
+function hook_mymodule_init()
+{
+    db_register_autojoin('people','address', 'addr', 'a_id', TWO_WAY);
+}
+~~~
+After you do this registration above you can use the ***join_auto()*** and ***join_opt_auto()*** function in db queries.
+~~~php
+$r = db_query('people')
+     ->get('name')
+     ->join_auto('address')
+     ->get('address_string')
+     ->sort('name')
+     ->execute_to_arrays();
+.
+// Here the join_auto('address') will be translated to
+//    join_ffe('address','',['people','addr'],['address','a_id])
+.
+print to_table($r);
+~~~
+
+
 #transactions#
 == Sql transactions ==
-
 
 
 It's possible to use sql transactions, the sql module have helper functions to do this.
