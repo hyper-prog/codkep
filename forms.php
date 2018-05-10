@@ -1281,7 +1281,10 @@ class HtmlForm
             else
             {
                 global $sys_data;
-                $dispv = $parts[1] . ' ' . t($sys_data->month_names[intval($parts[2])]) . ' '. $parts[3];
+                if($parts[1] == 1899 && $parts[2] == 0 && $parts[3] == 0)
+                    $dispv = '-- -- --';
+                else
+                    $dispv = $parts[1] . ' ' . t($sys_data->month_names[intval($parts[2])]) . ' '. $parts[3];
             }
 
             print $this->formatter->item($dta['before'].$dispv.$dta['after'],$dta['name']);
