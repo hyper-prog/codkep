@@ -531,6 +531,7 @@ function sql_schema_page()
         }
     }
 
+    run_hook('before_sql_schema_collection');
     $sdes = run_hook('required_sql_schema');
 
     ob_start();

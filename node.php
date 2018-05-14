@@ -1022,13 +1022,18 @@ function hook_node_required_sql_schema()
 
     foreach($sys_data->node_types as $nname => $ndef)
     {
+        if(isset($ndef['sql_schema_bypass']) && $ndef['sql_schema_bypass'])
+            continue;
         $sf = new SpeedForm($ndef);
         $t['Node: '.$nname] = $sf->sql_create_schema();
     }
     foreach($sys_data->node_otypes as $nname => $nval)
     {
         $definerclass = $nval['defineclass'];
-        $sf = new SpeedForm($definerclass::$definition);
+        $def = $definerclass::$definition;
+        if(isset($def['sql_schema_bypass']) && $def['sql_schema_bypass'])
+            continue;
+        $sf = new SpeedForm($def);
         $t['dNode: '.$nname] = $sf->sql_create_schema();
     }
     return $t;

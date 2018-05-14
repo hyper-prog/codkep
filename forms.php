@@ -3589,6 +3589,8 @@ function hook_forms_required_sql_schema()
     foreach($datadef_repository as $ddname => $ddef)
     {
         $datastruct = call_user_func($ddef);
+        if(isset($datastruct['sql_schema_bypass']) && $datastruct['sql_schema_bypass'])
+            continue;
         $sf = new SpeedForm($datastruct);
         $t['DDefRepo: '.$ddname] = $sf->sql_create_schema();
     }
