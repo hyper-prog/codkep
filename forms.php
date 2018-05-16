@@ -931,6 +931,13 @@ class HtmlForm
         return $this;
     }
 
+    public function getId()
+    {
+        if(isset($this->o['id']))
+            return $this->o['id'];
+        return '';
+    }
+
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     public function get($readonly = false)
@@ -961,6 +968,7 @@ class HtmlForm
         print $this->formatter->begin_form(
             "<form method=\"$mode\"".
             ($this->url != '' ? ' action="'.$this->url.'"':'').
+            (isset($this->o['id']) ? ' id="'.$this->o['id'].'"':'').
             (isset($this->o['class']) ? ' class="'.$this->o['class'].'"':'').
             (isset($this->o['style']) ? ' style="'.$this->o['style'].'"':'').
             "$enc>");

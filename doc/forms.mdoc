@@ -73,8 +73,11 @@ __Definition methods of HtmlForm class:__
  - @@@opts($o)@@@
   - Sets some options of the generated form for example css style or html classes.
   \ The function should receive an associative array where the values can be:
+   - ***"id"=string*** the id attribute of the form
    - ***"class"=string*** the css class of the form
    - ***"style"=string*** the style attribute of the form (Custom css code of the form)
+ - @@@getId()@@@
+  - Returns the ID attribute of the form if set. Otherwise empty string returned.
  - @@@set_formatter($formatter)@@@
   - Sets the output formatter class of the form which a ***HtmlFormFormatter*** descendant object.
   \ See [form formatter part|url:#formformatter] of this page.
