@@ -217,6 +217,32 @@ __Definition methods of HtmlForm class:__
   \ through the CodKep [parameter system|url:doc/codkep/parameters].
   \ If the parameter which defined by this field is set, the form value will display the already set value.
   \ (The method is automatically define the requested parameter)
+ - @@@custom($name, $value, $callback, $opts = array())@@@
+   - Adds a custom form element to the form with a user defined callback function to generate html codes.
+    - The ***$name*** parameter is the name of the from element.
+    - The ***$value*** parameter is the value of the field.
+     - *Note: Your callback function receive this value in the "value" item of the $elementarray parameter*
+    - The ***$callback*** parameter is the callback function which generates the html codes of the custom element.
+     - The callback function should looks like the following way:
+      - @@@my_custom_form_callback($formobject,$elementarray,$readonly)@@@
+       - The ***$formobject*** parameter holds the whole form object where the element is generated.
+       - The ***$elementarray*** parameter holds the options array of the custom made form element.
+       \ This array holds every available information which passed from api side. (Holds name and value too.)
+       - The ***$readonly*** parameter is true when readonly form should generate, otherwise is false.
+      - The callback function should return the html codes of the custom made element. The "after" and "before" strings
+      \ are concatenated, but the others like "class" or "id", etc should be handled by your custom codes.
+    - The ***$opts*** is an associative array can set some features of the field.
+     - ***"class"=string*** - Sets the css class of the field.
+     - ***"style"=string*** - Sets the css/style attribute of the field.
+     - ***"onclick"=string*** - Sets the onclick attribute of the field.
+     - ***"onchange"=string*** - Sets the onchange attribute of the field.
+     - ***"id"=string*** - Sets the ID of the field.
+     - ***"before"=string*** - Put this text before the tag.
+     - ***"after"=string*** - Put this text after the tag.
+     - ***"size"=number*** - Sets the size attribute of the field.
+     - ***"maxlength"=number*** - Sets the maxlength attribute of the field.
+     - ***"readonly"=true*** - Sets the field readonly.
+     - ***"autofocus"=true*** - Sets the form item has the initial focus
 
 
 #htmlformcodgen#

@@ -4,7 +4,7 @@
  *  Written by Peter Deak (C) hyper80@gmail.com , License GPLv2
  */
 
-define('VERSION', '1.069');
+define('VERSION', '1.070');
 
 define('CODKEP_MINIMUM_PHP', '5.4.0');
 

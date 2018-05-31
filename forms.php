@@ -878,6 +878,26 @@ class HtmlForm
         return $this;
     }
 
+    public function custom($name,$value,$callback,$opts=array())
+    {
+        array_push($this->d,
+            ['type' => 'custom',
+                'name' => $name,
+                'value' => $value,
+                'callback' => $callback,
+                'class' => (isset($opts['class']) ? $opts['class'] : ''),
+                'style' => (isset($opts['style']) ? $opts['style'] : ''),
+                'onclick' => (isset($opts['onclick']) ? $opts['onclick'] : ''),
+                'onchange' => (isset($opts['onchange']) ? $opts['onchange'] : ''),
+                'id' => (isset($opts['id']) ? $opts['id'] : ''),
+                'before' => (isset($opts['before']) ? $opts['before'] : ''),
+                'after' => (isset($opts['after']) ? $opts['after'] : ''),
+                'readonly' => (isset($opts['readonly']) ? $opts['readonly'] : false),
+                'autofocus' => (isset($opts['autofocus']) ? $opts['autofocus'] : false),
+            ]);
+        return $this;
+    }
+
     public function hidden($n,$v,$opts=array())
     {
         $this->input('hidden',$n,$v,$opts);
@@ -1002,6 +1022,12 @@ class HtmlForm
 
         if($dta['type'] == 'raw')
             print $this->formatter->item($dta['before'].$dta['data'].$dta['after'],$dta['name']);
+
+        if($dta['type'] == 'custom')
+        {
+            $str = $dta['before'] . call_user_func($dta['callback'],$this,$dta,false) . $dta['after'];
+            print $this->formatter->item($str, $dta['name']);
+        }
 
         if($dta['type'] == 'text'     ||
            $dta['type'] == 'number'   ||
@@ -1214,6 +1240,12 @@ class HtmlForm
 
         if($dta['type'] == 'raw')
             print $this->formatter->item($dta['before'].$dta['data'].$dta['after'],$dta['name']);
+
+        if($dta['type'] == 'custom')
+        {
+            $str = $dta['before'] . call_user_func($dta['callback'],$this,$dta,true) . $dta['after'];
+            print $this->formatter->item($str, $dta['name']);
+        }
 
         if($dta['type'] == 'text' ||
            $dta['type'] == 'textarea' ||
