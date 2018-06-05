@@ -269,6 +269,14 @@ function popup_ckdialog()
     }
 }
 
+function close_ckdialog()
+{
+    var modal = document.getElementsByClassName('ck_modalpane')[0];
+    var modalin = document.getElementsByClassName('ck_dialog_body')[0];
+    modal.style.display = "none";
+    modalin.style.display = "none";
+}
+
 jQuery(document).ready(function() {
     initializeAjaxLinks();
 });
