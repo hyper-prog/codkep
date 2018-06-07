@@ -2298,7 +2298,7 @@ class SpeedForm
 
     function get_key()
     {
-        return $this->values[get_key_name()];
+        return $this->values[$this->get_key_name()];
     }
 
     function get_key_sqlvalue($strip = false)
