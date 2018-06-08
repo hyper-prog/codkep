@@ -55,6 +55,7 @@ function processAjaxResponse(data)
     var obj = jQuery.parseJSON(data);
     if(!obj)
         return;
+    var i;
     for (i = 0; i < obj.length; i++)
     {
         if(obj[i][0] == "html")
