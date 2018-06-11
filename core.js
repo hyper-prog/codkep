@@ -30,6 +30,10 @@ function initializeAjaxLinks()
     jQuery.each(items,function(idx,val) {
         var aurl= jQuery(val).attr('action');
         jQuery(this).on("submit",function(e) {
+            var submit_element = jQuery('input[type="submit"]',this);
+            var name = submit_element.attr('name');
+            var value = submit_element.val();
+            jQuery(this).append('<input type="hidden" name="'+name+'" value="'+value+'" />');
             jQuery.ajax({
                 type: 'POST',
                 url: aurl,
