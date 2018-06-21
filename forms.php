@@ -3177,7 +3177,11 @@ class Table_SpeedFormFormFormmater extends HtmlFormFormatter
 
         if(isset($f['prefix']))
             print $f['prefix'];
+        if(isset($f['neval_prefix']) && $txt != '')
+            print $f['neval_prefix'];
         print $txt;
+        if(isset($f['neval_suffix']) && $txt != '')
+            print $f['neval_suffix'];
         if(isset($f['suffix']))
             print $f['suffix'];
 
@@ -3293,7 +3297,11 @@ class Div_SpeedFormFormFormmater extends HtmlFormFormatter
 
         if(isset($f['prefix']))
             print $f['prefix'];
+        if(isset($f['neval_prefix']) && $txt != '')
+            print $f['neval_prefix'];
         print $txt;
+        if(isset($f['neval_suffix']) && $txt != '')
+            print $f['neval_suffix'];
         if(isset($f['suffix']))
             print $f['suffix'];
 

@@ -178,7 +178,8 @@ print "The task is saved, see:" . l('View','node/'.$nid);
 .
 @@@node_load($nid)@@@
 <br/>
-Load and return the node from the database by NID
+Load and return the node from the database by NID.
+It returns the appropriate node object if success, otherwise ***null***;
 ~~~php
 //Loads a node by NID
 $n = node_load($nid);
@@ -190,7 +191,8 @@ $n->save();
 .
 @@@node_load_intype($join_id,$type)@@@
 <br/>
-Load and return the node from the database by NODETYPE and JOIN_ID
+Load and return the node from the database by NODETYPE and JOIN_ID.
+It returns the appropriate node object if success, otherwise ***null***;
 ~~~php
 //Print the name of the user $uid
 $u = node_load_intype($uid,'user');

@@ -282,8 +282,10 @@ function pc_speedform_builder()
 
     p_gral_item(2,'color'         ,BTYPE_TEXT ,BSEC_LOOK,[],'The color of the table row of the field (only in table mode)');
     p_gral_item(2,'before'        ,BTYPE_TEXT ,BSEC_LOOK,[],'Text displayed before the table row');
-    p_gral_item(2,'prefix'        ,BTYPE_TEXT ,BSEC_LOOK,[],'Text displayed immediately before value');
-    p_gral_item(2,'suffix'        ,BTYPE_TEXT ,BSEC_LOOK,[],'Text displayed immediately after value');
+    p_gral_item(2,'prefix'        ,BTYPE_TEXT ,BSEC_LOOK,[],'Text displayed immediately before value (always)');
+    p_gral_item(2,'neval_prefix'  ,BTYPE_TEXT ,BSEC_LOOK,[],'Text displayed immediately before value if the value is not empty');
+    p_gral_item(2,'neval_suffix'  ,BTYPE_TEXT ,BSEC_LOOK,[],'Text displayed immediately after value if the value is not empty');
+    p_gral_item(2,'suffix'        ,BTYPE_TEXT ,BSEC_LOOK,[],'Text displayed immediately after value (always)');
     p_gral_item(2,'after'         ,BTYPE_TEXT ,BSEC_LOOK,[],'Text displayed after the table row');
 
     p_gral_item(2,'formatters'    ,BTYPE_SEL  ,BSEC_LOOK,['values' => ['all','before','after','none']]);
