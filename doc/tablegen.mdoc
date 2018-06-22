@@ -161,13 +161,13 @@ The ***$opts*** parameter of the ***opts()***,***cell()***,***cells()***,***cell
   - ___"=RC[-1]*2"___ - The cell same row and one column less multiplied with 2
   - ___"=R[-1]C*2"___ - The cell in same column and one row less multiplied with 2
   - ___"=R3C3*2"___  - The cell with absolute row 3 and column 3 multiplied with 2
-- ***"t" => typestring"*** - The type of the cell
+- ***"t" => typestring*** - The type of the cell
  - Possible values of ***typestring***
   - ***"str"*** - String
   - ***"num"*** - Number
   - ***"dat"*** - Date, You also have to specify the ***"numberformat" => "Short Date"*** and
   \ give the data in ISO date ***yyyy-MM-dd***!
-- ***"wrap" => wrapstr"*** - Sets the wrapping of the cells.
+- ***"wrap" => wrapstr*** - Sets the wrapping of the cells.
  - Possible values of ***wrapstr***
   - ***"on"*** - Sets cell wrapping on.
   - ***"off"*** - Sets cell wrapping off.
@@ -176,12 +176,12 @@ The ***$opts*** parameter of the ***opts()***,***cell()***,***cells()***,***cell
   - ***"top"*** - Sets the vertical align to top.
   - ***"center"***- Sets the vertical align to center.
   - ***"bottom"*** - Sets the vertical align to bottom.
-- ***"horizontal" => horizontalalignstr"*** - Sets the horizontal align of the specified cells.
+- ***"horizontal" => horizontalalignstr*** - Sets the horizontal align of the specified cells.
  - Possible values of ***horizontalalignstr***
   - ***"left"*** - Sets the horizontal align to left.
   - ***"center"*** - Sets the horizontal align to center.
   - ***"right"*** - Sets the horizontal to right.
-- ***"border" => borderstr_or_array"*** - Sets the borders of the cells.
+- ***"border" => borderstr_or_array*** - Sets the borders of the cells.
  - The ***borderstr_or_array*** can be a simple string or an array with the combination of the following values:
   - ***"none"*** - Sets no border.
   - ***"all"*** - Sets all borders top, right, bottom, left.
@@ -192,13 +192,17 @@ The ***$opts*** parameter of the ***opts()***,***cell()***,***cells()***,***cell
  - Example 1: ***"border" => "all"***
  - Example 2: ***"border" => ["top","left"]***
 - ***"borderweight" => 0*** or ***1*** or ***2*** or ***3*** - Sets the border width from 0 to 3.
-- ***"background-color" => #RRGGBB"*** - SetsThe background color of the cell
+- ***"background-color" => colorstring*** - SetsThe background color of the cell
+ - The ***colorstring*** have to contains html color specification (In #RRGGBB format).
+ - Example: ***"background-color" => "#RRGGBB"***
 - ***"strong" => "yes"*** - Sets bold font
 - ***"italic" => "yes"*** - Sets italic font
-- ***"size" => size"*** - Sets the point size of the font to ***size***.
 - ***"underline" => "yes"*** - Sets the font to underlined.
-- ***"color" => #RRGGBB"*** - Sets the color of the font
-- ***"numberformat" => numfmtstr"*** - Sets the format of the numbers
+- ***"size" => size*** - Sets the point size of the font to ***size***.
+- ***"color" => colorstring*** - Sets the color of the font
+ - The ***colorstring*** have to contains html color specification (In #RRGGBB format).
+ - Example: ***"color" => "#RRGGBB"***
+- ***"numberformat" => numfmtstr*** - Sets the format of the numbers
  - An example of this:
   - "#,##0.00\ [$EUR];[Red]\-#,##0.00\ [$EUR]']" - Will set "34,00 EUR"
 
