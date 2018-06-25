@@ -940,14 +940,16 @@ class HtmlForm
         par_def($n.'_month',isset($opts['par_sec']) ? $opts['par_sec'] : 'number0');
         par_def($n.'_day'  ,isset($opts['par_sec']) ? $opts['par_sec'] : 'number0');
 
+        $dval = $v;
         if(par_ex($n.'_year' ) && par_ex($n.'_month') && par_ex($n.'_day'  ))
         {
             $vy = par($n . '_year');
             $vm = par($n . '_month');
             $vd = par($n . '_day');
+            $dval = "$vy-$vm-$vd";
         }
 
-        $this->datefield($type,$n,"$vy-$vm-$vd",$opts);
+        $this->datefield($type,$n,$dval,$opts);
         return $this;
     }
 
