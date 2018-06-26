@@ -392,7 +392,7 @@ class ExcelXmlDocument
         }
 
         $this->c_index++;
-        if(isset($opts['colspan']))
+        if(isset($opts['colspan']) && intval($opts['colspan']) > 1)
             $this->c_index += (intval($opts['colspan']) - 1);
 
         if($this->colcount < $this->c_index)
@@ -639,14 +639,24 @@ function table_options_translator(array $opts,array $additional = array(),$style
     if(isset($opts['style']))
         $style = $opts['style'];
 
-    if(isset($opts['width']))
-        $style .= 'min-width: '.$opts['width'].'px; ';
-    if(isset($opts['twidth']))
-        $style .= 'min-width: '.$opts['twidth'].'px; ';
-    if(isset($opts['height']))
-        $style .= 'height: '.$opts['height'].'px; ';
-    if(isset($opts['theight']))
-        $style .= 'height: '.$opts['theight'].'px; ';
+    if(isset($opts['width']) || isset($opts['twidth']))
+    {
+        $w = 0;
+        if(isset($opts['width']))
+            $w = $opts['width'];
+        if(isset($opts['twidth']))
+            $w = $opts['twidth'];
+        $style .= 'min-width: ' . $w . 'px; ';
+    }
+    if(isset($opts['height']) || isset($opts['theight']))
+    {
+        $h = 0;
+        if(isset($opts['height']))
+            $h = $opts['height'];
+        if(isset($opts['theight']))
+            $h = $opts['theight'];
+        $style .= 'height: ' . $h . 'px; ';
+    }
     if(isset($opts['background-color']))
         $style .= 'background-color: '.$opts['background-color'].'; ';
     if(isset($opts['color']))

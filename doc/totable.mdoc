@@ -73,11 +73,13 @@ __Options affects the whole table tag:__
  - The variable's value is passed to the callback functions defined under ***#lineoptions_callback*** and ***valuecallback***.
  \ These callback functions will receive the array under their parameter's ***&#95;&#95;external&#95;&#95;*** field name.
 - ***#return_disabled*** - If this option is set and the value is ***true*** the to_table() function does not generate
-\ and return the html output of the table. This option is useful when the to_table() do the work into an external passed
-\ HtmlTable or ExcelXmlDocument object. This case you have to create HtmlTable or ExcelXmlDocument object before calling
+\ and returns the html output of the table. This option is useful when the to_table() do the work into an external passed
+\ HtmlTable or ExcelXmlDocument object. (Opposite to the usual way when the returned string is used as output)
+\ This case you have to create HtmlTable or ExcelXmlDocument object before calling
 \ to_table() and pass to the function in the ***$results*** parameter's "target" field.
  - Example: <br/>
- \ ***$results = ["target" => my_table_object];*** <br/>
+ \ ***$mytable = new HtmlTable("my");*** <br/>
+ \ ***$results = ["target" => $mytable];*** <br/>
  \ ***to_table($tbl,["#return_disabled" => true],$results);***
 - ***#before*** - You can set function name/callback here which outputs (print) will displayed before the table
 - ***#after*** - You can set function name/callback here which outputs (print) will displayed after the table
