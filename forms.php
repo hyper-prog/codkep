@@ -337,6 +337,12 @@ class ExcelXmlDocument
         }
 
         $opts = array_merge($this->table_options,$this->row_options,$opts);
+
+        if(isset($opts['xheight']) && $opts['xheight'] != '')
+            $opts['height'] = $opts['xheight'];
+        if(isset($opts['xwidth']) && $opts['xwidth'] != '')
+            $opts['width'] = $opts['xwidth'];
+
         if(isset($opts['height']) && $opts['height'] != '')
             if($this->rowh < $opts['height'])
                 $this->rowh = $opts['height'];
@@ -347,6 +353,7 @@ class ExcelXmlDocument
         $sId = $this->styleId($opts);
         if($c !== '' || $sId != '' || isset($opts['formula']))
         {
+            $ssMerge = '';
             $ssStyle = '';
             $ssIndex = '';
             $ssFormula = '';
@@ -356,6 +363,10 @@ class ExcelXmlDocument
                 $ssStyle = ' ss:StyleID="'.$sId.'"';
             if(isset($opts['formula']))
                 $ssFormula = ' ss:Formula="'.$opts['formula'].'"';
+            if(isset($opts['xcolspan']) && intval($opts['xcolspan']) > 1)
+                $opts['colspan'] = $opts['xcolspan'];
+            if(isset($opts['colspan']) && intval($opts['colspan']) > 1)
+                $ssMerge = ' ss:MergeAcross="'.(intval($opts['colspan']) - 1).'"';
             if($c !== '')
             {
                 $type = 'String';
@@ -366,11 +377,11 @@ class ExcelXmlDocument
                     if($opts['t'] == 'dat')
                         $type = 'DateTime';
                 }
-                $this->row .= ' <Cell' . $ssIndex . $ssStyle . $ssFormula. '><Data ss:Type="'.$type.'">' . $c . '</Data></Cell>' . "\n";
+                $this->row .= ' <Cell' . $ssIndex . $ssMerge . $ssStyle . $ssFormula. '><Data ss:Type="'.$type.'">' . $c . '</Data></Cell>' . "\n";
             }
             else
             {
-                $this->row .= ' <Cell' . $ssIndex . $ssStyle . $ssFormula .'/>' . "\n";
+                $this->row .= ' <Cell' . $ssIndex . $ssMerge . $ssStyle . $ssFormula .'/>' . "\n";
             }
             $this->c_emptycellbefore = false;
             $this->r_empty = false;
@@ -381,6 +392,9 @@ class ExcelXmlDocument
         }
 
         $this->c_index++;
+        if(isset($opts['colspan']))
+            $this->c_index += (intval($opts['colspan']) - 1);
+
         if($this->colcount < $this->c_index)
             $this->colcount = $this->c_index;
         return $this;
@@ -500,6 +514,8 @@ class ExcelXmlDocument
             $size = '';
             if(isset($opts['size']) && $opts['size'] != '')
                 $size = ' ss:Size="'.$opts['size'].'"';
+            if(isset($opts['xsize']) && $opts['xsize'] != '')
+                $size = ' ss:Size="'.$opts['xsize'].'"';
 
             $color = '';
             if(isset($opts['color']) && $opts['color'] != '')
@@ -620,10 +636,17 @@ function table_options_translator(array $opts,array $additional = array(),$style
 {
     $o = array();
     $style = '';
+    if(isset($opts['style']))
+        $style = $opts['style'];
+
     if(isset($opts['width']))
         $style .= 'min-width: '.$opts['width'].'px; ';
+    if(isset($opts['twidth']))
+        $style .= 'min-width: '.$opts['twidth'].'px; ';
     if(isset($opts['height']))
         $style .= 'height: '.$opts['height'].'px; ';
+    if(isset($opts['theight']))
+        $style .= 'height: '.$opts['theight'].'px; ';
     if(isset($opts['background-color']))
         $style .= 'background-color: '.$opts['background-color'].'; ';
     if(isset($opts['color']))
@@ -634,8 +657,15 @@ function table_options_translator(array $opts,array $additional = array(),$style
         $style .= 'font-style: italic; ';
     if(isset($opts['underline']) && $opts['underline'] == 'yes')
         $style .= 'text-decoration: underline; ';
-    if(isset($opts['size']))
-        $style .= 'font-size: '.$opts['size'].'px; ';
+    if(isset($opts['size']) || isset($opts['tsize']))
+    {
+        $s = 12;
+        if(isset($opts['size']))
+            $s = $opts['size'];
+        if(isset($opts['tsize']))
+            $s = $opts['tsize'];
+        $style .= 'font-size: ' . $s . 'px; ';
+    }
 
     if(isset($opts['vertical']))
     {
@@ -692,6 +722,8 @@ function table_options_translator(array $opts,array $additional = array(),$style
         if (isset($opts['align']))
             $o['align'] = $opts['align'];
         if (isset($opts['colspan']))
+            $o['colspan'] = $opts['colspan'];
+        if (isset($opts['tcolspan']))
             $o['colspan'] = $opts['colspan'];
     }
     $o = array_merge($o,$additional);
@@ -3435,7 +3467,7 @@ function to_sqlsort($sp,array $options=array())
  * @param array $results An optional array to get some data back from generation
  * @return string The generated html table code
  * @package forms */
-function to_table($dataobj,array $options=array(),array &$results = NULL)
+function to_table($dataobj,array $options=array(),array &$results = null)
 {
     global $field_repository;
 
@@ -3452,19 +3484,26 @@ function to_table($dataobj,array $options=array(),array &$results = NULL)
         $is_pdo = true;
 
     $oo = '';
-    $table = NULL;
-    if(isset($options['#output_object']))
+    $table = null;
+    if($results != null && isset($results['target']) && $results['target'] != null)
     {
-        $oo = $options['#output_object'];
-        $table = h($oo, isset($options['#name']) ? $options['#name'] : 'Generated');
+        $table = $results['target'];
     }
     else
     {
-        $oo = 'table';
-        $table = new HtmlTable('array_generated');
+        if(isset($options['#output_object']))
+        {
+            $oo = $options['#output_object'];
+            $table = h($oo, isset($options['#name']) ? $options['#name'] : 'Generated');
+        }
+        else
+        {
+            $oo = 'table';
+            $table = new HtmlTable('array_generated');
+        }
+        if(isset($options['#tableopts']))
+            $table->opts($options['#tableopts']);
     }
-    if(isset($options['#tableopts']))
-        $table->opts($options['#tableopts']);
 
     if(isset($options['#before']) && is_callable($options['#before']))
     {
@@ -3510,7 +3549,7 @@ function to_table($dataobj,array $options=array(),array &$results = NULL)
         //There is no more data row, exiting...
         if($end)
         {
-            if($results !== NULL)
+            if($results !== null)
                 $results['rowcount'] = $rowcount;
             if(isset($options['#after']) && is_callable($options['#after']))
             {
@@ -3518,6 +3557,8 @@ function to_table($dataobj,array $options=array(),array &$results = NULL)
                 call_user_func($options['#after'], $table);
                 $aftertext = ob_get_clean();
             }
+            if(isset($options['#return_disabled']) && $options['#return_disabled'])
+                return null;
             return $beforetext.$table->get().$aftertext;
         }
 

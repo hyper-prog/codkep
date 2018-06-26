@@ -154,8 +154,12 @@ __Methods of ExcelXmlDocument class:__
 The ***$opts*** parameter of the ***opts()***,***cell()***,***cells()***,***cellss()*** and ***head()***,***heads()*** and
 ***nrow()*** function is an associative array with the following possible options:
 
-- ***"height" => height_number*** - The height of the cell's row
-- ***"width" => width_number*** - The width of the cell's row
+- ***"height" => height_number*** - The height of the cell's row.
+- ***"xheight" => height_number*** - The height of the cell's row. This option affects ExcelXml document only.
+- ***"theight" => height_number*** - The height of the cell's row. This option affects HtmlTables document only.
+- ***"width" => width_number*** - The width of the cell's row.
+- ***"xwidth" => width_number*** - The width of the cell's row. This option affects ExcelXml document only.
+- ***"twidth" => width_number*** - The width of the cell's row. This option affects HtmlTables document only.
 - ***"formula" => formulastring*** - Specify a formula of the cell
  - Examples:
   - ___"=RC[-1]*2"___ - The cell same row and one column less multiplied with 2
@@ -167,6 +171,9 @@ The ***$opts*** parameter of the ***opts()***,***cell()***,***cells()***,***cell
   - ***"num"*** - Number
   - ***"dat"*** - Date, You also have to specify the ***"numberformat" => "Short Date"*** and
   \ give the data in ISO date ***yyyy-MM-dd***!
+- ***"colspan" => spannumber*** -  Merge more horizontal cells to one.
+- ***"xcolspan" => spannumber*** -  Merge more horizontal cells to one. This option affects ExcelXml document only.
+- ***"tcolspan" => spannumber*** -  Merge more horizontal cells to one. This option affects HtmlTables document only.
 - ***"wrap" => wrapstr*** - Sets the wrapping of the cells.
  - Possible values of ***wrapstr***
   - ***"on"*** - Sets cell wrapping on.
@@ -199,6 +206,8 @@ The ***$opts*** parameter of the ***opts()***,***cell()***,***cells()***,***cell
 - ***"italic" => "yes"*** - Sets italic font
 - ***"underline" => "yes"*** - Sets the font to underlined.
 - ***"size" => size*** - Sets the point size of the font to ***size***.
+- ***"xsize" => size*** - Sets the point size of the font to ***size***. This option affects ExcelXml document only.
+- ***"tsize" => size*** - Sets the point size of the font to ***size***. This option affects HtmlTables document only.
 - ***"color" => colorstring*** - Sets the color of the font
  - The ***colorstring*** have to contains html color specification (In #RRGGBB format).
  - Example: ***"color" => "#RRGGBB"***
