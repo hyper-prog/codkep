@@ -497,7 +497,7 @@ class ExcelXmlDocument
 
         //strong & italic & size & color
         if(isset($opts['strong']) || isset($opts['italic']) ||
-            isset($opts['underline']) || isset($opts['size']) || isset($opts['color']))
+           isset($opts['underline']) || isset($opts['size']) || isset($opts['xsize']) || isset($opts['color']))
         {
             $strong = '';
             if(isset($opts['strong']) && $opts['strong'] == 'yes')
