@@ -28,6 +28,7 @@ class HtmlTable
     public $o; //table options
     public $tr_open;
     public $ena_f;
+    protected $callbacks;
 
     public function __construct($n = '')
     {
@@ -37,6 +38,17 @@ class HtmlTable
         $this->o = array();
         $this->tr_open = false;
         $this->ena_f = false;
+        $this->callbacks = array();
+    }
+
+    public function setCallback($name,$callback)
+    {
+        $this->callbacks[$name] = $callback;
+    }
+
+    public function run($name)
+    {
+        return call_user_func($this->callbacks[$name],$this);
     }
 
     public function name($n)
@@ -224,6 +236,7 @@ class ExcelXmlDocument
     private $in_header_row;
     private $table_options;
     private $row_options;
+    protected $callbacks;
 
     public function __construct($n = 'Generated excel xml table')
     {
@@ -245,6 +258,7 @@ class ExcelXmlDocument
         $this->in_header_row = false;
         $this->table_options = [];
         $this->row_options = [];
+        $this->callbacks = [];
     }
 
     public function setHtmlHeaders($filename)
@@ -257,6 +271,16 @@ class ExcelXmlDocument
     {
         $this->n = $n;
         return $this;
+    }
+
+    public function setCallback($name,$callback)
+    {
+        $this->callbacks[$name] = $callback;
+    }
+
+    public function run($name)
+    {
+        return call_user_func($this->callbacks[$name],$this);
     }
 
     /** Does nothing, for compatibility reasons only */
@@ -752,6 +776,8 @@ class HtmlForm
 
     public $formatter;
 
+    protected $callbacks;
+
     public function __construct($n = '',$formatter = NULL)
     {
         $this->name = $n;
@@ -761,12 +787,23 @@ class HtmlForm
         $this->mode = 'POST';
         $this->formatter = $formatter == NULL ? new HtmlFormFormatter() : $formatter ;
         $this->hidden('harassment-value',getFormSalt());
+        $this->callbacks = [];
     }
 
     public function name($n)
     {
         $this->name = $n;
         return $this;
+    }
+
+    public function setCallback($name,$callback)
+    {
+        $this->callbacks[$name] = $callback;
+    }
+
+    public function run($name)
+    {
+        return call_user_func($this->callbacks[$name],$this);
     }
 
     public function opts($o)
