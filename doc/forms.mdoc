@@ -243,6 +243,18 @@ __Definition methods of HtmlForm class:__
      - ***"maxlength"=number*** - Sets the maxlength attribute of the field.
      - ***"readonly"=true*** - Sets the field readonly.
      - ***"autofocus"=true*** - Sets the form item has the initial focus
+ - @@@setCallback($name, $callback)@@@
+  - You can add a named callback to the object and run it later with the given name. This callbacks can used as macros.
+  \ This callback mechanism works same in HtmlTable,HtmlForm and ExcelXmlDocument. It possible to set different
+  \ callbacks with same names to achieve different mechanism on same event.
+  - The callbacks receives two parameters:
+   - The object reference where the callback is set (HtmlTable,HtmlForm and ExcelXmlDocument)
+   - The optional parameter passed to ***run()***
+  - Example: ***$t->setCallback("sep",function($x,$p) { $x->nrows(2); return ''; });***
+ - @@@run($name, $parameter = null)@@@
+  - Calls the callback by name which set through ***setCallback()***
+  - The ***$parameter*** is an optional parameter passed directly to the callback
+  - Example: ***$t->run("sep");***
 
 
 #htmlformcodgen#

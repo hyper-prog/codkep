@@ -46,9 +46,9 @@ class HtmlTable
         $this->callbacks[$name] = $callback;
     }
 
-    public function run($name)
+    public function run($name,$parameter = null)
     {
-        return call_user_func($this->callbacks[$name],$this);
+        return call_user_func($this->callbacks[$name],$this,$parameter);
     }
 
     public function name($n)
@@ -278,9 +278,9 @@ class ExcelXmlDocument
         $this->callbacks[$name] = $callback;
     }
 
-    public function run($name)
+    public function run($name,$parameter = null)
     {
-        return call_user_func($this->callbacks[$name],$this);
+        return call_user_func($this->callbacks[$name],$this,$parameter);
     }
 
     /** Does nothing, for compatibility reasons only */
@@ -801,9 +801,9 @@ class HtmlForm
         $this->callbacks[$name] = $callback;
     }
 
-    public function run($name)
+    public function run($name,$parameter = null)
     {
-        return call_user_func($this->callbacks[$name],$this);
+        return call_user_func($this->callbacks[$name],$this,$parameter);
     }
 
     public function opts($o)

@@ -67,6 +67,18 @@ __Methods of HtmlTable class:__
   - Sets more row of the table with a two dimensional array.
  - @@@get()@@@
   - Generates the html code of the table.
+ - @@@setCallback($name, $callback)@@@
+  - You can add a named callback to the object and run it later with the given name. This callbacks can used as macros.
+  \ This callback mechanism works same in HtmlTable,HtmlForm and ExcelXmlDocument. It possible to set different
+  \ callbacks with same names to achieve different mechanism on same event.
+  - The callbacks receives two parameters:
+   - The object reference where the callback is set (HtmlTable,HtmlForm and ExcelXmlDocument)
+   - The optional parameter passed to ***run()***
+  - Example: ***$t->setCallback("sep",function($x,$p) { $x->nrows(2); return ''; });***
+ - @@@run($name, $parameter = null)@@@
+  - Calls the callback by name which set through ***setCallback()***
+  - The ***$parameter*** is an optional parameter passed directly to the callback
+  - Example: ***$t->run("sep");***
 
 #excelxml#
 == Excel output generator ==
@@ -148,6 +160,19 @@ __Methods of ExcelXmlDocument class:__
  - This function sets a default options of the table cells.
  \ The options set in ***nrow()*** function will overwrite these, while the options passed
  \ in ***cell()*** and ***head()*** will overwrite both.
+- @@@setCallback($name, $callback)@@@
+ - You can add a named callback to the object and run it later with the given name. This callbacks can used as macros.
+ \ This callback mechanism works same in HtmlTable,HtmlForm and ExcelXmlDocument. It possible to set different
+ \ callbacks with same names to achieve different mechanism on same event.
+ - The callbacks receives two parameters:
+  - The object reference where the callback is set (HtmlTable,HtmlForm and ExcelXmlDocument)
+  - The optional parameter passed to ***run()***
+ - Example: ***$t->setCallback("sep",function($x,$p) { $x->nrows(2); return ''; });***
+- @@@run($name, $parameter = null)@@@
+ - Calls the callback by name which set through ***setCallback()***
+ - The ***$parameter*** is an optional parameter passed directly to the callback
+ - Example: ***$t->run("sep");***
+
 
 
 #exmlstyleopts#
