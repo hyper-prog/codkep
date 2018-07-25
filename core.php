@@ -47,6 +47,12 @@ function hook_core_boot()
 
     $site_config->cors_requests_enabled_hosts  = '';
 
+    $site_config->param_event_locations = [
+        'undefined' => 'param_undefined_error',
+        'missing'   => 'missing_parameter_error',
+        'security'  => 'param_security_error',
+    ];
+
     $translations = array();
     //------------------------------------------------
 
@@ -780,6 +786,7 @@ function get_startpage()
  *  @package core */
 function par_def($name,$security_class,$source = 'all',$accept_empty = true,$default = NULL,$required = NULL)
 {
+    global $site_config;
     global $sys_data;
     $sys_data->content->par[$name] = ['name' => $name,
                                       'sc' => $security_class,
@@ -789,7 +796,7 @@ function par_def($name,$security_class,$source = 'all',$accept_empty = true,$def
                                       'req' => $required,
                                       ];
     if($required != NULL && $required != '' && !par_ex($name))
-        load_loc('missing_parameter_error',$name,$required);
+        load_loc($site_config->param_event_locations['missing'],$name,$required);
 }
 
 /** Empty/reset defined parameters 
@@ -843,7 +850,8 @@ function par_ex($name,$autodefine_type = 'no')
         }
         else
         {
-            load_loc('param_undefined_error',$name);
+            global $site_config;
+            load_loc($site_config->param_event_locations['undefined'],$name);
             return false;
         }
     }
@@ -891,16 +899,16 @@ function par_is($name,$value,$autodefine_type = 'no')
 function par($name,$autodefine_type = 'no')
 {
     global $sys_data;
+    global $site_config;
     if(!isset($sys_data->content->par[$name]))
     {
-        global $site_config;
         if($site_config->parameter_autodefine)
         {
             par_def($name,$autodefine_type);
         }
         else
         {
-            load_loc('param_undefined_error',$name);
+            load_loc($site_config->param_event_locations['undefined'],$name);
             return false;
         }
     }
@@ -922,7 +930,7 @@ function par($name,$autodefine_type = 'no')
     if($v == NULL)
     {
         if($p['req'] != NULL && $p['req'] != '')
-            load_loc('missing_parameter_error',$name,$p['req']);
+            load_loc($site_config->param_event_locations['missing'],$name,$p['req']);
 
         if($v == NULL)
             $v = $p['def'];
@@ -935,7 +943,7 @@ function par($name,$autodefine_type = 'no')
         if(preg_match($sys_data->parameter_security_classes[$p['sc']],$v) == 1)
             return $v;
     }
-    load_loc('param_security_error',$name,$p['sc']);
+    load_loc($site_config->param_event_locations['security'],$name,$p['sc']);
     return NULL;
 }
 

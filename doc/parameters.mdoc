@@ -239,3 +239,16 @@ function mypage()
   //...
 }
 ~~~
+
+
+#parametersettings#
+== Parameter handling relates settings ==
+
+The settings which can set [in site settings|url:doc/codkep/modules#site_settings].
+.
+
+| name                                                                    | default                                    | description |
+|---                                                                      |--                                          | ---         |
+|<small> ***$site_config->param_event_locations['undefined']*** </small>  |<small> 'param_undefined_error' </small>    | The built-in undefined parameter error page [location|url:doc/codkep/routes]. |
+|<small> ***$site_config->param_event_locations['missing']***   </small>  |<small> 'missing_parameter_error'  </small> | The built-in missing parameter error page [location|url:doc/codkep/routes]. |
+|<small> ***$site_config->param_event_locations['security']***  </small>  |<small> 'param_security_error'  </small>    | The built-in parameter not match to the security class error page [location|url:doc/codkep/routes]. |
