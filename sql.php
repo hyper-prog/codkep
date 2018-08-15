@@ -452,11 +452,10 @@ function sql_column_exists($tablename,$colname)
 
 function sql_check_and_build($name,$tablename,$fields)
 {
-    $r = array();
     $table_exists = sql_table_exists($tablename);
     $full_exists = true;
     $str = '';
-    $str2 = '';
+    $exstr = [];
     $str .= "-- $name  \n";
     $str .= "CREATE TABLE ".$tablename." (\n";
     $first = true;
@@ -470,17 +469,17 @@ function sql_check_and_build($name,$tablename,$fields)
         if($table_exists && !sql_column_exists($tablename,$name))
         {
             $full_exists = false;
-            $str2 = "ALTER TABLE ".$tablename." ADD ".$name." ".$type.";\n";
+            $exstr[] = "ALTER TABLE ".$tablename." ADD ".$name." ".$type.";";
         }
     }
     $str .= "\n);";
 
     if(!$table_exists)
-        $str2 = $str;
+        $exstr[] = $str;
     return array("table_exists" => $table_exists,
                  "full_exists" => $full_exists,
                  "create_string" => $str,
-                 "exec_string" => $str2,
+                 "exec_string" => $exstr,
                 );
 }
 
@@ -490,6 +489,8 @@ function sql_schema_page()
     global $db;
     par_def("sep","text3ns");
     par_def("execute","text3ns");
+    par_def("lines","text1ns");
+    par_def("hideok","bool");
 
     if(!isset($db->schema_editor_allowed_for_admin) ||
        !$db->schema_editor_allowed_for_admin ||
@@ -534,15 +535,13 @@ function sql_schema_page()
     run_hook('before_sql_schema_collection');
     $sdes = run_hook('required_sql_schema');
 
-    ob_start();
-    print '<table class="sql_schema_table" border="1">';
-
-    $fa = '';
-    $fa .= '<form method="POST" action="'.url(current_loc()).'">';
-    $fa .= '<input type="hidden" name="sep" value="'.par('sep').'"/>';
-    $fa .= '<input type="hidden" name="execute" value="--forall--"/>';
-    $fa .= '<input type="submit" name="s" value="'.t("EXECUTE TO ALL").'"/>';
-    $fa .= '</form>';
+    $f_execall = '';
+    $f_execall .= '<form method="POST" action="'.url(current_loc()).'">';
+    $f_execall .= '<input type="hidden" name="sep" value="'.par('sep').'"/>';
+    $f_execall .= '<input type="hidden" name="execute" value="--forall--"/>';
+    $f_execall .= '<input type="hidden" name="lines" value="all"/>';
+    $f_execall .= '<input type="submit" name="s" value="'.t("EXECUTE TO ALL").'"/>';
+    $f_execall .= '</form>';
 
     $f_refresh = '';
     $f_refresh .= '<form method="POST" action="'.url(current_loc()).'">';
@@ -550,18 +549,46 @@ function sql_schema_page()
     $f_refresh .= '<input type="submit" name="s" value="'.t("Refresh").'"/>';
     $f_refresh .= '</form>';
 
-    print "<thead><tr><th>Table</th><th>Needs execute</th><th>$f_refresh</th></tr></thead>";
+    $f_hideok = '';
+    $f_hideok .= '<form method="POST" action="'.url(current_loc()).'">';
+    $f_hideok .= '<input type="hidden" name="sep" value="'.par('sep').'"/>';
+    $f_hideok .= '<input type="hidden" name="hideok" value="1"/>';
+    $f_hideok .= '<input type="submit" name="s" value="'.t("Hide Ok & Refresh").'"/>';
+    $f_hideok .= '</form>';
+
+    add_style(".sqseheader { background-color: #555555; color: #eeeeee; }");
+    add_style(".sql_schema_table {border-collapse: collapse; }");
+
+    $num = 0;
+    $num_nok = 0;
+    ob_start();
+    $fcolname = "All tables";
+    if(par_ex('hideok') || par('hideok'))
+        $fcolname = "Filtered tables";
+    print '<table class="sql_schema_table" border="1">';
+    print "<thead><tr class=\"sqseheader\"><th>Required table definition</th><th>Needs to execute</th><th>$f_refresh $f_hideok</th></tr></thead>";
 
     print '<tbody>';
-    print "<tr><td>All tables</td><td></td><td align=\"center\">$fa</td></tr>";
+    print "<tr class=\"sqseheader\"><td>$fcolname</td><td></td><td align=\"center\">$f_execall</td></tr>";
     foreach($sdes as $defname => $def)
     {
         if(par_is("execute",$def['tablename']) || par_is("execute","--forall--"))
         {
             $a = sql_check_and_build($defname,$def['tablename'],$def['columns']);
-            if($a['exec_string'] != '')
-                sql_exec($a['exec_string']);
+            if(count($a['exec_string']) > 0)
+            {
+                if(par_is("lines","first"))
+                {
+                    sql_exec($a['exec_string'][0]);
+                }
+                if(par_is("lines","all"))
+                {
+                    foreach($a['exec_string'] as $es_sql)
+                        sql_exec($es_sql);
+                }
+            }
         }
+        ++$num;
 
         $a = sql_check_and_build($defname,$def['tablename'],$def['columns']);
 
@@ -575,9 +602,18 @@ function sql_schema_page()
             $style = 'background-color: #ff4444';
         }
 
-        $exec_str = $a['exec_string'];
-        if($exec_str == '')
+        $exec_str = '';
+        if(count($a['exec_string']) == 0)
+        {
             $exec_str = '-- Ok ';
+            if(par_ex('hideok') || par('hideok'))
+                continue;
+        }
+        else
+        {
+            $exec_str = implode('<br/>', $a['exec_string']);
+            ++$num_nok;
+        }
 
         print '<tr>';
         print "<td style=\"$style\"><pre>".$a['create_string']."</pre></td>";
@@ -589,9 +625,17 @@ function sql_schema_page()
             $f .= '<form method="POST" action="'.url(current_loc()).'">';
             $f .= '<input type="hidden" name="sep" value="'.par('sep').'"/>';
             $f .= '<input type="hidden" name="execute" value="'.$def['tablename'].'"/>';
-            $f .= '<input type="submit" name="s" value="'.t("EXECUTE").'"/>';
+            $f .= '<input type="hidden" name="lines" value="all"/>';
+            $f .= '<input type="submit" name="s" value="'.t("EXECUTE ALL").'"/>';
             $f .= '</form>';
-            print "<td>$f</td>";
+            $f2 = '';
+            $f2 .= '<form method="POST" action="'.url(current_loc()).'">';
+            $f2 .= '<input type="hidden" name="sep" value="'.par('sep').'"/>';
+            $f2 .= '<input type="hidden" name="execute" value="'.$def['tablename'].'"/>';
+            $f2 .= '<input type="hidden" name="lines" value="first"/>';
+            $f2 .= '<input type="submit" name="s" value="'.t("EXECUTE FIRST").'"/>';
+            $f2 .= '</form>';
+            print "<td style=\"background-color: #cccccc;\">$f $f2</td>";
         }
         else
         {
@@ -649,13 +693,17 @@ function sql_schema_page()
             }
             else
             {
-                print "<td>Ok ($count row)</td>";
+                print "<td style=\"background-color: #cccccc;\">Ok ($count row)</td>";
             }
         }
         print '</tr>';
     }
     print '</tbody>';
     print '</table>';
+    if(par_ex('hideok') || par('hideok'))
+        print "$num_nok definitions needs some actions to do.";
+    else
+        print "$num definitions listed / $num_nok needs some actions to do.";
 
     return ob_get_clean();
 }
