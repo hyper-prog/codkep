@@ -557,6 +557,7 @@ function sql_schema_page()
     $f_hideok .= '</form>';
 
     add_style(".sqseheader { background-color: #555555; color: #eeeeee; }");
+    add_style(".sqsethree { background-color: #cccccc; }");
     add_style(".sql_schema_table {border-collapse: collapse; }");
 
     $num = 0;
@@ -635,7 +636,7 @@ function sql_schema_page()
             $f2 .= '<input type="hidden" name="lines" value="first"/>';
             $f2 .= '<input type="submit" name="s" value="'.t("EXECUTE FIRST").'"/>';
             $f2 .= '</form>';
-            print "<td style=\"background-color: #cccccc;\">$f $f2</td>";
+            print "<td class=\"sqsethree\">$f $f2</td>";
         }
         else
         {
@@ -658,14 +659,14 @@ function sql_schema_page()
                     {
                         $u->get_speedform_object()->load_parameters();
                         $nid = $u->insert();
-                        print "<td>Ok<br/>" . l('User login page', 'user/login') . "</td>";
+                        print "<td class=\"sqsethree\">Ok<br/>" . l('User login page', 'user/login') . "</td>";
                     }
                     else
                     {
                         $form = $u->getform('insert');
                         $form->action_post(current_loc());
                         $form->hidden("sep", par("sep"));
-                        print "<td>Ok ($count row)<br/>" . $form->get() . "</td>";
+                        print "<td class=\"sqsethree\">Ok ($count row)<br/>" . $form->get() . "</td>";
                     }
                 }
                 else
@@ -677,7 +678,7 @@ function sql_schema_page()
                         $sf->do_select();
                         $sf->load_parameters();
                         $sf->do_update();
-                        print "<td>Ok<br/>" . l('User login page', 'user/login') . "</td>";
+                        print "<td class=\"sqsethree\">Ok<br/>" . l('User login page', 'user/login') . "</td>";
                     }
                     else
                     {
@@ -686,14 +687,14 @@ function sql_schema_page()
                         $form = $sf->generate_form('update');
                         $form->action_post(current_loc());
                         $form->hidden("sep", par("sep"));
-                        print "<td>Ok ($count row)<br/>" . $form->get() . "<br/>".
+                        print "<td class=\"sqsethree\">Ok ($count row)<br/>" . $form->get() . "<br/>".
                               l('User login page', 'user/login')."</td>";
                     }
                 }
             }
             else
             {
-                print "<td style=\"background-color: #cccccc;\">Ok ($count row)</td>";
+                print "<td class=\"sqsethree\">Ok ($count row)</td>";
             }
         }
         print '</tr>';
