@@ -983,6 +983,12 @@ class HtmlForm
         return $this;
     }
 
+    public function hidden_array(array $keyvalue,$opts=array())
+    {
+        foreach($keyvalue as $key => $value)
+            $this->input('hidden',$key,$value,$opts);
+    }
+
     public function input_p($type,$n,$v,$opts=array())
     {
         par_def($n,isset($opts['par_sec']) ? $opts['par_sec'] : 'text4');

@@ -182,6 +182,10 @@ __Definition methods of HtmlForm class:__
     - ***"id"=string*** - Sets the ID of the field.
     - ***"before"=string*** - Put this text before the tag.
     - ***"after"=string*** - Put this text after the tag.
+ - @@@hidden_array(array $keyvalue,$opts=array())@@@
+  - Adds the parameter passed ***$keyvalue*** associative array every elements to the form as hidden fields.
+  \ The keys of the array is the parameter names while the values act as hidden values.
+  - The ***$opts*** parameter is added for every fields and works same as ***hidden()*** method above.
  - @@@datefield($type, $n, $v, $opts = array())@@@
   - Adds a date typed field to the form. This will be a dropdown select for years, months and days.
   - The parameter ***$type*** should be ***"date"*** or ***"dateu"***
