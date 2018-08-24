@@ -252,3 +252,14 @@ The settings which can set [in site settings|url:doc/codkep/modules#site_setting
 |<small> ***$site_config->param_event_locations['undefined']*** </small>  |<small> 'param_undefined_error' </small>    | The built-in undefined parameter error page [location|url:doc/codkep/routes]. |
 |<small> ***$site_config->param_event_locations['missing']***   </small>  |<small> 'missing_parameter_error'  </small> | The built-in missing parameter error page [location|url:doc/codkep/routes]. |
 |<small> ***$site_config->param_event_locations['security']***  </small>  |<small> 'param_security_error'  </small>    | The built-in parameter not match to the security class error page [location|url:doc/codkep/routes]. |
+
+
+== Hooks ==
+
+The following [hooks|url:doc/codkep/hooks] can be implement related to the parameter system.
+| Hook                                | Description |
+| ---                                 | ---         |
+| HOOK_parameter_missing($name,$required)   | The hook is activated when a required parameter is missing. |
+| HOOK_parameter_undefined($name)           | The hook is activated when a parameter is queried but not defined. |
+| HOOK_parameter_security_error($name,$sc) | The hook is activated when a parameter does not fit in the defined security class. |
+

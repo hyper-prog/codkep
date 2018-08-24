@@ -805,7 +805,10 @@ function par_def($name,$security_class,$source = 'all',$accept_empty = true,$def
                                       'req' => $required,
                                       ];
     if($required != NULL && $required != '' && !par_ex($name))
+    {
+        run_hook('parameter_missing',$name,$required);
         load_loc($site_config->param_event_locations['missing'],$name,$required);
+    }
 }
 
 /** Empty/reset defined parameters 
@@ -860,6 +863,7 @@ function par_ex($name,$autodefine_type = 'no')
         else
         {
             global $site_config;
+            run_hook('parameter_undefined',$name);
             load_loc($site_config->param_event_locations['undefined'],$name);
             return false;
         }
@@ -917,6 +921,7 @@ function par($name,$autodefine_type = 'no')
         }
         else
         {
+            run_hook('parameter_undefined',$name);
             load_loc($site_config->param_event_locations['undefined'],$name);
             return false;
         }
@@ -939,7 +944,10 @@ function par($name,$autodefine_type = 'no')
     if($v == NULL)
     {
         if($p['req'] != NULL && $p['req'] != '')
+        {
+            run_hook('parameter_missing',$name,$p['req']);
             load_loc($site_config->param_event_locations['missing'],$name,$p['req']);
+        }
 
         if($v == NULL)
             $v = $p['def'];
@@ -952,6 +960,7 @@ function par($name,$autodefine_type = 'no')
         if(preg_match($sys_data->parameter_security_classes[$p['sc']],$v) == 1)
             return $v;
     }
+    run_hook('parameter_security_error',$name,$p['sc']);
     load_loc($site_config->param_event_locations['security'],$name,$p['sc']);
     return NULL;
 }
@@ -1956,4 +1965,13 @@ function _HOOK_alter_mainmenu($object) {}
 
 /** The system was dropped the cache. All modules should drop their own caches too. */
 function _HOOK_emptycache() {}
+
+/** The hook is activated when a required parameter is missing. */
+function _HOOK_parameter_missing($name,$required) {}
+
+/** The hook is activated when a parameter is queried but not defined. */
+function _HOOK_parameter_undefined($name) {}
+
+/** The hook is activated when a parameter does not fit in the defined security class. */
+function _HOOK_parameter_security_error($name,$sc) {}
 //end.

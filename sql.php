@@ -1527,4 +1527,28 @@ function _HOOK_sql_connected() {}
  * @package sql */
 function _HOOK_execute_sql() {}
 
+/**
+ * Activated on the sql built-in connection error page.
+ * @package sql */
+function _HOOK_sql_show_builtin_connerror_page() {}
+
+/**
+ * Activated on the sql built-in general error page.
+ * @package sql */
+function _HOOK_sql_show_builtin_error_page() {}
+
+/**
+ * Activated immediately before the schema page begins to collect the sql requirements.
+ * @package sql */
+function _HOOK_before_sql_schema_collection() {}
+
+/**
+ * Called before the General database CRUD interface begins to generate and sql command.
+ * @package sql */
+function _HOOK_begin_generate_sql() {}
+
+/**
+ * Called after the General database CRUD interface finishes to generate and sql command.
+ * @package sql */
+function _HOOK_end_generate_sql() {}
 //end.
