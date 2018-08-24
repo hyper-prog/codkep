@@ -687,6 +687,15 @@ function ajax_add_val($selector,$value)
     global $sys_data;
     $sys_data->content->commands[] = ['val',$selector,$value];
 }
+/** Creates an ajax (jQuery) 'val' commands to append a text to the output queue.
+ *
+ *  Only use in ajax handler. ( _defineroute 'type'=>'ajax' )
+ *  @package core */
+function ajax_add_appendval($selector,$value,$linebreak_if_nonempty = false)
+{
+    global $sys_data;
+    $sys_data->content->commands[] = ['appendval',$selector,$value,$linebreak_if_nonempty];
+}
 
 /** Returns the html code which placed a delayed ajax call to the page.
  *  @param string $ajax_url The url of the ajax call to be call. (Will be processed by url())

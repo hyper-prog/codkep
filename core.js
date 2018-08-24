@@ -70,6 +70,12 @@ function processAjaxResponse(data)
             jQuery(obj[i][1]).remove();
         if(obj[i][0] == "val")
             jQuery(obj[i][1]).val(obj[i][2]);
+        if(obj[i][0] == "appendval") {
+            var x,v;
+            x = jQuery(obj[i][1]);
+            v = x.val();
+            x.val(v+(obj[i][3] && v != '' ? '\n' : '')+obj[i][2]);
+        }
         if(obj[i][0] == "addClass")
             jQuery(obj[i][1]).addClass(obj[i][2]);
         if(obj[i][0] == "removeClass")
