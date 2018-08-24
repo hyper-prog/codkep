@@ -99,6 +99,11 @@ __Definition methods of HtmlForm class:__
   \ See the [documentation of ***url()***|url:doc/codkep/routes#urlfunc]
  - @@@input($type, $n, $v, $opts = array())@@@
   - Adds an input tag to the form with type received in ***$type*** parameter.
+   - The ***$type*** parameter can receive the following values:
+    - ***"text" "number" "password" "submit" "file"*** - These values are generates a single html input tag and the type
+    \ parameter's value passed through to the input tag type.
+    - ***"raw"*** - It does not generate html tags, the data is simply written to the output.
+    - ***"checkbox"*** - It generates a html input tag with checkbox type and a second hidden input tag to handle false values.
    - The ***$n*** parameter is the name of the input tag.
    - The ***$v*** parameter is the default value of the input tag.
    - The ***$opts*** is an associative array can set some features of the field.
@@ -140,7 +145,11 @@ __Definition methods of HtmlForm class:__
     - ***"maxlength"=number*** - Sets the maxlength attribute of the field.
     - ***"readonly"=true*** - Sets the field readonly.
  - @@@select($type, $n, $v, $values = array(), $opts = array())@@@
-  - Adds a select field to the form. (dropdown select)
+  - Adds a select (dropdown), radio or optional select field to the form.
+   - The ***$type*** parameter can receive the following values:
+    - ***"select"*** - Generates a html select. (Dropdown select)
+    - ***"radio"*** - Generates a html radio buttons.
+    - ***"optselect"*** - Generate an optional html select. (It can holds NULL value)
    - The ***$name*** parameter is the name of the field.
    - The ***$v*** parameter is the default value of the select.
    - The ***$values*** parameter is an associative array holds the possible values of the select.
@@ -155,6 +164,10 @@ __Definition methods of HtmlForm class:__
     - ***"after"=string*** - Put this text after the tag.
     - ***"readonly"=true*** - Sets the field readonly.
     - ***"autofocus"=true*** - Sets the form item has the initial focus
+    - ***"itemprefix"=string*** - This string is written immediately before the item tags.
+    \ Before the option tags in select mode and before the input tags in radio mode.
+    - ***"itemsuffix"=string*** - This string is written immediately after the item tags.
+    \ After the option tags in select mode and after the input tags in radio mode.
  - @@@textarea($n, $v, $row, $col, $opts = array())@@@
   - Adds a textarea field to the form. (Large text editor field)
    - The ***$name*** parameter is the name of the field.
@@ -247,6 +260,8 @@ __Definition methods of HtmlForm class:__
      - ***"maxlength"=number*** - Sets the maxlength attribute of the field.
      - ***"readonly"=true*** - Sets the field readonly.
      - ***"autofocus"=true*** - Sets the form item has the initial focus
+     - ***"itemprefix"=string*** - This string is written immediately before the item tags.
+     - ***"itemsuffix"=string*** - This string is written immediately after the item tags.
  - @@@setCallback($name, $callback)@@@
   - You can add a named callback to the object and run it later with the given name. This callbacks can used as macros.
   \ This callback mechanism works same in HtmlTable,HtmlForm and ExcelXmlDocument. It possible to set different

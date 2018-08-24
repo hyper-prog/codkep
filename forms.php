@@ -913,6 +913,8 @@ class HtmlForm
              'after' => (isset($opts['after']) ? $opts['after'] : ''),
              'readonly' => (isset($opts['readonly']) ? $opts['readonly'] : false),
              'autofocus' => (isset($opts['autofocus']) ? $opts['autofocus'] : false),
+             'itemprefix' => (isset($opts['itemprefix']) ? $opts['itemprefix'] : ''),
+             'itemsuffix' => (isset($opts['itemsuffix']) ? $opts['itemsuffix'] : ''),
             ]);
         return $this;
     }
@@ -973,6 +975,8 @@ class HtmlForm
                 'after' => (isset($opts['after']) ? $opts['after'] : ''),
                 'readonly' => (isset($opts['readonly']) ? $opts['readonly'] : false),
                 'autofocus' => (isset($opts['autofocus']) ? $opts['autofocus'] : false),
+                'itemprefix' => (isset($opts['itemprefix']) ? $opts['itemprefix'] : ''),
+                'itemsuffix' => (isset($opts['itemsuffix']) ? $opts['itemsuffix'] : ''),
             ]);
         return $this;
     }
@@ -1189,7 +1193,7 @@ class HtmlForm
             foreach($dta['values'] as $h => $v)
             {
                 $s = $dta['value'] == $h ? ' selected' : ''; 
-                $t .= "<option value=\"$h\"$s>$v</option>";
+                $t .= $dta['itemprefix']."<option value=\"$h\"$s>$v</option>".$dta['itemsuffix'];
             }
             $t .= '</select>';
             print $this->formatter->item($dta['before'].$t.$dta['after'],$dta['name']);
@@ -1214,7 +1218,7 @@ class HtmlForm
             foreach($dta['values'] as $h => $v)
             {
                 $s = $dta['value'] == $h ? ' selected' : '';
-                $t .= "<option value=\"$h\"$s>$v</option>";
+                $t .= $dta['itemprefix']."<option value=\"$h\"$s>$v</option>".$dta['itemsuffix'];
             }
             $t .= '</select> ';
             $onclset = "forms_click_selset('$id');";
@@ -1239,13 +1243,14 @@ class HtmlForm
             foreach($dta['values'] as $h => $v)
             {
                 $s = $dta['value'] == $h ? ' checked="checked"' : ''; 
-                $t .= "<input type=\"radio\" name=\"".$dta['name']."\" value=\"$h\"".
+                $t .= $dta['itemprefix'].
+                    "<input type=\"radio\" name=\"".$dta['name']."\" value=\"$h\"".
                     ($dta['class']==''?'':' class="'.$dta['class'].'"').
                     ($dta['style']==''?'':' style="'.$dta['style'].'"').
                     ($dta['onclick']==''?'':' onclick="'.$dta['onclick'].'"').
                     ($dta['onchange']==''?'':' onchange="'.$dta['onchange'].'"').
                     ($dta['id']==''?'':' id="'.$dta['id'].'"').
-                    "$s>$v";
+                    "$s>$v".$dta['itemsuffix'];
             }
             print $this->formatter->item($dta['before'].$t.$dta['after'],$dta['name']);
         }
