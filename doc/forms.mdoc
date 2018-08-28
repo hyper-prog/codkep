@@ -219,21 +219,33 @@ __Definition methods of HtmlForm class:__
   \ through the CodKep [parameter system|url:doc/codkep/parameters].
   \ If the parameter which defined by this field is set, the form value will display the already set value.
   \ (The method is automatically define the requested parameter)
+  - If the ***$opts*** array contains an index ***'no_par_def'*** with ***true*** value the parameter definition
+  \ (with the par_def() function)is skipped.
+  \ Use it if you already define the parameter before and only need to load the set value into the form.
  - @@@select_p($type, $n, $v, $values = array(), $opts = array())@@@
   - Same as ***select()*** method but define and query the previous set HTML parameter value
   \ through the CodKep [parameter system|url:doc/codkep/parameters].
   \ If the parameter which defined by this field is set, the form value will display the already set value.
   \ (The method is automatically define the requested parameter)
+  - If the ***$opts*** array contains an index ***'no_par_def'*** with ***true*** value the parameter definition
+  \ (with the par_def() function)is skipped.
+  \ Use it if you already define the parameter before and only need to load the set value into the form.
  - @@@textarea_p($n, $v, $row, $col, $opts = array())@@@
   - Same as ***textarea()*** method but define and query the previous set HTML parameter value
   \ through the CodKep [parameter system|url:doc/codkep/parameters].
   \ If the parameter which defined by this field is set, the form value will display the already set value.
   \ (The method is automatically define the requested parameter)
+  - If the ***$opts*** array contains an index ***'no_par_def'*** with ***true*** value the parameter definition
+  \ (with the par_def() function)is skipped.
+  \ Use it if you already define the parameter before and only need to load the set value into the form.
  - @@@datefield_p($type, $n, $v, $opts = array())@@@
   - Same as ***datefield()*** method but define and query the previous set HTML parameter value
   \ through the CodKep [parameter system|url:doc/codkep/parameters].
   \ If the parameter which defined by this field is set, the form value will display the already set value.
   \ (The method is automatically define the requested parameter)
+  - If the ***$opts*** array contains an index ***'no_par_def'*** with ***true*** value the parameter definition
+  \ (with the par_def() function)is skipped.
+  \ Use it if you already define the parameter before and only need to load the set value into the form.
  - @@@custom($name, $value, $callback, $opts = array())@@@
    - Adds a custom form element to the form with a user defined callback function to generate html codes.
     - The ***$name*** parameter is the name of the from element.

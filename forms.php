@@ -995,7 +995,8 @@ class HtmlForm
 
     public function input_p($type,$n,$v,$opts=array())
     {
-        par_def($n,isset($opts['par_sec']) ? $opts['par_sec'] : 'text4');
+        if(!isset($opts['no_par_def']) || !$opts['no_par_def'])
+            par_def($n,isset($opts['par_sec']) ? $opts['par_sec'] : 'text4');
 
         if(par_ex($n))
             $v = par($n);
@@ -1005,7 +1006,8 @@ class HtmlForm
 
     public function select_p($type,$n,$v,$values=array(),$opts=array())
     {
-        par_def($n,isset($opts['par_sec']) ? $opts['par_sec'] : 'text4');
+        if(!isset($opts['no_par_def']) || !$opts['no_par_def'])
+            par_def($n,isset($opts['par_sec']) ? $opts['par_sec'] : 'text4');
 
         if(par_ex($n))
             $v = par($n);
@@ -1015,7 +1017,8 @@ class HtmlForm
 
     public function textarea_p($n,$v,$row,$col,$opts=array())
     {
-        par_def($n,isset($opts['par_sec']) ? $opts['par_sec'] : 'text4');
+        if(!isset($opts['no_par_def']) || !$opts['no_par_def'])
+            par_def($n,isset($opts['par_sec']) ? $opts['par_sec'] : 'text4');
 
         if(par_ex($n))
             $v = par($n);
@@ -1025,9 +1028,12 @@ class HtmlForm
 
     public function datefield_p($type,$n,$v,$opts=array())
     {
-        par_def($n.'_year' ,isset($opts['par_sec']) ? $opts['par_sec'] : 'number0');
-        par_def($n.'_month',isset($opts['par_sec']) ? $opts['par_sec'] : 'number0');
-        par_def($n.'_day'  ,isset($opts['par_sec']) ? $opts['par_sec'] : 'number0');
+        if(!isset($opts['no_par_def']) || !$opts['no_par_def'])
+        {
+            par_def($n . '_year', isset($opts['par_sec']) ? $opts['par_sec'] : 'number0');
+            par_def($n . '_month', isset($opts['par_sec']) ? $opts['par_sec'] : 'number0');
+            par_def($n . '_day', isset($opts['par_sec']) ? $opts['par_sec'] : 'number0');
+        }
 
         $dval = $v;
         if(par_ex($n.'_year' ) && par_ex($n.'_month') && par_ex($n.'_day'  ))
