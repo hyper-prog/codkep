@@ -965,6 +965,15 @@ function par($name,$autodefine_type = 'no')
     return NULL;
 }
 
+/** Returns true if the given named parameter is defined. */
+function is_par_defined($name)
+{
+    global $sys_data;
+    if(isset($sys_data->content->par[$name]))
+        return true;
+    return false;
+}
+
 /** Checks if the given string is meet the requirements of
  *  the specified parameter_class (See par_def()) 
  *  @package core */
