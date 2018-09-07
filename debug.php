@@ -28,6 +28,7 @@ function hook_debug_boot()
 
     $site_config->enable_hook_table_info = false;
     $site_config->enable_route_table_info = false;
+    $site_config->enable_route_table_info_for_admin = false;
     $site_config->show_sql_commands_executed = false;
     $sys_data->debug_executed_sql = array();
 }
@@ -182,28 +183,48 @@ function info_routes()
     global $sys_data;
     
     if(!$site_config->enable_route_table_info)
-        return '';
+    {
+        global $user;
+        if(!isset($user->admin) || !$user->admin || !$site_config->enable_route_table_info_for_admin)
+            return '';
+    }
 
     ob_start();
     $t = h('table');
-    $t->heads(['path','type','theme','callback','file']);
+    $t->heads(['path','type','theme','callback','definition<br/>of the callback','callback<br/>file'],
+              ['style' => 'background-color: #555555; color: #eeeeee;']);
     $t->opts(['border' => '1','style' => 'border-collapse: collapse;']);
-    foreach($sys_data->loaded_routes as $r)
+    $routes = $sys_data->loaded_routes;
+    uasort($routes,function($a,$b) {
+        if ($a['path'] == $b['path']) {
+            return 0;
+        }
+        return ($a['path'] < $b['path']) ? -1 : 1;
+    });
+    $n = 0; $nj = 0; $na = 0; $nr = 0;
+    foreach($routes as $r)
     {
-        $t->cell($r['path']);
-        $t->cell(isset($r['type']) ? $r['type'] : 'html');
+        $t->cell($r['path'],['style' => 'background-color: #ffffdd;']);
+        $c = '#99ff99';
+        ++$n;
+        if(isset($r['type']) && $r['type'] == 'raw' ) { $c = '#ff9999'; ++$nr; }
+        if(isset($r['type']) && $r['type'] == 'ajax') { $c = '#ffff99'; ++$na; }
+        if(isset($r['type']) && $r['type'] == 'json') { $c = '#9999ff'; ++$nj; }
+        $t->cell(isset($r['type']) ? $r['type'] : 'html',['style' => "background-color: $c;"]);
 
         if(!isset($r['type']) || $r['type'] == 'html')
-            $t->cell(isset($r['theme']) ? $r['theme'] : '<i>'.$site_config->default_theme_name.'</i>');
+            $t->cell(isset($r['theme']) ? $r['theme'] : '<i>'.$site_config->default_theme_name.'</i>',['style' => 'background-color: #ddffdd;']);
         else
             $t->cell('');
         
-        $t->cell(isset($r['callback']) ? $r['callback'] : '-');
-        $t->cell(isset($r['file']) ? $r['file'] : '-');
-
+        $t->cell(isset($r['callback']) ? $r['callback'] : '-',['style' => 'background-color: #ddddff;']);
+        $fr = new ReflectionFunction($r['callback']);
+        $t->cell('<small>'.$fr->getFileName() . ':' . $fr->getStartLine().'</small>',['style' => 'background-color: #cccccc;']);
+        $t->cell(isset($r['file']) ? $r['file'] : '-',['style' => 'background-color: #ddddff;']);
         $t->nrow();
-    }              
-    print $t->get();                                  
+    }
+    print $t->get();
+    print "$n route listed ($na ajax, $nj json, $nr raw)";
     return ob_get_clean();
 }
 
