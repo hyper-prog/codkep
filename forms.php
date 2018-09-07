@@ -758,7 +758,7 @@ function table_options_translator(array $opts,array $additional = array(),$style
         if (isset($opts['colspan']))
             $o['colspan'] = $opts['colspan'];
         if (isset($opts['tcolspan']))
-            $o['colspan'] = $opts['colspan'];
+            $o['colspan'] = $opts['tcolspan'];
     }
     $o = array_merge($o,$additional);
     return $o;
