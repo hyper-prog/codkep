@@ -49,12 +49,16 @@ __Methods of HtmlTable class:__
    - ***"class"=string*** the css class of the table
    - ***"style"=string*** the style attribute of the table (Custom css code of the table)
    - ***"formatter"=true*** enable some additional functionality of cell's string formatting.
+   - Every [*cell modifier option*|url:#exmlstyleopts] can be used here jointly with the ***"type" => "uni"*** option.
+   \ <br/>(Most option set there is automatically coverted to ***"style"*** and merged with the original ***"style"*** value.)
  - @@@nrow(array $opts = array())@@@
   - Start a new row in table. Every time when this function called a new row will generated in table.
   \ If this function called two times an empty row is generated.
   \ The function can receive an associative array where the values can be:
      - ***"class"=string*** the css class of the tr tag
      - ***"style"=string*** the style attribute of the tr tag
+     - Every [*cell modifier option*|url:#exmlstyleopts] can be used here jointly with the ***"type" => "uni"*** option.
+     \ <br/>(Most option set there is automatically coverted to ***"style"*** and merged with the original ***"style"*** value.)
  - @@@head($h,array $opts)@@@
   - Sets the next header cell name. The ***$opts*** parameter is same that the ***opts()*** function can receive.
  - @@@heads($hs,array $opts)@@@
@@ -178,6 +182,9 @@ __Methods of ExcelXmlDocument class:__
 #exmlstyleopts#
 The ***$opts*** parameter of the ***opts()***,***cell()***,***cells()***,***cellss()*** and ***head()***,***heads()*** and
 ***nrow()*** function is an associative array with the following possible options:
+.
+#cellmods#
+**Cell modifier options**
 
 - ***"height" => height_number*** - The height of the cell's row.
 - ***"xheight" => height_number*** - The height of the cell's row. This option affects ExcelXml document only.
