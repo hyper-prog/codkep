@@ -1,0 +1,12 @@
+This file describes the non fully compatible
+changes between the released versions
+
+1.091 -> 1.092
+
+ - Until now the to_table() function's "headertext" option can be a text or a callback/function name.
+   Now the "headertext" option only receive string data. Only the new "headertextcallback" option can be used to specify
+   header text data by callback/function name.
+   So if the "headertext" option contains a callback, rename is to "headertextcallback".
+
+ - The to_table() function's uses the printed output of "#after" and "#before" callbacks and does not care the returned value.
+   Now the returned string value will be used as default, and (as fallback) the printed output is used when empty string returned.

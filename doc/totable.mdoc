@@ -2,6 +2,12 @@
 = Query formatter =
 
 The automatic query formatter is part of "forms" module which depends on "core" and "sql" modules.
+In fact this page describes the using of ***to_table()*** function.
+This function is a versatile and highly customisable table generator, which primary goal is to generate raw and well designed
+table outputs from sql queries and two dimensional arrays.
+<br/>
+This function can be used in early development phase to show raw query outputs as well to generate highly customised/designed
+tables in production code.
 
 == Automatic output generator for sql queries ==
 
@@ -49,7 +55,19 @@ $data = sql_exec('SELECT pid,name,city FROM people;');
 print to_table($data);
 ~~~
 
+In the example *1a* and *1b* the ***to_table()*** receives a two dimensional arrays while in the example *2* it receives
+an executed sql query. In the second case the function fetch all rows data to show.
 
+== Outout of to_table() ==
+
+By default the ***to_table()*** function returns the strings of the generated html table. With special options you can
+make ***to_table()*** to generate [ExcelXml output|url:doc/codkep/tablegen#excelxml] instead of html table.
+(See ***#output_object*** modifier below)
+.
+The ***to_table()*** function generates a brand new table or excel xml object which appears as an individual table.
+It's possible to use ***to_table()*** to adds the generated data to an existing (and not empty) table  or excel xml object.
+Typical useful scenario when you generate a large excel xml document with more different tables in one worksheet.
+(See ***#return_disabled*** modifier below)
 
 == Options affects the whole table ==
 
@@ -59,6 +77,9 @@ We can pass an ***$options*** array to the second parameter of the ***to_table()
 some formatting instruction to the table generator.
 .
 __Options affects the whole table tag:__
+- ***#output_object***
+ - ***table*** - Generates a [html table|url:doc/codkep/tablegen#html_table_generator]. (default)
+ - ***excelxml*** - Generates a [ExcelXml output|url:doc/codkep/tablegen#excelxml]
 - ***#tableopts***
  - ***border*** - Set the border of the table
  - ***style*** - CSS style for table tag
@@ -81,8 +102,15 @@ __Options affects the whole table tag:__
  \ ***$mytable = new HtmlTable("my");*** <br/>
  \ ***$results = ["target" => $mytable];*** <br/>
  \ ***to_table($tbl,["#return_disabled" => true],$results);***
-- ***#before*** - You can set function name/callback here which outputs (print) will displayed before the table
-- ***#after*** - You can set function name/callback here which outputs (print) will displayed after the table
+- ***#before*** - You can set function name/callback here to insert some data before the generated table.
+ - The return value of the callback will be used to insert before the table.
+ - The callback receives the output object as a parameter, so it can add some data directly to the output object. (as side effect)
+ - <small>By compatibility reasons the printed output of the callback will used as output if empty string returned!</small>
+- ***#after*** - You can set function name/callback here to insert some data after the generated table.
+ - The return value of the callback will be used to insert after the table.
+ - The callback receives the output object as a parameter, so it can add some data directly to the output object. (as side effect)
+ - <small>By compatibility reasons the printed output of the callback will used as output if empty string returned!</small>
+- ***#fields*** - Controls the generated fields/columns (See documentation [below|url:#fieldscontrol])
 
 Let's see an example of using this options above:
 ~~~php
@@ -127,6 +155,7 @@ print to_table($data,$c);
 <td>{file:totable2-2.png|css: border: 0;}</td></tr></table>
 
 
+#fieldscontrol#
 == Change the number or/and the order of the fields ==
 
 
@@ -136,6 +165,13 @@ You can change the number or/and the order of the rows by set ***#fields*** valu
 In case the ***#fields*** value is set, it overwrites the field orders.
 You can safety change orders or skip some
 fields here. You can even add fields which doesn't exists in the original query. (See later examples)
+.
+The ***#fields*** value is an array contains field names which can came from:
+- The sql name of the column in query
+- The index string of the inner associative array if two dimensional array is received.
+- A section name which exists in the ***$options*** array. (Virtual field)
+- A field repository name. (See later)
+The fields will be displayed in the results table as is ordered in the ***#fields*** array.
 .
 Let's see the using of ***#fields*** here:
 ~~~php
@@ -166,6 +202,7 @@ matched to the original query field name or a virtual field which only exists in
 .
 Fields definitions can receive the following options
 - ***headertext*** - Sets the text of the table header of this field
+- ***headertextcallback*** - Sets a callback function which returns the text of the header of this field
 - ***headeropts*** - Options affects of the table header of this field
  - ***style*** - CSS style for the header tag
  - ***class*** - CSS class of the header tag
@@ -175,6 +212,8 @@ Fields definitions can receive the following options
  - ***style*** - CSS style for the cell
  - ***class*** - CSS class of the cell
 - ***valuecallback*** - Value callback (See the next chapter)
+- ***skip*** - Does not show the field itself. See explanation later.
+- ***sqlname*** - Sets the fields sql name. See explanation later.
 
 Let's see an example using of this options:
 
@@ -206,6 +245,34 @@ print to_table($data,$c);
  <td>{file:totableraw1.png|css: border: 0;}</td>
  <td>to</td>
 <td>{file:totable4.png|css: border: 0;}</td></tr></table>
+
+**All of these options above can be used to restrict working with one output type only.**<br/>
+The restricted options begins the original option name and a : letter and the output name used in ***#output_object***.
+As the usable outputs is the "table" and "excelxml" the restricted modifiers looks like this way:
+~~~code
+$c = [
+    ...
+    'name' => [
+        "headertext:table" => "The Name in web",
+        "headertext:excelxml" => "The Name in excel",
+.
+        "headeropts" => ['type' => 'uni',
+                        't' => 'str',
+                        'background-color' => '#454545',
+                        'color' => '#efefef',
+                        'border' => 'all'],
+.
+        "cellopts:table" => ['type' => 'uni',
+                             't' => 'str',
+                             'background-color' => '#ccffcc'],
+        "cellopts:excelxml" => ['type' => 'uni',
+                                't' => 'str',
+                                'background-color' => '#ddeedd',
+                                'border' => 'all'],
+    ],
+    ...
+ ];
+~~~
 
 
 == Modify the value of the fields ==

@@ -3572,8 +3572,10 @@ function to_table($dataobj,array $options=array(),array &$results = null)
     if(isset($options['#before']) && is_callable($options['#before']))
     {
         ob_start();
-        call_user_func($options['#before'], $table);
-        $beforetext = ob_get_clean();
+        $beforetext = call_user_func($options['#before'], $table);
+        $ostr = ob_get_clean();
+        if($beforetext == '' && $ostr != '')
+            $beforetext = $ostr;
     }
 
     $rowcount = 0;
@@ -3618,8 +3620,10 @@ function to_table($dataobj,array $options=array(),array &$results = null)
             if(isset($options['#after']) && is_callable($options['#after']))
             {
                 ob_start();
-                call_user_func($options['#after'], $table);
-                $aftertext = ob_get_clean();
+                $aftertext = call_user_func($options['#after'], $table);
+                $astr = ob_get_clean();
+                if($aftertext == '' && $astr != '')
+                    $aftertext = $astr;
             }
             if(isset($options['#return_disabled']) && $options['#return_disabled'])
                 return null;
@@ -3659,12 +3663,13 @@ function to_table($dataobj,array $options=array(),array &$results = null)
                 if($r_show[$hitem])
                 {
                     $headertext = optSel($iopt,['headertext:'.$oo,'headertext'],$hitem);
-                    if(is_callable($headertext))
-                        $txt = call_user_func($headertext);
+                    $headertextcallback = optSel($iopt,['headertextcallback:'.$oo,'headertextcallback'],'');
+                    if(is_callable($headertextcallback))
+                        $txt = call_user_func($headertextcallback,$hitem);
                     else
                         $txt = $headertext;
 
-                    $table->head($txt, isset($iopt['headeropts']) ? $iopt['headeropts'] : array());
+                    $table->head($txt, optSel($iopt,['headeropts:'.$oo,'headeropts'],array()));
 
                     $r_prefixes[$hitem] = optSel($iopt,['cellprefix:'.$oo,'cellprefix'],'');
                     $r_suffixes[$hitem] = optSel($iopt,['cellsuffix:'.$oo,'cellsuffix'],'');
@@ -3720,7 +3725,6 @@ function to_table($dataobj,array $options=array(),array &$results = null)
                     $table->cell($r_prefixes[$k] . $r[$keyname] . $r_suffixes[$k], $r_cellopts[$k]);
                 }
             }
-
 
         ++$rowcount;
     }
