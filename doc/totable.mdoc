@@ -111,6 +111,10 @@ __Options affects the whole table tag:__
  - The callback receives the output object as a parameter, so it can add some data directly to the output object. (as side effect)
  - <small>By compatibility reasons the printed output of the callback will used as output if empty string returned!</small>
 - ***#fields*** - Controls the generated fields/columns (See documentation [below|url:#fieldscontrol])
+- ***#default_headeropts*** - Sets the default options array for the columns where the ***#headeropts*** is not present.
+ - The value is same as usable for ***#headeropts***.
+- ***#default_cellopts*** - Sets the default options array for the cells where the ***#cellopts*** is not present.
+ - The value is same as usable for ***#cellopts***.
 
 Let's see an example of using this options above:
 ~~~php

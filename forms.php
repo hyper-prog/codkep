@@ -3539,6 +3539,8 @@ function to_table($dataobj,array $options=array(),array &$results = null)
     $is_pdo = false;
     $beforetext = '';
     $aftertext = '';
+    $def_headeropts = [];
+    $def_cellopts = [];
 
     if($dataobj === null)
         return '';
@@ -3577,6 +3579,11 @@ function to_table($dataobj,array $options=array(),array &$results = null)
         if($beforetext == '' && $ostr != '')
             $beforetext = $ostr;
     }
+
+    if(isset($options['#default_headeropts']))
+        $def_headeropts = $options['#default_headeropts'];
+    if(isset($options['#default_cellopts']))
+        $def_cellopts = $options['#default_cellopts'];
 
     $rowcount = 0;
     $first = true;
@@ -3669,11 +3676,11 @@ function to_table($dataobj,array $options=array(),array &$results = null)
                     else
                         $txt = $headertext;
 
-                    $table->head($txt, optSel($iopt,['headeropts:'.$oo,'headeropts'],array()));
+                    $table->head($txt, optSel($iopt,['headeropts:'.$oo,'headeropts'],$def_headeropts));
 
                     $r_prefixes[$hitem] = optSel($iopt,['cellprefix:'.$oo,'cellprefix'],'');
                     $r_suffixes[$hitem] = optSel($iopt,['cellsuffix:'.$oo,'cellsuffix'],'');
-                    $r_cellopts[$hitem] = optSel($iopt,['cellopts:'.$oo,'cellopts'],array());
+                    $r_cellopts[$hitem] = optSel($iopt,['cellopts:'.$oo,'cellopts'],$def_cellopts);
                     $r_valuecallback[$hitem] = optSel($iopt,['valuecallback:'.$oo,'valuecallback'],NULL);
                 }
             }
