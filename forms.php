@@ -3729,7 +3729,7 @@ function to_table($dataobj,array $options=array(),array &$results = null)
                     $keyname = $k;
                     if(!isset($r[$k]))
                         $keyname = $r_sqlname[$k];
-                    $table->cell($r_prefixes[$k] . $r[$keyname] . $r_suffixes[$k], $r_cellopts[$k]);
+                    $table->cell(isset($r[$keyname]) ? ($r_prefixes[$k] . $r[$keyname] . $r_suffixes[$k]) : '', $r_cellopts[$k]);
                 }
             }
 
