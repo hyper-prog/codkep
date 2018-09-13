@@ -3757,7 +3757,7 @@ function get_field_repository_definition($name)
     $ro = get_field_repository_definition($r['base']);
     foreach($r as $i => $v)
     {
-        if(is_array($ro[$i]) && is_array($v))
+        if(isset($ro[$i]) && is_array($ro[$i]) && is_array($v))
             $ro[$i] = array_merge($ro[$i],$v);
         else
             $ro[$i] = $v;
