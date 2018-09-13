@@ -3754,7 +3754,7 @@ function get_field_repository_definition($name)
     $r = $field_repository[$name];
     if(!isset($r['base']))
         return $r;
-    $ro = $field_repository[$r['base']];
+    $ro = get_field_repository_definition($r['base']);
     foreach($r as $i => $v)
         $ro[$i] = $v;
     return $ro;
