@@ -210,11 +210,13 @@ Fields definitions can receive the following options
 - ***headeropts*** - Options affects of the table header of this field
  - ***style*** - CSS style for the header tag
  - ***class*** - CSS class of the header tag
+ - Every [*cell modifier option*|url:doc/codkep/tablegen#exmlstyleopts] can be used here jointly with the ***"type" => "uni"*** option.
 - ***cellprefix*** - Print this string immediately before the cell's value
 - ***cellsuffix*** - Print this string immediately after the cell's value
 - ***cellopts*** - Options affects of the cell
  - ***style*** - CSS style for the cell
  - ***class*** - CSS class of the cell
+ - Every [*cell modifier option*|url:doc/codkep/tablegen#exmlstyleopts] can be used here jointly with the ***"type" => "uni"*** option.
 - ***valuecallback*** - Value callback (See the next chapter)
 - ***skip*** - Does not show the field itself. See explanation later.
 - ***sqlname*** - Sets the fields sql name. See explanation later.
@@ -377,7 +379,9 @@ pass an sql query containing ***#*** prefixed column names the field repository
 will be used to the appropriate field.
 .
 You can use every field option in the field repository and some additional options:
-- ***base*** - You can set an another field repository name here which act as base where the options are inherited here.
+- ***base*** - You can set an another field repository name here which act as base from where the options are inherited.
+\ <br/>The options set here are overwrite the options of "base" field definition, while the array typed options are merged
+\ priority with this values.
 - ***skip*** - If this option is ***true*** the field will be completely skipped from the output table.
 \ (But can used in other field's value callback function)
 - ***sqlname*** - A string value, specifies a redefined field/sql name. Can used for two reasons:
