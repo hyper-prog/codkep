@@ -3554,6 +3554,8 @@ function to_table($dataobj,array $options=array(),array &$results = null)
     if($results != null && isset($results['target']) && $results['target'] != null)
     {
         $table = $results['target'];
+        if(isset($options['#output_object']))
+            $oo = $options['#output_object'];
     }
     else
     {
