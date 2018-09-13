@@ -293,6 +293,8 @@ _The callback function receive an array as parameter. This array contains all sq
 _a ***&#95;&#95;rownumber&#95;&#95;*** named element which contains a row number sequence. The array also contains_
 _an ***&#95;&#95;external&#95;&#95;*** field which is an array received in ***to&#95;table()*** ***$options*** parameter_
 _under the ***#callback&#95;array&#95;external*** index name._
+.
+_The callback function can receive a second parameter too, which contains the current column name._
 ~~~php
 $c = [
     '#tableopts' => [
@@ -375,6 +377,7 @@ pass an sql query containing ***#*** prefixed column names the field repository
 will be used to the appropriate field.
 .
 You can use every field option in the field repository and some additional options:
+- ***base*** - You can set an another field repository name here which act as base where the options are inherited here.
 - ***skip*** - If this option is ***true*** the field will be completely skipped from the output table.
 \ (But can used in other field's value callback function)
 - ***sqlname*** - A string value, specifies a redefined field/sql name. Can used for two reasons:
@@ -408,12 +411,16 @@ function hook_mymodule_tables_field_repository()
             },
         ],
         'city_decorated' => [
-            'headertext' => 'Works in',
+            'headertext' => 'Works in city',
             'headeropts' => ['style' => 'background-color: lightblue;'],
             'cellprefix' => '<i>',
             'cellsuffix' => '</i>',
             'cellopts' => ['style' => 'background-color: lightgrey;'],
             'sqlname' => 'city',
+        ],
+        'city_home_decorated' => [
+            'base' => 'city_decorated',
+            'headertext' => 'Live in city',
         ],
     ];
     return $c;
@@ -424,6 +431,7 @@ After this hook field repository contains the following fields:
 - ***#pidfield***
 - ***#name_decorated***
 - ***#city_decorated***
+- ***#city_home_decorated***
 
 Using of field repository:
 

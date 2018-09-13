@@ -3482,8 +3482,6 @@ function speedform_get_field_display_value($definition,$sqlname,$value)
  * @package forms */
 function to_sqlsort($sp,array $options=array())
 {
-    global $field_repository;
-
     if(isset($options[$sp]['sqlsort']))
         return $options[$sp]['sqlsort'];
 
@@ -3497,7 +3495,7 @@ function to_sqlsort($sp,array $options=array())
         foreach($options['#fields'] as $f)
             if(substr($f,0,1) == '#')
             {
-                $iopt = $field_repository[substr($f, 1)];
+                $iopt = get_field_repository_definition(substr($f, 1));
                 if(isset($iopt['sqlname:'.$oo]) && $iopt['sqlname:'.$oo] == $sp)
                 {
                     if(isset($iopt['sqlsort:'.$oo]))
@@ -3534,8 +3532,6 @@ function to_sqlsort($sp,array $options=array())
  * @package forms */
 function to_table($dataobj,array $options=array(),array &$results = null)
 {
-    global $field_repository;
-
     $is_array = false;
     $is_pdo = false;
     $beforetext = '';
@@ -3650,7 +3646,7 @@ function to_table($dataobj,array $options=array(),array &$results = null)
             {
                 $iopt = array();
                 if(substr($hitem,0,1) == '#')
-                    $iopt = $field_repository[substr($hitem, 1)];
+                    $iopt = get_field_repository_definition(substr($hitem, 1));
                 else
                     if(isset($options[$hitem]))
                         $iopt = $options[$hitem];
@@ -3695,7 +3691,7 @@ function to_table($dataobj,array $options=array(),array &$results = null)
                 if(substr($rname,0,1) == '#')
                     if(!isset($r_sqlname[$rname]))
                     {
-                        $iopt2 = $field_repository[substr($rname,1)];
+                        $iopt2 = get_field_repository_definition(substr($rname,1));
                         $r_sqlname[$rname] = isset($iopt2['sqlname']) ? $iopt2['sqlname'] : substr($rname, 1);
                     }
 
@@ -3724,7 +3720,7 @@ function to_table($dataobj,array $options=array(),array &$results = null)
             {
                 if($r_valuecallback[$k] !== NULL)
                 {
-                    $value = call_user_func($r_valuecallback[$k],$r_mapped);
+                    $value = call_user_func($r_valuecallback[$k],$r_mapped,$k);
                     $table->cell($r_prefixes[$k] . $value . $r_suffixes[$k], $r_cellopts[$k]);
                 }
                 else
@@ -3749,6 +3745,19 @@ function optSel($options,$keys,$default)
             return $options[$t];
     }
     return $default;
+}
+
+function get_field_repository_definition($name)
+{
+    global $field_repository;
+
+    $r = $field_repository[$name];
+    if(!isset($r['base']))
+        return $r;
+    $ro = $field_repository[$r['base']];
+    foreach($r as $i => $v)
+        $ro[$i] = $v;
+    return $ro;
 }
 
 function hook_forms_required_sql_schema()
