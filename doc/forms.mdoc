@@ -222,6 +222,8 @@ __Definition methods of HtmlForm class:__
   - If the ***$opts*** array contains an index ***'no_par_def'*** with ***true*** value the parameter definition
   \ (with the par_def() function)is skipped.
   \ Use it if you already define the parameter before and only need to load the set value into the form.
+  - If the ***$opts*** array contains an index ***'no_par_load'*** with ***true*** value the parameter loading
+  \ is skipped even if the value is received, and the original default value is used instead.
  - @@@select_p($type, $n, $v, $values = array(), $opts = array())@@@
   - Same as ***select()*** method but define and query the previous set HTML parameter value
   \ through the CodKep [parameter system|url:doc/codkep/parameters].
@@ -230,6 +232,8 @@ __Definition methods of HtmlForm class:__
   - If the ***$opts*** array contains an index ***'no_par_def'*** with ***true*** value the parameter definition
   \ (with the par_def() function)is skipped.
   \ Use it if you already define the parameter before and only need to load the set value into the form.
+  - If the ***$opts*** array contains an index ***'no_par_load'*** with ***true*** value the parameter loading
+  \ is skipped even if the value is received, and the original default value is used instead.
  - @@@textarea_p($n, $v, $row, $col, $opts = array())@@@
   - Same as ***textarea()*** method but define and query the previous set HTML parameter value
   \ through the CodKep [parameter system|url:doc/codkep/parameters].
@@ -238,6 +242,8 @@ __Definition methods of HtmlForm class:__
   - If the ***$opts*** array contains an index ***'no_par_def'*** with ***true*** value the parameter definition
   \ (with the par_def() function)is skipped.
   \ Use it if you already define the parameter before and only need to load the set value into the form.
+  - If the ***$opts*** array contains an index ***'no_par_load'*** with ***true*** value the parameter loading
+  \ is skipped even if the value is received, and the original default value is used instead.
  - @@@datefield_p($type, $n, $v, $opts = array())@@@
   - Same as ***datefield()*** method but define and query the previous set HTML parameter value
   \ through the CodKep [parameter system|url:doc/codkep/parameters].
@@ -246,6 +252,8 @@ __Definition methods of HtmlForm class:__
   - If the ***$opts*** array contains an index ***'no_par_def'*** with ***true*** value the parameter definition
   \ (with the par_def() function)is skipped.
   \ Use it if you already define the parameter before and only need to load the set value into the form.
+  - If the ***$opts*** array contains an index ***'no_par_load'*** with ***true*** value the parameter loading
+  \ is skipped even if the value is received, and the original default value is used instead.
  - @@@custom($name, $value, $callback, $opts = array())@@@
    - Adds a custom form element to the form with a user defined callback function to generate html codes.
     - The ***$name*** parameter is the name of the from element.

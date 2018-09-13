@@ -998,7 +998,7 @@ class HtmlForm
         if(!isset($opts['no_par_def']) || !$opts['no_par_def'])
             par_def($n,isset($opts['par_sec']) ? $opts['par_sec'] : 'text4');
 
-        if(par_ex($n))
+        if(par_ex($n) && (!isset($opts['no_par_load']) || !$opts['no_par_load']))
             $v = par($n);
         $this->input($type,$n,$v,$opts);
         return $this;
@@ -1009,7 +1009,7 @@ class HtmlForm
         if(!isset($opts['no_par_def']) || !$opts['no_par_def'])
             par_def($n,isset($opts['par_sec']) ? $opts['par_sec'] : 'text4');
 
-        if(par_ex($n))
+        if(par_ex($n) && (!isset($opts['no_par_load']) || !$opts['no_par_load']))
             $v = par($n);
         $this->select($type,$n,$v,$values,$opts);
         return $this;
@@ -1020,7 +1020,7 @@ class HtmlForm
         if(!isset($opts['no_par_def']) || !$opts['no_par_def'])
             par_def($n,isset($opts['par_sec']) ? $opts['par_sec'] : 'text4');
 
-        if(par_ex($n))
+        if(par_ex($n) && (!isset($opts['no_par_load']) || !$opts['no_par_load']))
             $v = par($n);
         $this->textarea($n,$v,$row,$col,$opts);
         return $this;
@@ -1036,7 +1036,8 @@ class HtmlForm
         }
 
         $dval = $v;
-        if(par_ex($n.'_year' ) && par_ex($n.'_month') && par_ex($n.'_day'  ))
+        if(par_ex($n.'_year' ) && par_ex($n.'_month') && par_ex($n.'_day') &&
+          (!isset($opts['no_par_load']) || !$opts['no_par_load']))
         {
             $vy = par($n . '_year');
             $vm = par($n . '_month');
