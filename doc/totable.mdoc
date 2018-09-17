@@ -207,6 +207,7 @@ matched to the original query field name or a virtual field which only exists in
 Fields definitions can receive the following options
 - ***headertext*** - Sets the text of the table header of this field
 - ***headertextcallback*** - Sets a callback function which returns the text of the header of this field
+ - The callback receive the header text string as parameter
 - ***headeropts*** - Options affects of the table header of this field
  - ***style*** - CSS style for the header tag
  - ***class*** - CSS class of the header tag
@@ -217,6 +218,8 @@ Fields definitions can receive the following options
  - ***style*** - CSS style for the cell
  - ***class*** - CSS class of the cell
  - Every [*cell modifier option*|url:doc/codkep/tablegen#exmlstyleopts] can be used here jointly with the ***"type" => "uni"*** option.
+- ***celloptscallback*** - Sets a callback function which retrun the value of ***cellopts***.
+ - The callback receive the header text string as parameter
 - ***valuecallback*** - Value callback (See the next chapter)
 - ***skip*** - Does not show the field itself. See explanation later.
 - ***sqlname*** - Sets the fields sql name. See explanation later.
@@ -499,7 +502,8 @@ print to_table($data,$c);
  <td>to</td>
 <td>{file:totable9.png|css: border: 0;}</td></tr></table>
 
-
+_Note: The column names started with # sign are searched in the field repository until the second # sign only!_
+_It means that only the first string between the # signs are serarched as repository element, the others are irrelevant._
 #totablebackend#
 == Backend of to_table() ==
 

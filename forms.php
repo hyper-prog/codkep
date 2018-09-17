@@ -3646,7 +3646,7 @@ function to_table($dataobj,array $options=array(),array &$results = null)
             {
                 $iopt = array();
                 if(substr($hitem,0,1) == '#')
-                    $iopt = get_field_repository_definition(substr($hitem, 1));
+                    $iopt = get_field_repository_definition(substr($hitem,1));
                 else
                     if(isset($options[$hitem]))
                         $iopt = $options[$hitem];
@@ -3676,10 +3676,15 @@ function to_table($dataobj,array $options=array(),array &$results = null)
                         $txt = $headertext;
 
                     $table->head($txt, optSel($iopt,['headeropts:'.$oo,'headeropts'],$def_headeropts));
-
                     $r_prefixes[$hitem] = optSel($iopt,['cellprefix:'.$oo,'cellprefix'],'');
                     $r_suffixes[$hitem] = optSel($iopt,['cellsuffix:'.$oo,'cellsuffix'],'');
-                    $r_cellopts[$hitem] = optSel($iopt,['cellopts:'.$oo,'cellopts'],$def_cellopts);
+
+                    $celloptscallback = optSel($iopt,['celloptscallback:'.$oo,'celloptscallback'],'');
+                    if(is_callable($celloptscallback))
+                        $r_cellopts[$hitem] = call_user_func($celloptscallback,$hitem);
+                    else
+                        $r_cellopts[$hitem] = optSel($iopt,['cellopts:'.$oo,'cellopts'],$def_cellopts);
+
                     $r_valuecallback[$hitem] = optSel($iopt,['valuecallback:'.$oo,'valuecallback'],NULL);
                 }
             }
@@ -3751,6 +3756,9 @@ function get_field_repository_definition($name)
 {
     global $field_repository;
 
+    $p = strpos($name,'#');
+    if($p !== FALSE)
+        $name = substr($name,0,$p);
     $r = $field_repository[$name];
     if(!isset($r['base']))
         return $r;
