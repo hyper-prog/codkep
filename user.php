@@ -313,7 +313,7 @@ function generateRandomString($length = 10)
     $r = substr(base64_encode($bytes),0,$length);
     for($i = 0 ; $i < $length ; ++$i)
         while($r[$i] == '+' || $r[$i] == '/')
-            $r[$i] = $chars[($r[$i] + rand(0,100))%62];
+            $r[$i] = $chars[(ord($r[$i]) + rand(0,100))%62];
     return $r;
 }
 
