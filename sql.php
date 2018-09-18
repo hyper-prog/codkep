@@ -27,6 +27,7 @@ function hook_sql_boot()
     $db->name = "";
     $db->user = "";
     $db->password = "";
+    $db->sqlencoding = "";
     $db->sql = NULL;
     $db->lastsql = "";
     $db->auto_error_page = true;
@@ -107,6 +108,10 @@ function sql_connect()
             load_loc($db->error_locations['connection_error']);
         return;
     }
+    $encoding = $db->sqlencoding;
+    if($encoding != '')
+        sql_exec_noredirect("SET NAMES '$encoding';");
+
     run_hook('sql_connected');
 }
 
@@ -1187,7 +1192,7 @@ class DatabaseQuerySql extends DatabaseQuery
                     $this->calculated_query .= ')';
                 }
                 if($field['alias'] != '')
-                    $this->calculated_query .= ' AS '.$field['alias'];
+                    $this->calculated_query .= ' AS "'.$field['alias'].'"';
             }
             if($fc == 0)
                 $this->calculated_query .= '*';

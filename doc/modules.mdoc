@@ -121,11 +121,12 @@ The sql database settings of the site is also come here:
 global $db;
 .
 //Settings of the sql database
-$db->servertype = "mysql";
-$db->host       = "127.0.0.1";
-$db->name       = "databasename";
-$db->user       = "username";
-$db->password   = "secretpassword";
+$db->servertype  = "mysql";
+$db->host        = "127.0.0.1";
+$db->name        = "databasename";
+$db->user        = "username";
+$db->password    = "secretpassword";
+$db->sqlencoding = "utf8";
 .
 //You can specify a password for sql schema editor page here.
 //The editor can reached with this password in case no admin user logged in.
@@ -171,6 +172,7 @@ I won't list all of then, but let see some important here:
 |<small> ***$db->name***                                    </small>|sql       |<small> ''                        </small>|Database name on the sql server|
 |<small> ***$db->user***                                    </small>|sql       |<small> ''                        </small>|Username of the sql server|
 |<small> ***$db->password***                                </small>|sql       |<small> ''                        </small>|Password for the sql server|
+|<small> ***$db->sqlencoding***                             </small>|sql       |<small> ''                        </small>|Runs ***SET NAMES sqlencoding;*** sql command to set the connection encoding immediately after database connect. The default is empty string, which bypass running of ***SET NAMES***. |
 |<small> ***$db->auto_error_page***                         </small>|sql       |<small> true                      </small>|Should the sql executer functions automatically redirects to error page when something wrong during an sql operation. (Some kind of automatic error handling)|
 |<small> ***$db->schema_editor_password***                  </small>|sql       |<small> ''                        </small>|You can specify a password for sql schema editor page here. The editor can reached with this password in case no admin user logged in. (Empty means disabled)|
 |<small> ***$db->schema_editor_allowed_for_admin***         </small>|sql       |<small> true                      </small>|Should sql schema editor allowed to use for administrator users without special schema editor password|

@@ -34,6 +34,7 @@ connection settings to [site settings|url:doc/codkep/modules#site_settings] in *
     $db->password = "secretpass1";
 .
     //optional settings:
+    $db->sqlencoding = "utf8";
     $db->schema_editor_password = "secretpass2"; //empty means disabled!
     $db->schema_editor_allowed_for_admin = true;
     //$db->schema_editor_allowed_only_for_login = 'superadmin';
@@ -55,6 +56,9 @@ Mandatory settings
   - The password for the specified user
 
 Optional settings
+ - ***$db->sqlencoding***
+  - Runs ***SET NAMES sqlencoding;*** sql command to set the connection encoding immediately after database connect.
+  - If not set the default is empty string, which bypass running of ***SET NAMES***.
  - ***$db->schema_editor_password***
   - Specifies a password for the [schema editor page|url:#schemeedit].
   \ Empty string will disable of accessing this page with password. (See next setting)
