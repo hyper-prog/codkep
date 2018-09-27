@@ -91,6 +91,7 @@ class HtmlTable
             (isset($opts['class']) ? ' class="'.$opts['class'].'"':'').
             (isset($opts['style']) ? ' style="'.$opts['style'].'"':'').
             (isset($opts['align']) ? ' align="'.$opts['align'].'"':'') .
+            (isset($opts['colspan']) ? ' colspan="'.$opts['colspan'].'"':'') .
             '>'.$this->f($h).'</th>');
         return $this;
     }
