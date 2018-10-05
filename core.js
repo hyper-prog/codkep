@@ -249,6 +249,26 @@ function dialogDragElement(elmnt)
     }
 }
 
+function prepare_ckdialog(title,content)
+{
+    jQuery('#dialog_placeholder').html(
+            '<div class="ck_modalpane">' +
+              '<div class="ck_dialog_body" style="background-color: #d0d0d0;">' +
+                '<div class="ck_dialog_header">' +
+                  '<div class="ck_dialog_title" id="popupped_title">' + title + '</div>' +
+                  '<div class="ck_dialog_close">&times;</div>' +
+                  '<div class="c"></div>' +
+                '</div>' +
+                '<div class="c"></div>' +
+                '<div class="ck_dialog_prec">' +
+                  '<div class="ck_dialog_content" id="popupped_content">' + content + '</div>' +
+                '</div>' +
+                '<div class="c"></div>' +
+              '</div>' +
+              '<div class="c"></div>' +
+            '</div>');
+}
+
 function popup_ckdialog()
 {
     console.log("Popupping dialog...");
