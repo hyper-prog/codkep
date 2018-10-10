@@ -936,6 +936,7 @@ class HtmlForm
              'before' => (isset($opts['before']) ? $opts['before'] : ''),
              'after' => (isset($opts['after']) ? $opts['after'] : ''),
              'readonly' => (isset($opts['readonly']) ? $opts['readonly'] : false),
+             'softreadonly' => (isset($opts['softreadonly']) ? $opts['softreadonly'] : false),
              'autofocus' => (isset($opts['autofocus']) ? $opts['autofocus'] : false),
             ]);
         return $this;
@@ -1271,6 +1272,7 @@ class HtmlForm
                  ($dta['onclick']==''?'':' onclick="'.$dta['onclick'].'"').
                  ($dta['id']==''?'':' id="'.$dta['id'].'"').
                  ($dta['autofocus']?' autofocus':'').
+                 ($dta['softreadonly']?' readonly':'').
                  '>';
             $t .= $dta['value'];
             $t .= '</textarea>';
