@@ -249,6 +249,7 @@ function dialogDragElement(elmnt)
     }
 }
 
+function prepare_ckdialog_a(arr) { prepare_ckdialog(arr[0],arr[1]); }
 function prepare_ckdialog(title,content)
 {
     jQuery('#dialog_placeholder').html(
@@ -306,6 +307,85 @@ function close_ckdialog()
     var modalin = document.getElementsByClassName('ck_dialog_body')[0];
     modal.style.display = "none";
     modalin.style.display = "none";
+}
+
+
+function b64EncodeUnicodeString(str) {
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+        return String.fromCharCode(parseInt(p1, 16))
+    }))
+}
+
+/* ******************* DynTable functions ***************************************** */
+var dyntable_objs = [];
+
+function re_fireup_dyntableedit(id) {
+    fireup_dyntableedit(dyntable_objs[id]);
+}
+
+function fireup_dyntableedit(settings) {
+    dyntable_objs[settings.id] = settings;
+
+    var items_dyncellclick = jQuery('.dyntable_' + settings.id + ' .dyncell').not('.ep');
+    jQuery.each(items_dyncellclick, function (idx1, val1) {
+        jQuery(this).on('click',function(e) {
+            var value = jQuery(this).html();
+            var cellid = jQuery(this).attr('id');
+            var text = jQuery(this).attr('data-rn') + ' - ' + jQuery(this).attr('data-cn');
+            var id = jQuery(this).closest('table').attr('data-id');
+            var content =
+                '<div class="dyntable_edit_dlg">'+ text +
+                '<input id="dynpopup_mname" type="hidden" name="mname" value="'+cellid+'"/>' +
+                '<br/><input class="dynpopup_input" id="dynpopup_valueinput" type="text" name="mvalue" value="' + value + '"/>' +
+                '<button class="dynpopup_input" id="dynpopup_save" onclick="save_and_close_dyntable_dialog(\''+id+'\');">' +
+                dyntable_objs[id].btntext+'</button>' +
+                '</div>';
+            prepare_ckdialog(dyntable_objs[id].title,content);
+            popup_ckdialog();
+
+            var items_returnpress = jQuery('.dynpopup_input').not('.ep');
+            jQuery.each(items_returnpress, function (idx2, val2) {
+                jQuery(this).on('enterKey',function(e) {
+                    save_and_close_dyntable_dialog(id);
+                });
+                jQuery(this).on('escKey',function(e) {
+                    close_ckdialog();
+                });
+                jQuery(this).keyup(function(e) {
+                    if (e.keyCode == 13)
+                        jQuery(this).trigger("enterKey");
+                    if (e.keyCode == 27)
+                        jQuery(this).trigger("escKey");
+                });
+                jQuery(val2).addClass("ep");
+            });
+
+            var inputbox = document.getElementById('dynpopup_valueinput');
+            inputbox.focus();
+            inputbox.setSelectionRange(0, inputbox.value.length)
+        });
+        jQuery(val1).addClass("ep");
+    });
+}
+
+function save_and_close_dyntable_dialog(id)
+{
+    var mname = jQuery('#dynpopup_mname').val();
+    var mval = jQuery('#dynpopup_valueinput').val();
+    var rurl = dyntable_objs[id].ajaxurl+'?subtype=' + dyntable_objs[id].ajaxsubtype + '&id=' + dyntable_objs[id].id +
+        '&modname=' + mname + '&value='+b64EncodeUnicodeString(mval);
+    jQuery.ajax({
+        url: rurl,
+        context: document.body,
+        error: function() {
+            alert('Communication error #49');
+        },
+        success: function(data) {
+            close_ckdialog();
+            processAjaxResponse(data);
+            initializeAjaxLinks();
+        }
+    });
 }
 
 jQuery(document).ready(function() {

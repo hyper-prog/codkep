@@ -1,0 +1,117 @@
+= DynTable =
+** This documentation is only a scratch, unfinished yet! **
+.
+The DynTable contains a previously defined **collection of numeric or textual typed fields referenced by names**.
+You can get/set this elements as a simple object attribute or even do arithmetic operation on all of them or
+store/load the whole object to/from database by simple api calls.<br/>
+The DynTable class elements can be show or edit as a simple **two dimensional html table** with the specified column and row names.
+The editing is achieved through ajax functions.
+.
+Because the DynTable class is inheritable in your codes, you can extend the functions of the base class to meet your special needs.
+The class contains many redefineable methods to easy extend base functions.
+
+- @@@ __construct($definition)@@@
+- @@@ zeroData()@@@
+- @@@ isReadonly()@@@
+- @@@ setReadonly($ro)@@@
+- @@@ isInSql()@@@
+- @@@ arithmeticForAllNumeric($operation,$operand)@@@
+ - '+','-','*','/'
+- @@@ collectForAllNumeric($operation)@@@
+ - 'sum','count','max','min','avg'
+- @@@ getHtml($readonly = false)@@@
+- @@@ html_table_body($readonly = false)@@@
+- @@@ setData($name,$toValue,$method = '')@@@
+- @@@ setDataFromAjax($name,$toValue,$method = 'ajax')@@@
+- @@@ readFromDatabase($id)@@@
+- @@@ saveToDatabase()@@@
+- @@@ storeToDatabase()@@@
+- @@@ ajax_add_refreshHtmlTable($readonly = false)@@@
+.
+- @@@html_table_body_before()@@@
+- @@@html_table_body_after()@@@
+- @@@readFromDatabase_preaction($queryobject)@@@
+- @@@readFromDatabase_postaction($resultobject)@@@
+- @@@saveToDatabase_preaction($queryobject)@@@
+- @@@saveToDatabase_postaction()@@@
+- @@@storeToDatabase_preaction($queryobject)@@@
+- @@@storeToDatabase_postaction()@@@
+.
+- "sqltable" = string
+- "idfield" = string
+- "table_border" = numeric
+- "table_class" = string
+- "table_rowlabel_class" = string
+- "table_columnlabel_class" = string
+- "table_cell_class" = string
+- "table_missing_cell_class" = string
+
+- "table_seq_name"
+- "table_key_prefix"
+- "table_key_suffix"
+
+- "popupedit_title" = string
+- "popupedit_btntext" = string
+- "popupedit_ajaxurl" = urlstring
+- "popupedit_ajaxsubtype" = string
+
+- "default_type" = str|num
+- "numeric_format_string" = formatstring
+- "rows" = associative array
+ - index = string
+- "cols" = associative array
+ - index = string
+- "datacells" = associative array
+ - fieldname => options array
+  - "row"
+  - "col"
+  - "sql"
+  - "type"
+
+~~~php
+$d = new DynTable([
+        'sqltable' => 'fruit_harvest',
+        'idfield' => 'year',
+
+        'table_border' => '1',
+
+        'popupedit_title' => 'Set the selected item',
+        'popupedit_btntext' => 'Modify',
+        'popupedit_ajaxurl' => 'ajax_mod_fruit_table',
+        'popupedit_ajaxsubtype' => 'fruit',
+
+        'rows' => [
+            0 => 'Apple',
+            1 => 'Plum',
+            2 => 'Pear',
+            3 => 'Nut',
+        ],
+        'cols' => ['Good (Kg)','Decent (kg)','Waste (kg)'],
+        'default_type' => 'num',
+        'datacells' => [
+            'applegood'   => ['row' => 0,'col' => 0],
+            'appledecent' => ['row' => 0,'col' => 1],
+            'applewaste'  => ['row' => 0,'col' => 2],
+            'plumgood'    => ['row' => 1,'col' => 0],
+            'plumdecent'  => ['row' => 1,'col' => 1],
+            'plumwaste'   => ['row' => 1,'col' => 2],
+            'peargood'    => ['row' => 2,'col' => 0],
+            'peardecent'  => ['row' => 2,'col' => 1],
+            'pearwaste'   => ['row' => 2,'col' => 2],
+            'nutgood'     => ['row' => 3,'col' => 0],
+            'nutwaste'    => ['row' => 3,'col' => 2],
+
+        ],
+    ]);
+
+    $d->zeroData();
+
+    $d->nutgood = 12;
+    $d->applegood = 200;
+    $d->applewaste = 23;
+    $d->plumgood = 68;
+    $d->plumdecent = 12;
+
+    print $d->getHtml();
+~~~
+

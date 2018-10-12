@@ -1141,10 +1141,11 @@ function run_hook()
 function hook_core_before_start()
 {
     global $site_config;
-    add_header('<script type="text/javascript" src="'.url('/sys/jquery.js').'"></script>'."\n");
+    add_js_file('/sys/jquery.js');
     //System's javascript file
-    add_header('<script type="text/javascript" src="'.url('/sys/core.js').'"></script>'."\n");
+    add_js_file('/sys/core.js');
     add_header('<meta name="Content-Language" content="'.$site_config->lang.'" />'."\n");
+    add_css_file('/sys/ckcomm.css');
 
     global $sys_data;
     global $site_config;

@@ -223,25 +223,7 @@ function codkep_render_commentblock($cont,$cid,$name,$created,$text,$deletelink)
 
 function ajax_add_popupdialog($title,$content)
 {
-    $dlgbody = "
-        <div class=\"ck_modalpane\">
-                <div class=\"ck_dialog_body\" style=\"background-color: #d0d0d0;\">
-                    <div class=\"ck_dialog_header\">
-                        <div class=\"ck_dialog_title\" id=\"popupped_title\">$title</div>
-                        <div class=\"ck_dialog_close\">&times;</div>
-                        <div class=\"c\"></div>
-                    </div>
-                    <div class=\"c\"></div>
-                    <div class=\"ck_dialog_prec\">
-                        <div class=\"ck_dialog_content\" id=\"popupped_content\">
-                        <!-- Content here begin --> $content <!-- Content end -->
-                        </div>
-                    </div>
-                    <div class=\"c\"></div>
-                </div>
-                <div class=\"c\"></div>
-            </div>";
-    ajax_add_html("#dialog_placeholder",$dlgbody);
+    ajax_add_run("prepare_ckdialog_a",[$title,$content]);
     ajax_add_run("popup_ckdialog");
 }
 

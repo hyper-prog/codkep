@@ -1,0 +1,129 @@
+/* CodKep css file */
+/* ************ Popup dialog CSS ******************** */
+.ck_modalpane {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+.ck_dialog_body {
+    display: none;
+    position: absolute;
+    z-index: 9;
+    text-align: center;
+    border: 1px solid #d3d3d3;
+    background-color: #fefefe;
+    box-shadow: 0 5px 10px 0 rgba(0,0,20,0.6),0 8px 25px 0 rgba(0,0,20,0.5);
+    top: 5%;
+    width: 80%;
+    left: 10%;
+    height: auto;
+
+    -webkit-animation-name: ck_dlg_animatetop;
+    -webkit-animation-duration: 0.4s;
+    animation-name: ck_dlg_animatetop;
+    animation-duration: 0.3s
+}
+.ck_dialog_prec {
+    display: block;
+    height: auto;
+}
+.ck_dialog_content {
+    display: block;
+    height: auto;
+}
+
+/* Add Animation */
+@-webkit-keyframes ck_dlg_animatetop {
+    from {top:-500px; opacity:0;}
+    to {top:0; opacity:1;}
+}
+
+@keyframes ck_dlg_animatetop {
+    from {top:-300px; opacity:0}
+    to {top:5%; opacity:1}
+}
+
+.ck_dialog_header {
+    display: block;
+    padding: 3px;
+    cursor: pointer;
+    z-index: 10;
+    background-color: #2196F3;
+    color: #fff;
+}
+.ck_dialog_close {
+    display: block;
+    margin: 0;
+    color: white;
+    float: right;
+    font-weight: bold;
+    width: 1em;
+    padding: 4px;
+    border-radius: 5px;
+    background-color: #0255F0;
+}
+
+.ck_dialog_title {
+    color: white;
+    float: left;
+    font-weight: bold;
+    padding: 3px 5px 3px 15px;
+}
+
+.ck_dialog_close:hover,
+.ck_dialog_close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+    background-color: #ff2020;
+}
+
+/* ******* DynTable dialog CSS ****************** */
+.dyncell {
+    cursor: pointer;
+}
+.dyncell:hover {
+    background-color: #00ddff;
+}
+.dyntable_edit_dlg {
+    margin: 16px;
+    padding: 5px;
+    font-weight: bold;
+    font-size: 110%;
+}
+.dyntable_edit_dlg input {
+    text-align: right;
+    padding: 2px 10px 2px 10px;
+    margin: 10px 0px 10px 10px;
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+    font-size: 110%;
+    box-shadow: #4c4c4c 4px 4px 5px;
+    border: 1px solid #7c7c7c;
+}
+.dyntable_edit_dlg button {
+    padding: 2px 10px 2px 10px;
+    margin: 10px 10px 10px 0px;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    font-size: 110%;
+    border: 1px solid #7c7c7c;
+    box-shadow: #4c4c4c 4px 4px 5px;
+    cursor: pointer;
+}
+.dyntable_edit_dlg button:hover {
+    box-shadow: #4c4c4c 7px 7px 5px;
+    background-color: #77ccff;
+}
+.dyntable_table_missingcell {
+    background-color: #6d6d6d;
+}
+/* end css */

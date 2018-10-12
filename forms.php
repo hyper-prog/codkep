@@ -3776,6 +3776,345 @@ function get_field_repository_definition($name)
     return $ro;
 }
 
+class DynTable
+{
+    protected $def;
+    protected $data;
+    protected $inSQL;
+    protected $id;
+    protected $numtype_formatstr;
+
+    protected $readonly;
+    public function __construct($definition)
+    {
+        $this->data = [];
+        $this->def = $definition;
+        $this->zeroData();
+        $this->inSQL = false;
+        $this->id = 'temp_'.time().'_'.rand(1000,9999);
+        $this->numtype_formatstr = '%.2f';
+        if(isset($this->def['numeric_format_string']))
+            $this->numtype_formatstr = $this->def['numeric_format_string'];
+        $this->readonly;
+    }
+
+    public function zeroData()
+    {
+        foreach($this->def['datacells'] as $name => $opts)
+        {
+            $d = null;
+            if(!isset($opts['type']))
+            {
+                if($this->def['default_type'] == 'num') $d = 0;
+                if($this->def['default_type'] == 'str') $d = '';
+            }
+            else
+            {
+                if($opts['type'] == 'num') $d = 0;
+                if($opts['type'] == 'str') $d = '';
+            }
+            $this->data[$name] = $d;
+        }
+    }
+
+    public function isReadonly()
+    {
+        return $this->readonly;
+    }
+
+    public function setReadonly($ro)
+    {
+        $this->readonly = $ro;
+    }
+
+    public function __set($name, $value)
+    {
+        $this->setData($name,$value,'__set');
+    }
+
+    public function __get($name)
+    {
+        if(array_key_exists($name,$this->data))
+            return $this->data[$name];
+        return null;
+    }
+
+    public function __isset($name)
+    {
+        if(array_key_exists($name,$this->data))
+            return true;
+        return false;
+    }
+
+    function isInSql()
+    {
+        return $this->inSQL;
+    }
+
+    public function arithmeticForAllNumeric($operation,$operand)
+    {
+        foreach($this->def['datacells'] as $name => $opts)
+        {
+            if( (!isset($opts['type']) && $this->def['default_type'] == 'num') ||
+                (isset($opts['type']) && $opts['type'] == 'num')                  )
+            {
+                if(is_numeric($operand) && !is_object($operand) && !is_array($operand))
+                {
+                    if($operation == '+') $this->data[$name] += $operand;
+                    if($operation == '-') $this->data[$name] -= $operand;
+                    if($operation == '*') $this->data[$name] *= $operand;
+                    if($operation == '/') $this->data[$name] /= $operand;
+                }
+                if(is_object($operand) && is_subclass_of($operand,'DynTable'))
+                {
+                    if($operation == '+') $this->data[$name] += $operand->$name;
+                    if($operation == '-') $this->data[$name] -= $operand->$name;
+                    if($operation == '*') $this->data[$name] *= $operand->$name;
+                    if($operation == '/') $this->data[$name] /= $operand->$name;
+                }
+            }
+        }
+    }
+
+    public function collectForAllNumeric($operation)
+    {
+        $sum = 0.0;
+        $max = 0.0;
+        $min = null;
+        $count = 0;
+        foreach($this->def['datacells'] as $name => $opts)
+        {
+            if( (!isset($opts['type']) && $this->def['default_type'] == 'num') ||
+                (isset($opts['type']) && $opts['type'] == 'num')                  )
+            {
+                $sum += $this->data[$name];
+                if($max == null || $max < $this->data[$name])
+                    $max = $this->data[$name];
+                if($min == null || $min > $this->data[$name])
+                    $min = $this->data[$name];
+                ++$count;
+
+            }
+        }
+        if($operation == 'sum')     return $sum;
+        if($operation == 'count')   return $count;
+        if($operation == 'max')     return $max;
+        if($operation == 'min')     return $min;
+        if($operation == 'avg' && $count != 0)
+            return $sum/$count;
+        return null;
+    }
+
+    public function getHtml($readonly = false)
+    {
+        $divclass = 'dyntable_'.$this->id;
+        ob_start();
+        print "<div class=\"$divclass\">";
+        print $this->html_table_body($readonly || $this->readonly);
+        print "</div>";
+
+        $ajaxurl = '';
+        $ajaxsub = 'none';
+        $titletext = 'Edit field value';
+        $btntext   = 'Save';
+        if(isset($this->def['popupedit_ajaxurl']))
+            $ajaxurl = url($this->def['popupedit_ajaxurl']);
+        if(isset($this->def['popupedit_ajaxsubtype']))
+            $ajaxsub = url($this->def['popupedit_ajaxsubtype']);
+        if(isset($this->def['popupedit_title']))
+            $titletext = $this->def['popupedit_title'];
+        if(isset($this->def['popupedit_btntext']))
+            $btntext = $this->def['popupedit_btntext'];
+        //We have to add the following js code even in readonly mode because the table can change through ajax interface
+        //so we need to memorize the base in case the readonly table turns to read-write.
+        print "<script>
+            jQuery(document).ready(function() {
+              fireup_dyntableedit({ajaxurl:'$ajaxurl',ajaxsubtype:'$ajaxsub',id:'$this->id',title:'$titletext',btntext:'$btntext'});
+            });
+        </script>";
+
+        return ob_get_clean();
+    }
+
+    public function html_table_body($readonly = false)
+    {
+        ob_start();
+        print $this->html_table_body_before();
+        $border = "0";
+        $tclass = "dyntable_table";
+        $hclass = "dyntable_table_col";
+        $rclass = "dyntable_table_row";
+        $cclass = "dyntable_table_cell";
+        $missclass = "dyntable_table_missingcell";
+        if(isset($this->def['table_border']))
+            $border = $this->def['table_border'];
+        if(isset($this->def['table_class']))
+            $tclass = $this->def['table_class'];
+        if(isset($this->def['table_columnlabel_class']))
+            $hclass = $this->def['table_columnlabel_class'];
+        if(isset($this->def['table_rowlabel_class']))
+            $rclass = $this->def['table_rowlabel_class'];
+        if(isset($this->def['table_cell_class']))
+            $cclass = $this->def['table_cell_class'];
+        if(isset($this->def['table_missing_cell_class']))
+            $missclass = $this->def['table_missing_cell_class'];
+
+        print "<table border=\"$border\" class=\"$tclass\" data-id=\"$this->id\">";
+        print "<tr>";
+        print "<th></th>";
+        foreach($this->def['cols'] as $cIdx => $colname)
+            print "<th class=\"$hclass\">$colname</th>";
+        foreach($this->def['rows'] as $rIdx => $rowname)
+        {
+            print "<tr>";
+            print "<td class=\"$rclass\">$rowname</td>";
+            foreach($this->def['cols'] as $cIdx => $colname)
+            {
+                $put = false;
+                foreach($this->def['datacells'] as $name => $opts)
+                    if($opts['row'] == $rIdx && $opts['col'] == $cIdx)
+                    {
+                        $ac = ($readonly || $this->readonly) ? "staticcell" : "dyncell";
+                        print "<td class=\"$cclass $ac\" id=\"dync_$name\"
+                               data-rn=\"$rowname\" data-cn=\"$colname\">";
+
+                        if(isset($opts['type']))
+                            $t = $opts['type'];
+                        else
+                            $t = $this->def['default_type'];
+
+                        if($t == 'str')
+                            print $this->data[$name];
+                        if($t == 'num')
+                        {
+                            $value = 0;
+                            if($this->data[$name] != 0.0)
+                                $value = sprintf($this->numtype_formatstr, $this->data[$name]);
+                            print $value;
+                        }
+                        print "</td>";
+                        $put = true;
+                        break 1;
+                    }
+                if(!$put)
+                {
+                    print "<td class=\"$missclass\"></td>";
+                }
+            }
+            print "</tr>";
+        }
+        print "</table>";
+        print $this->html_table_body_after();
+        return ob_get_clean();
+    }
+
+    protected function html_table_body_before()
+    {
+        return '';
+    }
+
+    protected function html_table_body_after()
+    {
+        return '';
+    }
+
+    public function setData($name,$toValue,$method = '')
+    {
+        if(!array_key_exists($name,$this->def['datacells']))
+            return false;
+        if($this->data[$name] == $toValue)
+            return false;
+        $this->data[$name] = $toValue;
+        return true;
+    }
+
+    public function setDataFromAjax($name,$toValue,$method = 'ajax')
+    {
+        if(substr($name,0,5) == 'dync_')
+            return $this->setData(substr($name,5),$toValue,$method);
+        return false;
+    }
+
+    public function readFromDatabase($id)
+    {
+        $this->zeroData();
+        $q = db_query($this->def['sqltable'])
+            ->get($this->def['idfield'])
+            ->cond_fv($this->def['idfield'],$id,'=');
+        foreach($this->def['datacells'] as $name => $opts)
+            $q->get(isset($opts['sql']) ? $opts['sql'] : $name);
+        $this->readFromDatabase_preaction($q);
+        $r = $q->execute_and_fetch();
+        if(!isset($r[$this->def['idfield']]))
+            return true;
+        $this->id = $r[$this->def['idfield']];
+        foreach($this->def['datacells'] as $name => $opts)
+            $this->data[$name] = $r[isset($opts['sql']) ? $opts['sql'] : $name];
+        $this->readFromDatabase_postaction($r);
+        $this->inSQL = true;
+        return false;
+    }
+
+    protected function readFromDatabase_preaction($queryobject)
+    {
+    }
+
+    protected function readFromDatabase_postaction($resultobject)
+    {
+    }
+
+    public function saveToDatabase()
+    {
+        if($this->id == '')
+            return true;
+        $q = db_update($this->def['sqltable'])
+            ->cond_fv($this->def['idfield'],$this->id,'=');
+        $this->saveToDatabase_preaction($q);
+        foreach($this->def['datacells'] as $name => $opts)
+            $q->set_fv((isset($opts['sql']) ? $opts['sql'] : $name),$this->data[$name]);
+        $q->execute();
+        $this->saveToDatabase_postaction();
+        return false;
+    }
+
+    protected function saveToDatabase_preaction($queryobject)
+    {
+    }
+
+    protected function saveToDatabase_postaction()
+    {
+    }
+
+    public function storeToDatabase()
+    {
+        global $db;
+        $q = db_insert($this->def['sqltable']);
+        foreach($this->def['datacells'] as $name => $opts)
+            $q->set_fv((isset($opts['sql']) ? $opts['sql'] : $name),$this->data[$name]);
+        $this->storeToDatabase_preaction($q);
+        $q->execute();
+        $new_id = (isset($this->def['table_key_prefix']) ? $this->def['table_key_prefix'] : '') .
+            $db->sql->lastInsertId(isset($this->def['table_seq_name']) ? $this->def['table_seq_name'] : NULL ) .
+            (isset($this->def['table_key_suffix']) ? $this->def['table_key_suffix'] : '');
+        $this->id = $new_id;
+        $this->storeToDatabase_postaction();
+    }
+
+    protected function storeToDatabase_preaction($queryobject)
+    {
+    }
+
+    protected function storeToDatabase_postaction()
+    {
+    }
+
+    public function ajax_add_refreshHtmlTable($readonly = false)
+    {
+        ajax_add_html(".dyntable_".$this->id,$this->html_table_body($readonly));
+        ajax_add_run("re_fireup_dyntableedit",$this->id);
+    }
+}
+
 function hook_forms_required_sql_schema()
 {
     global $datadef_repository;
@@ -3799,6 +4138,7 @@ function hook_forms_documentation($section)
         $docs[] = ['forms' => ['path' => 'sys/doc/forms.mdoc','index' => false, 'imagepath' => '/sys/doc/images']];
         $docs[] = ['tablegen' => ['path' => 'sys/doc/tablegen.mdoc','index' => false, 'imagepath' => '/sys/doc/images']];
         $docs[] = ['totable' => ['path' => 'sys/doc/totable.mdoc','index' => false, 'imagepath' => '/sys/doc/images']];
+        $docs[] = ['dyntable' => ['path' => 'sys/doc/dyntable.mdoc','index' => false, 'imagepath' => '/sys/doc/images']];
     }
     return $docs;
 }
