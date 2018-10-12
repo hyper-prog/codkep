@@ -697,6 +697,16 @@ function ajax_add_appendval($selector,$value,$linebreak_if_nonempty = false)
     $sys_data->content->commands[] = ['appendval',$selector,$value,$linebreak_if_nonempty];
 }
 
+/** Creates an ajax commands to popup a dialog.
+ *
+ *  Only use in ajax handler. ( _defineroute 'type'=>'ajax' )
+ *  @package core */
+function ajax_add_popupdialog($title,$content)
+{
+    ajax_add_run("prepare_ckdialog_a",[$title,$content]);
+    ajax_add_run("popup_ckdialog");
+}
+
 /** Returns the html code which placed a delayed ajax call to the page.
  *  @param string $ajax_url The url of the ajax call to be call. (Will be processed by url())
  *  @param mixed $msec The delay time in millisecundum after document.ready

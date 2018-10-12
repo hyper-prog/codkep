@@ -221,12 +221,6 @@ function codkep_render_commentblock($cont,$cid,$name,$created,$text,$deletelink)
     return ob_get_clean();
 }
 
-function ajax_add_popupdialog($title,$content)
-{
-    ajax_add_run("prepare_ckdialog_a",[$title,$content]);
-    ajax_add_run("popup_ckdialog");
-}
-
 function hook_activity_required_sql_schema()
 {
     global $site_config;
