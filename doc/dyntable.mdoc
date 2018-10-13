@@ -7,28 +7,35 @@ store/load the whole object to/from database by simple api calls.<br/>
 The DynTable class elements can be show or edit as a simple **two dimensional html table** with the specified column and row names.
 The editing is achieved through ajax functions.
 .
+{file:dyntable2.png}
+.
 Because the DynTable class is inheritable in your codes, you can extend the functions of the base class to meet your special needs.
 The class contains many redefineable methods to easy extend base functions.
 .
+Let's see a simple example of DynTable
+.
 ~~~php
-$d = new DynTable([
-        'rows' => [0 => 'Apple',1 => 'Plum',2 => 'Pear',3 => 'Nut',],
-        'cols' => [0 => 'Good (Kg)',1 => 'Decent (kg)',2 => 'Waste (kg)'],
-        'default_type' => 'num',
-        'datacells' => [
-            'applegood'   => ['row' => 0,'col' => 0],
-            'appledecent' => ['row' => 0,'col' => 1],
-            'applewaste'  => ['row' => 0,'col' => 2],
-            'plumgood'    => ['row' => 1,'col' => 0],
-            'plumdecent'  => ['row' => 1,'col' => 1],
-            'plumwaste'   => ['row' => 1,'col' => 2],
-            'peargood'    => ['row' => 2,'col' => 0],
-            'peardecent'  => ['row' => 2,'col' => 1],
-            'pearwaste'   => ['row' => 2,'col' => 2],
-            'nutgood'     => ['row' => 3,'col' => 0],
-            'nutwaste'    => ['row' => 3,'col' => 2],
-        ],
-    ]);
+$definition = [
+     'rows' => [0 => 'Apple',1 => 'Plum',2 => 'Pear',3 => 'Nut',],
+     'cols' => [0 => 'Good (Kg)',1 => 'Decent (kg)',2 => 'Waste (kg)'],
+     'default_type' => 'num',
+     'datacells' => [
+         'applegood'   => ['row' => 0,'col' => 0],
+         'appledecent' => ['row' => 0,'col' => 1],
+         'applewaste'  => ['row' => 0,'col' => 2],
+         'plumgood'    => ['row' => 1,'col' => 0],
+         'plumdecent'  => ['row' => 1,'col' => 1],
+         'plumwaste'   => ['row' => 1,'col' => 2],
+         'peargood'    => ['row' => 2,'col' => 0],
+         'peardecent'  => ['row' => 2,'col' => 1],
+         'pearwaste'   => ['row' => 2,'col' => 2],
+         'nutgood'     => ['row' => 3,'col' => 0],
+         'nutwaste'    => ['row' => 3,'col' => 2],
+     ],
+     'table_border' => '1',
+];
+.
+$d = new DynTable($definition);
 .
 $d->zeroData();
 .
@@ -41,27 +48,72 @@ $d->plumdecent = 12;
 print $d->getHtml();
 ~~~
 .
+The code above generates the following table in the browser
+.
+
 {file:dyntable1.png}
 .
 
-- @@@ __construct($definition)@@@
+#dyntmethods#
+=== Methods of DynTable class ===
+
+**Constructor:**
+- @@@DynTable($definition)@@@ - The constructor (***__construct***) of DynTable
+ - The constructor should receive the definition of the DynTable. The definition is an associative array with the
+ \ appropriate fields. (explained later) The definition array describes the fields of the DynTable the parameters of
+ \ database appearance and the look and feel options of the whole table.
+
+.
+**Methods:**
 - @@@ zeroData()@@@
-- @@@ isReadonly()@@@
+ - It resets the value of all defined fields. The string typed fields set to empty string while the numerical fields are set to zero.
 - @@@ setReadonly($ro)@@@
+ - The DynTable has a read only mode which means that the web interface not enables the editing of the cells.
+ \ Keep in mind that this read only attribute only affects the web interface only. You will be able to save the table
+ \ to the database through the api methods.
+ - Sets the read only status of the DynTable object.
+- @@@ isReadonly()@@@
+ - This method will returns the read only status of the current DynTable object. (***true***: Read only)
+ - See ***setReadonly()*** for explanation what is read only.
 - @@@ isInSql()@@@
+ - This method returns ***true*** if the DynTable object is present in the sql database. It means that you will receive
+ \ ***true*** if you read the table from the database or already saved or stored it. Otherwise you will receive
+ \ ***false*** if you created the object with the api but not stored it.
 - @@@ arithmeticForAllNumeric($operation,$operand)@@@
- - '+','-','*','/'
+ - Do the specified arithmetic operation on all number typed fields.
+ - The ***$operation*** parameter is a string, can be the following values:
+  - ***'+'*** - Adds the ***$operand*** to each numeric type field.
+  - ***'-'*** - Subs the ***$operand*** from each numeric type field.
+  - ___'*'___ - Multiply each numeric type field with the ***$operand***.
+  - ***'/'*** - Divide the each numeric type field by the ***$operand***.
 - @@@ collectForAllNumeric($operation)@@@
- - 'sum','count','max','min','avg'
-- @@@ getHtml($readonly = false)@@@
-- @@@ html_table_body($readonly = false)@@@
+ - Calculate the required value from all numeric typed fields.
+ - The ***$operation*** parameter is a string, can be the following values:
+  - ***'sum'*** - Searches/calculate the sum value of all numeric typed fields.
+  - ***'count'*** - Searches/calculate the number/count of all numeric typed fields.
+  - ***'nonzerocount'*** - Searches/calculate the number/count of all non zero valued numeric typed fields.
+  - ***'max'*** - Searches/calculate the maximum value of all numeric typed fields.
+  - ***'min'*** - Searches/calculate the minimum value of all numeric typed fields.
+  - ***'avg'*** - Searches/calculate the math average value of all numeric typed fields.
+- @@@ getHtml($readonly = false, $skipheaders = false)@@@
+ - Generate the html codes of the DynTable. The fields are shows in the rows/columns specified in the definition structure.
+ - By default this function generates an (popup ajax) editable table. If you set ***$readonly*** parameter ***true***
+ \ the editing is disabled.
+ - If you set ***$skipheaders*** to ***true*** the function will not draw the column and row labels but the table body only.
+ - This function is generate an unique html div container around the table code so that the ajax codes can refresh the table
+ \ without reload the full page. The (replaced) inner code of the table is generated by ***html_table_body()*** method.
+ \ This mechanism is works automatic if you use the ***ajax_add_refreshHtmlTable()*** method
+ \ in your ajax handler to refresh the table.
+- @@@ html_table_body($readonly = false, $skipheaders = false)@@@
+ - Generated the inner body of the html codes of DynTable. Use ***getHtml()*** and ***ajax_add_refreshHtmlTable()***
+ \ instead of this except if you exactly know what you do.
 - @@@ generateIntoTable($receiverobj,$skipheaders = false)@@@
 - @@@ setData($name,$toValue,$method = '')@@@
 - @@@ setDataFromAjax($name,$toValue,$method = 'ajax')@@@
 - @@@ readFromDatabase($id)@@@
 - @@@ saveToDatabase()@@@
 - @@@ storeToDatabase()@@@
-- @@@ ajax_add_refreshHtmlTable($readonly = false)@@@
+- @@@ ajax_add_refreshHtmlTable($readonly = false,$skipheaders = false)@@@
 .
 - @@@html_table_body_before()@@@
 - @@@html_table_body_after()@@@
@@ -73,6 +125,8 @@ print $d->getHtml();
 - @@@saveToDatabase_postaction()@@@
 - @@@storeToDatabase_preaction($queryobject)@@@
 - @@@storeToDatabase_postaction()@@@
+
+***dyntable_id*** and ***dyntable_definition*** attribute
 .
 - "sqltable" = string
 - "idfield" = string
@@ -92,6 +146,10 @@ print $d->getHtml();
 - "table_seq_name"
 - "table_key_prefix"
 - "table_key_suffix"
+
+- 'sqltype_numeric' = sqltype
+- 'sqltype_string' = sqltype
+- 'sqltype_idfield' = sqltype
 
 - "popupedit_title" = string
 - "popupedit_btntext" = string

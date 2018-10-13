@@ -3834,6 +3834,10 @@ class DynTable
 
     public function __get($name)
     {
+        if($name == 'dyntable_id')
+            return $this->id;
+        if($name == 'dyntable_definition')
+            return $this->def;
         if(array_key_exists($name,$this->data))
             return $this->data[$name];
         return null;
@@ -3882,6 +3886,7 @@ class DynTable
         $max = 0.0;
         $min = null;
         $count = 0;
+        $nzcount = 0;
         foreach($this->def['datacells'] as $name => $opts)
         {
             if( (!isset($opts['type']) && $this->def['default_type'] == 'num') ||
@@ -3892,25 +3897,27 @@ class DynTable
                     $max = $this->data[$name];
                 if($min == null || $min > $this->data[$name])
                     $min = $this->data[$name];
+                if($this->data[$name] != 0.0)
+                    ++$nzcount;
                 ++$count;
-
             }
         }
-        if($operation == 'sum')     return $sum;
-        if($operation == 'count')   return $count;
-        if($operation == 'max')     return $max;
-        if($operation == 'min')     return $min;
+        if($operation == 'sum')          return $sum;
+        if($operation == 'count')        return $count;
+        if($operation == 'nonzerocount') return $nzcount;
+        if($operation == 'max')          return $max;
+        if($operation == 'min')          return $min;
         if($operation == 'avg' && $count != 0)
             return $sum/$count;
         return null;
     }
 
-    public function getHtml($readonly = false)
+    public function getHtml($readonly = false,$skipheaders = false)
     {
         $divclass = 'dyntable_'.$this->id;
         ob_start();
         print "<div class=\"$divclass\">";
-        print $this->html_table_body($readonly || $this->readonly);
+        print $this->html_table_body($readonly || $this->readonly,$skipheaders);
         print "</div>";
 
         $ajaxurl = '';
@@ -3936,7 +3943,7 @@ class DynTable
         return ob_get_clean();
     }
 
-    public function html_table_body($readonly = false)
+    public function html_table_body($readonly = false,$skipheaders = false)
     {
         ob_start();
         print $this->html_table_body_before();
@@ -3960,14 +3967,19 @@ class DynTable
             $missclass = $this->def['table_missing_cell_class'];
 
         print "<table border=\"$border\" class=\"$tclass\" data-id=\"$this->id\">";
-        print "<tr>";
-        print "<th></th>";
-        foreach($this->def['cols'] as $cIdx => $colname)
-            print "<th class=\"$hclass\">$colname</th>";
+        if(!$skipheaders)
+        {
+            print "<tr>";
+            print "<th></th>";
+            foreach($this->def['cols'] as $cIdx => $colname)
+                print "<th class=\"$hclass\">$colname</th>";
+            print "</tr>";
+        }
         foreach($this->def['rows'] as $rIdx => $rowname)
         {
             print "<tr>";
-            print "<td class=\"$rclass\">$rowname</td>";
+            if(!$skipheaders)
+                print "<td class=\"$rclass\">$rowname</td>";
             foreach($this->def['cols'] as $cIdx => $colname)
             {
                 $put = false;
@@ -4109,6 +4121,43 @@ class DynTable
         return false;
     }
 
+
+    public function dataFor_required_sql_schema()
+    {
+        $cols = [];
+        $numeric_sqltype  = 'NUMERIC(15,5)';
+        $string_sqltype   = 'VARCHAR(128)';
+        $idfield_sqltype  = 'SERIAL';
+
+        if(isset($this->def['sqltype_numeric']))
+            $numeric_sqltype = $this->def['sqltype_numeric'];
+        if(isset($this->def['sqltype_string']))
+            $string_sqltype = $this->def['sqltype_string'];
+        if(isset($this->def['sqltype_idfield']))
+            $idfield_sqltype = $this->def['sqltype_idfield'];
+
+        $cols[$this->def['idfield']] = $idfield_sqltype;
+        foreach($this->def['datacells'] as $name => $opts)
+        {
+            $t = $string_sqltype;
+            if(!isset($opts['type']))
+            {
+                if($this->def['default_type'] == 'num') $t = $numeric_sqltype;
+                if($this->def['default_type'] == 'str') $t = $string_sqltype;
+            }
+            else
+            {
+                if($opts['type'] == 'num') $t = $numeric_sqltype;
+                if($opts['type'] == 'str') $t = $string_sqltype;
+            }
+            $cols[isset($opts['sql']) ? $opts['sql'] : $name] = $t;
+        }
+        return [
+            'tablename' => $this->def['sqltable'],
+            'columns' => $cols,
+        ];
+    }
+
     public function readFromDatabase($id)
     {
         $this->zeroData();
@@ -4148,6 +4197,7 @@ class DynTable
             $q->set_fv((isset($opts['sql']) ? $opts['sql'] : $name),$this->data[$name]);
         $q->execute();
         $this->saveToDatabase_postaction();
+        $this->inSQL = true;
         return false;
     }
 
@@ -4168,10 +4218,11 @@ class DynTable
         $this->storeToDatabase_preaction($q);
         $q->execute();
         $new_id = (isset($this->def['table_key_prefix']) ? $this->def['table_key_prefix'] : '') .
-            $db->sql->lastInsertId(isset($this->def['table_seq_name']) ? $this->def['table_seq_name'] : NULL ) .
+            $db->sql->lastInsertId(isset($this->def['table_seq_name']) ? $this->def['table_seq_name'] : $this->def['idfield'] ) .
             (isset($this->def['table_key_suffix']) ? $this->def['table_key_suffix'] : '');
         $this->id = $new_id;
         $this->storeToDatabase_postaction();
+        $this->inSQL = true;
     }
 
     protected function storeToDatabase_preaction($queryobject)
@@ -4182,9 +4233,9 @@ class DynTable
     {
     }
 
-    public function ajax_add_refreshHtmlTable($readonly = false)
+    public function ajax_add_refreshHtmlTable($readonly = false,$skipheaders = false)
     {
-        ajax_add_html(".dyntable_".$this->id,$this->html_table_body($readonly));
+        ajax_add_html(".dyntable_".$this->id,$this->html_table_body($readonly,$skipheaders));
         ajax_add_run("re_fireup_dyntableedit",$this->id);
     }
 }
