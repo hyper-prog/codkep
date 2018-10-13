@@ -9,6 +9,40 @@ The editing is achieved through ajax functions.
 .
 Because the DynTable class is inheritable in your codes, you can extend the functions of the base class to meet your special needs.
 The class contains many redefineable methods to easy extend base functions.
+.
+~~~php
+$d = new DynTable([
+        'rows' => [0 => 'Apple',1 => 'Plum',2 => 'Pear',3 => 'Nut',],
+        'cols' => [0 => 'Good (Kg)',1 => 'Decent (kg)',2 => 'Waste (kg)'],
+        'default_type' => 'num',
+        'datacells' => [
+            'applegood'   => ['row' => 0,'col' => 0],
+            'appledecent' => ['row' => 0,'col' => 1],
+            'applewaste'  => ['row' => 0,'col' => 2],
+            'plumgood'    => ['row' => 1,'col' => 0],
+            'plumdecent'  => ['row' => 1,'col' => 1],
+            'plumwaste'   => ['row' => 1,'col' => 2],
+            'peargood'    => ['row' => 2,'col' => 0],
+            'peardecent'  => ['row' => 2,'col' => 1],
+            'pearwaste'   => ['row' => 2,'col' => 2],
+            'nutgood'     => ['row' => 3,'col' => 0],
+            'nutwaste'    => ['row' => 3,'col' => 2],
+        ],
+    ]);
+.
+$d->zeroData();
+.
+$d->nutgood = 12;
+$d->applegood = 200;
+$d->applewaste = 23;
+$d->plumgood = 68;
+$d->plumdecent = 12;
+.
+print $d->getHtml();
+~~~
+.
+{file:dyntable1.png}
+.
 
 - @@@ __construct($definition)@@@
 - @@@ zeroData()@@@
@@ -21,6 +55,7 @@ The class contains many redefineable methods to easy extend base functions.
  - 'sum','count','max','min','avg'
 - @@@ getHtml($readonly = false)@@@
 - @@@ html_table_body($readonly = false)@@@
+- @@@ generateIntoTable($receiverobj,$skipheaders = false)@@@
 - @@@ setData($name,$toValue,$method = '')@@@
 - @@@ setDataFromAjax($name,$toValue,$method = 'ajax')@@@
 - @@@ readFromDatabase($id)@@@
@@ -30,6 +65,8 @@ The class contains many redefineable methods to easy extend base functions.
 .
 - @@@html_table_body_before()@@@
 - @@@html_table_body_after()@@@
+- @@@generateIntoTable_before($receiverobj)@@@
+- @@@protected function generateIntoTable_after($receiverobj)@@@
 - @@@readFromDatabase_preaction($queryobject)@@@
 - @@@readFromDatabase_postaction($resultobject)@@@
 - @@@saveToDatabase_preaction($queryobject)@@@
@@ -45,6 +82,12 @@ The class contains many redefineable methods to easy extend base functions.
 - "table_columnlabel_class" = string
 - "table_cell_class" = string
 - "table_missing_cell_class" = string
+
+- "gentable_colheader_opts" = array
+- "gentable_rowheader_opts" = array
+- "gentable_strcell_opts" = array
+- "gentable_numcell_opts" = array
+- "gentable_misscell_opts" = array
 
 - "table_seq_name"
 - "table_key_prefix"
@@ -74,12 +117,12 @@ $d = new DynTable([
         'idfield' => 'year',
 
         'table_border' => '1',
-
+.
         'popupedit_title' => 'Set the selected item',
         'popupedit_btntext' => 'Modify',
         'popupedit_ajaxurl' => 'ajax_mod_fruit_table',
         'popupedit_ajaxsubtype' => 'fruit',
-
+.
         'rows' => [
             0 => 'Apple',
             1 => 'Plum',
@@ -103,15 +146,15 @@ $d = new DynTable([
 
         ],
     ]);
-
+.
     $d->zeroData();
-
+.
     $d->nutgood = 12;
     $d->applegood = 200;
     $d->applewaste = 23;
     $d->plumgood = 68;
     $d->plumdecent = 12;
-
+.
     print $d->getHtml();
 ~~~
 

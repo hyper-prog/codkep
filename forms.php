@@ -4018,6 +4018,80 @@ class DynTable
         return '';
     }
 
+    public function generateIntoTable($receiverobj,$skipheaders = false)
+    {
+        $this->generateIntoTable_before($receiverobj);
+
+        $ch_opts    = ['type' => 'uni','t' => 'str','border' => 'all','background-color' => '#eeeeee'];
+        $rh_opts    = ['type' => 'uni','t' => 'str','border' => 'all','background-color' => '#eeeeee'];
+        $sc_opts    = ['type' => 'uni','t' => 'str','border' => 'all','background-color' => '#ffffff'];
+        $nc_opts    = ['type' => 'uni','t' => 'num','border' => 'all','background-color' => '#ffffff'];
+        $missc_opts = ['type' => 'uni','t' => 'str','border' => 'all','background-color' => '#777777'];
+
+        if(isset($this->def['gentable_colheader_opts']))
+            $ch_opts = $this->def['gentable_colheader_opts'];
+        if(isset($this->def['gentable_rowheader_opts']))
+            $rh_opts = $this->def['gentable_rowheader_opts'];
+        if(isset($this->def['gentable_strcell_opts']))
+            $sc_opts = $this->def['gentable_strcell_opts'];
+        if(isset($this->def['gentable_numcell_opts']))
+            $nc_opts = $this->def['gentable_numcell_opts'];
+        if(isset($this->def['gentable_misscell_opts']))
+            $missc_opts = $this->def['gentable_misscell_opts'];
+
+        if(!$skipheaders)
+        {
+            $receiverobj->cell('',$ch_opts);
+            foreach($this->def['cols'] as $cIdx => $colname)
+                $receiverobj->cell($colname,$ch_opts);
+            $receiverobj->nrow();
+        }
+
+        foreach($this->def['rows'] as $rIdx => $rowname)
+        {
+            if(!$skipheaders)
+                $receiverobj->cell($rowname,$rh_opts);
+            foreach($this->def['cols'] as $cIdx => $colname)
+            {
+                $put = false;
+                foreach($this->def['datacells'] as $name => $opts)
+                    if($opts['row'] == $rIdx && $opts['col'] == $cIdx)
+                    {
+                        if(isset($opts['type']))
+                            $t = $opts['type'];
+                        else
+                            $t = $this->def['default_type'];
+
+                        if($t == 'str')
+                            $receiverobj->cell($this->data[$name],$sc_opts);
+                        if($t == 'num')
+                        {
+                            $value = 0;
+                            if($this->data[$name] != 0.0)
+                                $value = sprintf($this->numtype_formatstr, $this->data[$name]);
+                            $receiverobj->cell($value,$nc_opts);
+                        }
+
+                        $put = true;
+                        break 1;
+                    }
+                if(!$put)
+                {
+                    $receiverobj->cell('',$missc_opts);
+                }
+            }
+            $receiverobj->nrow();
+        }
+
+        $this->generateIntoTable_after($receiverobj);
+    }
+    protected function generateIntoTable_before($receiverobj)
+    {
+    }
+    protected function generateIntoTable_after($receiverobj)
+    {
+    }
+
     public function setData($name,$toValue,$method = '')
     {
         if(!array_key_exists($name,$this->def['datacells']))
