@@ -1,6 +1,11 @@
 This file describes the non fully compatible
 changes between the released versions
 
+1.109 -> 1.110
+
+ - In SpeedForm class the delete_previous_files() and sql_update_part_CMN() and sql_insert_part_CMN()
+   methods was automatic public, now become protected.
+
 1.091 -> 1.092
 
  - Until now the to_table() function's "headertext" option can be a text or a callback/function name.

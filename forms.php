@@ -219,24 +219,24 @@ class HtmlTable
  */
 class ExcelXmlDocument
 {
-    private $n;
-    private $style = array();
-    private $b = array();
-    private $colcount;
-    private $rowcount;
-    private $r_open;
-    private $r_empty;
-    private $c_index;
-    private $c_emptycellbefore;
-    private $style_counter;
-    private $row;
-    private $rowh;
-    private $colwarray;
-    private $orientation;
-    private $hc_cc;
-    private $in_header_row;
-    private $table_options;
-    private $row_options;
+    protected $n;
+    protected $style = array();
+    protected $b = array();
+    protected $colcount;
+    protected $rowcount;
+    protected $r_open;
+    protected $r_empty;
+    protected $c_index;
+    protected $c_emptycellbefore;
+    protected $style_counter;
+    protected $row;
+    protected $rowh;
+    protected $colwarray;
+    protected $orientation;
+    protected $hc_cc;
+    protected $in_header_row;
+    protected $table_options;
+    protected $row_options;
     protected $callbacks;
 
     public function __construct($n = 'Generated excel xml table')
@@ -308,7 +308,7 @@ class ExcelXmlDocument
         return $this;
     }
 
-    private function beginRow(array $opts=array())
+    protected function beginRow(array $opts=array())
     {
         if($this->r_open)
             return;
@@ -322,7 +322,7 @@ class ExcelXmlDocument
         $this->row_options = $opts;
     }
 
-    private function endRow()
+    protected function endRow()
     {
         if(!$this->r_open)
             return;
@@ -346,7 +346,7 @@ class ExcelXmlDocument
         $this->in_header_row = false;
     }
 
-    function cell($c = '',array $opts=array())
+    public function cell($c = '',array $opts=array())
     {
         if(!$this->r_open)
             $this->beginRow();
@@ -425,7 +425,7 @@ class ExcelXmlDocument
         return $this;
     }
 
-    function cells($cs,array $opts=array())
+    public function cells($cs,array $opts=array())
     {
         if(is_array($cs))
             foreach($cs as $c)
@@ -433,7 +433,7 @@ class ExcelXmlDocument
         return $this;
     }
 
-    function cellss($cs,array $opts=array())
+    public function cellss($cs,array $opts=array())
     {
         if(is_array($cs))
             foreach($cs as $c)
@@ -459,7 +459,7 @@ class ExcelXmlDocument
         return $this->cells($hs,$opts);
     }
 
-    private function styleId(array $opts)
+    protected function styleId(array $opts)
     {
         $sStr = "";
 
@@ -569,22 +569,22 @@ class ExcelXmlDocument
         return $fidx;
     }
 
-    function setTitle($title)
+    public function setTitle($title)
     {
         $this->name($title);
     }
 
-    function setOrientationLandscape()
+    public function setOrientationLandscape()
     {
         $this->orientation = "Landscape";
     }
 
-    function setOrientationPortrait()
+    public function setOrientationPortrait()
     {
         $this->orientation = "";
     }
 
-    function get()
+    public function get()
     {
         global $user;
         if($this->r_open)
@@ -2378,7 +2378,7 @@ class SpeedForm
         run_hook("speedform_created",$pass);
     }
 
-    function index_of($sql)
+    public function index_of($sql)
     {
         foreach($this->def['fields'] as $idx => $f)
         {
@@ -2388,7 +2388,7 @@ class SpeedForm
         return NULL;
     }
 
-    function get_key_name()
+    public function get_key_name()
     {
         foreach($this->def['fields'] as $idx => $f)
         {
@@ -2398,12 +2398,12 @@ class SpeedForm
         return NULL;
     }
 
-    function get_key()
+    public function get_key()
     {
         return $this->values[$this->get_key_name()];
     }
 
-    function get_key_sqlvalue($strip = false)
+    public function get_key_sqlvalue($strip = false)
     {
         global $speedform_handlers;
 
@@ -2415,7 +2415,7 @@ class SpeedForm
         return call_user_func($fnc,$strip,$this->def['fields'][$keyindex],'SELECT',$this->values[$keyname]);
     }
 
-    function set_key($v)
+    public function set_key($v)
     {
         $pass = new stdClass();
         $pass->definition = $this->def;
@@ -2425,22 +2425,22 @@ class SpeedForm
         return $this;
     }
 
-    function set_value($sql,$value)
+    public function set_value($sql,$value)
     {
         $this->values[$sql] = $value;
     }
 
-    function get_value($sql)
+    public function get_value($sql)
     {
         return $this->values[$sql];
     }
 
-    function get_display_value($sql)
+    public function get_display_value($sql)
     {
         return $this->get_display_for_external_value($sql,$this->values[$sql]);
     }
 
-    function get_display_for_external_value($sql,$value)
+    public function get_display_for_external_value($sql,$value)
     {
         global $speedform_handlers;
 
@@ -2452,7 +2452,7 @@ class SpeedForm
         return $dispval;
     }
 
-    function &get_field($sql)
+    public function &get_field($sql)
     {
         foreach($this->def['fields'] as $idx => $f)
         {
@@ -2464,7 +2464,7 @@ class SpeedForm
 
     /** Check post parameters if any action in progress
      *  @param string $action Action to test. Values can be: "submit" "insert" "update" "delete" "select" */
-    function in_action($action = 'submit')
+    public function in_action($action = 'submit')
     {
         foreach($this->def['fields'] as $idx => $f)
         {
@@ -2484,7 +2484,7 @@ class SpeedForm
         return false;
     }
 
-    function in_specified_action($sql)
+    public function in_specified_action($sql)
     {
         foreach($this->def['fields'] as $idx => $f)
         {
@@ -2502,7 +2502,7 @@ class SpeedForm
         return false;
     }
 
-    function load_parameters()
+    public function load_parameters()
     {
         global $speedform_handlers;
         form_source_check();
@@ -2564,7 +2564,7 @@ class SpeedForm
         return $this;
     }
 
-    private function load_parameters_deferred()
+    protected function load_parameters_deferred()
     {
         if(!$this->load_parameters_done)
             return;
@@ -2612,7 +2612,7 @@ class SpeedForm
         return;
     }
 
-    function load_values($vals)
+    public function load_values($vals)
     {
         global $speedform_handlers;
         foreach($this->def['fields'] as $idx => $f)
@@ -2634,7 +2634,7 @@ class SpeedForm
         return $this;
     }
 
-    function delete_previous_files($afsql)
+    protected function delete_previous_files($afsql)
     {
         foreach($afsql as $fsql)
         {
@@ -2652,7 +2652,7 @@ class SpeedForm
         }
     }
 
-    function clean_before_delete()
+    public function clean_before_delete()
     {
         foreach($this->def['fields'] as $idx => $f)
             if($f['type'] == 'file' && !isset($f['ondelete']) && $f['ondelete'] != 'keep')
@@ -2666,7 +2666,7 @@ class SpeedForm
             }
     }
 
-    function sql_select_part($tablename = '')
+    public function sql_select_part($tablename = '')
     {
         global $speedform_handlers;
         $sf = '';
@@ -2686,22 +2686,22 @@ class SpeedForm
         return $sf;
     }
 
-    function sql_update_part($tablename = '')
+    public function sql_update_part($tablename = '')
     {
         return $this->sql_update_part_CMN($tablename,0);
     }
 
-    function sql_update_part_PQ($tablename = '')
+    public function sql_update_part_PQ($tablename = '')
     {
         return $this->sql_update_part_CMN($tablename,1);
     }
 
-    function sql_update_part_PA($tablename = '')
+    public function sql_update_part_PA($tablename = '')
     {
         return $this->sql_update_part_CMN($tablename,2);
     }
 
-    function sql_update_part_CMN($tablename,$mode) // 0-normal,1-PQ,2-PA
+    protected function sql_update_part_CMN($tablename,$mode) // 0-normal,1-PQ,2-PA
     {
         global $speedform_handlers;
         $uf = '';
@@ -2755,22 +2755,22 @@ class SpeedForm
         return $uf;
     }
 
-    function sql_insert_part($tablename = '',$extra = [])
+    public function sql_insert_part($tablename = '',$extra = [])
     {
         return $this->sql_insert_part_CMN($tablename,0,$extra);
     }
 
-    function sql_insert_part_PQ($tablename = '',$extra = [])
+    public function sql_insert_part_PQ($tablename = '',$extra = [])
     {
         return $this->sql_insert_part_CMN($tablename,1,$extra);
     }
 
-    function sql_insert_part_PA($tablename = '',$extra = [])
+    public function sql_insert_part_PA($tablename = '',$extra = [])
     {
         return $this->sql_insert_part_CMN($tablename,2,$extra);
     }
 
-    function sql_insert_part_CMN($tablename,$mode,$extra) // 0-normal,1-PQ,2-PA
+    protected function sql_insert_part_CMN($tablename,$mode,$extra) // 0-normal,1-PQ,2-PA
     {
         global $speedform_handlers;
         $npart = '';
@@ -2835,64 +2835,64 @@ class SpeedForm
         return "($npart) VALUES($vpart)";
     }
 
-    function sql_select_string($tablename = '')
+    public function sql_select_string($tablename = '')
     {
         return 'SELECT ' . $this->sql_select_part($tablename) .
                ' FROM ' . $this->def['table'] .
                ' WHERE ' . $this->get_key_name() . '='. $this->get_key_sqlvalue();
     }
 
-    function sql_select_string_PQ($tablename = '')
+    public function sql_select_string_PQ($tablename = '')
     {
         return 'SELECT ' . $this->sql_select_part($tablename) .
                ' FROM ' . $this->def['table'] .
                ' WHERE ' . $this->get_key_name() . '=:ph_'. $this->get_key_name();
     }
 
-    function sql_select_string_PA($tablename = '')
+    public function sql_select_string_PA($tablename = '')
     {
         return [':ph_' . $this->get_key_name() => $this->get_key_sqlvalue(true) ];
     }
 
-    function sql_update_string($tablename = '')
+    public function sql_update_string($tablename = '')
     {
         return 'UPDATE ' . ($tablename != '' ? $tablename : $this->def['table']) .
                ' SET ' . $this->sql_update_part($tablename) .
                ' WHERE ' . $this->get_key_name() . '='. $this->get_key_sqlvalue();
     }
 
-    function sql_update_string_PQ($tablename = '')
+    public function sql_update_string_PQ($tablename = '')
     {
         return 'UPDATE ' . ($tablename != '' ? $tablename : $this->def['table']) .
                ' SET ' . $this->sql_update_part_PQ($tablename) .
                ' WHERE ' . $this->get_key_name() . '=:ph_'. $this->get_key_name();
     }
 
-    function sql_update_string_PA($tablename = '')
+    public function sql_update_string_PA($tablename = '')
     {
         $pa = $this->sql_update_part_PA($tablename);
         $pa[':ph_'.$this->get_key_name()] = $this->get_key_sqlvalue(true);
         return $pa;
     }
 
-    function sql_insert_string($tablename = '',$extra = [])
+    public function sql_insert_string($tablename = '',$extra = [])
     {
         return 'INSERT into ' . ($tablename != '' ? $tablename : $this->def['table']) .
                $this->sql_insert_part($tablename,$extra);
     }
 
-    function sql_insert_string_PQ($tablename = '',$extra = [])
+    public function sql_insert_string_PQ($tablename = '',$extra = [])
     {
         return 'INSERT into ' . ($tablename != '' ? $tablename : $this->def['table']) .
         $this->sql_insert_part_PQ($tablename,$extra);
     }
 
-    function sql_insert_string_PA($tablename = '',$extra = [])
+    public function sql_insert_string_PA($tablename = '',$extra = [])
     {
         return $this->sql_insert_part_PA($tablename,$extra);
     }
 
-    function sql_create_string()
+    public function sql_create_string()
     {
         global $speedform_handlers;
         ob_start();
@@ -2913,7 +2913,7 @@ class SpeedForm
         return ob_get_clean();
     }
 
-    function sql_create_schema()
+    public function sql_create_schema()
     {
         global $speedform_handlers;
         ob_start();
@@ -2945,7 +2945,7 @@ class SpeedForm
      *  Return: 0 - Check ok, doesn't require refresh 
      *          1 - Check indicates the form is expired. Needs refresh.
      *          2 - Error, Can't run the check  */
-    function do_expirity_check($auto_handle = true)
+    public function do_expirity_check($auto_handle = true)
     {
         $msn = '';
         $msv = '';
@@ -2984,7 +2984,7 @@ class SpeedForm
         return 1;
     }
 
-    function do_validate($auto_handle = true)
+    public function do_validate($auto_handle = true)
     {
         global $speedform_handlers;
 
@@ -3077,7 +3077,7 @@ class SpeedForm
         return 0;
     }
 
-    function generate_form($mode = 'all', $tablename = '')
+    public function generate_form($mode = 'all', $tablename = '')
     {
         global $speedform_handlers;
         $ff = NULL;
@@ -3117,7 +3117,7 @@ class SpeedForm
         return $form;
     }
 
-    function do_select()
+    public function do_select()
     {
         $pq = $this->sql_select_string_PQ();
         $pa = $this->sql_select_string_PA();
@@ -3125,7 +3125,7 @@ class SpeedForm
         $this->load_values($v);
     }
 
-    function do_insert($disable_checks = false)
+    public function do_insert($disable_checks = false)
     {
         global $db;
         if(!$disable_checks)
@@ -3149,7 +3149,7 @@ class SpeedForm
         return $ikey;
     }
 
-    function do_update($disable_checks = false)
+    public function do_update($disable_checks = false)
     {
         if(!$disable_checks)
         {
@@ -3162,7 +3162,7 @@ class SpeedForm
         sql_exec($us,$up);
     }
 
-    function do_create()
+    public function do_create()
     {
         $cs = $this->sql_create_string();
         sql_exec($cs);
@@ -3199,7 +3199,7 @@ class Table_SpeedFormFormFormmater extends HtmlFormFormatter
         return array();
     }
 
-    function begin_form($txt)
+    public function begin_form($txt)
     {
         $before = '';
         if(isset($this->def['before']))
@@ -3221,7 +3221,7 @@ class Table_SpeedFormFormFormmater extends HtmlFormFormatter
         return $before . $txt . $t;
     }
 
-    function end_form($txt)
+    public function end_form($txt)
     {
         $after = '';
         if(isset($this->def['after']))
@@ -3231,7 +3231,7 @@ class Table_SpeedFormFormFormmater extends HtmlFormFormatter
         return $t . $txt . $after;
     }
 
-    function item($txt,$name)
+    public function item($txt,$name)
     {
         $f = $this->get_definition_of_field($name);
 
@@ -3332,7 +3332,7 @@ class Div_SpeedFormFormFormmater extends HtmlFormFormatter
         return array();
     }
 
-    function begin_form($txt)
+    public function begin_form($txt)
     {
         $before = '';
         if(isset($this->def['before']))
@@ -3345,7 +3345,7 @@ class Div_SpeedFormFormFormmater extends HtmlFormFormatter
         return $before . $txt . $t;
     }
 
-    function end_form($txt)
+    public function end_form($txt)
     {
         $after = '';
         if(isset($this->def['after']))
@@ -3355,7 +3355,7 @@ class Div_SpeedFormFormFormmater extends HtmlFormFormatter
         return $t . $txt . $after;
     }
 
-    function item($txt,$name)
+    public function item($txt,$name)
     {
         $f = $this->get_definition_of_field($name);
 
@@ -4122,7 +4122,7 @@ class DynTable
     }
 
 
-    public function dataFor_required_sql_schema()
+    public function sql_create_schema()
     {
         $cols = [];
         $numeric_sqltype  = 'NUMERIC(15,5)';
@@ -4249,8 +4249,17 @@ function hook_forms_required_sql_schema()
         $datastruct = call_user_func($ddef);
         if(isset($datastruct['sql_schema_bypass']) && $datastruct['sql_schema_bypass'])
             continue;
-        $sf = new SpeedForm($datastruct);
-        $t['DDefRepo: '.$ddname] = $sf->sql_create_schema();
+        //Here we will autodetect the type of the data definition structure by the content
+        if(isset($datastruct['fields']))
+        {
+            $sf = new SpeedForm($datastruct);
+            $t['DDefRepo: '.$ddname] = $sf->sql_create_schema();
+        }
+        if(isset($datastruct['datacells']))
+        {
+            $dt = new DynTable($datastruct);
+            $t['DDefRepo: '.$ddname] = $dt->sql_create_schema();
+        }
     }
     return $t;
 }

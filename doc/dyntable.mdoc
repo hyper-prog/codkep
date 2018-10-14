@@ -113,6 +113,7 @@ The code above generates the following table in the browser
 - @@@ readFromDatabase($id)@@@
 - @@@ saveToDatabase()@@@
 - @@@ storeToDatabase()@@@
+- @@@ sql_create_schema() @@@
 - @@@ ajax_add_refreshHtmlTable($readonly = false,$skipheaders = false)@@@
 .
 - @@@html_table_body_before()@@@
@@ -136,6 +137,7 @@ The code above generates the following table in the browser
 - "table_columnlabel_class" = string
 - "table_cell_class" = string
 - "table_missing_cell_class" = string
+- "sql_schema_bypass" = bool
 
 - "gentable_colheader_opts" = array
 - "gentable_rowheader_opts" = array
@@ -168,7 +170,10 @@ The code above generates the following table in the browser
   - "col"
   - "sql"
   - "type"
-
+.
+=== Data definition structure repository ===
+.
+=== Code example ===
 ~~~php
 $d = new DynTable([
         'sqltable' => 'fruit_harvest',
