@@ -317,7 +317,7 @@ class File
                   [':ufi' => $this->ufi]);
     }
 
-    function __get($n)
+    public function __get($n)
     {
         if($n == 'url' && $this->ufi != NULL)
         {
@@ -334,7 +334,7 @@ class File
         return NULL;
     }
 
-    function __isset($n)
+    public function __isset($n)
     {
         if($n == 'url' && $this->ufi != NULL)
             return true;

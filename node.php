@@ -282,7 +282,7 @@ class Node
         }
     }
 
-    function __set($name,$value)
+    public function __set($name,$value)
     {
         if($this->dataspeedform === NULL)
         {
@@ -297,7 +297,7 @@ class Node
         }
     }
 
-    function __get($name)
+    public function __get($name)
     {
         if($name == 'node_nid')
             return $this->nid;
@@ -335,7 +335,7 @@ class Node
         }
     }
 
-    function __isset($name)
+    public function __isset($name)
     {
         if($name == 'node_nid' && $this->nid !== NULL)
             return true;
@@ -354,11 +354,11 @@ class Node
         return false;
     }
 
-    function __unset($name)
+    public function __unset($name)
     {
     }
 
-    function getDataREST()
+    public function getDataREST()
     {
         $obj = new stdClass();
         $obj->node_nid = $this->nid;
@@ -378,7 +378,7 @@ class Node
         return $obj;
     }
 
-    function setDataREST($object,$opchar) // $opchar = c u
+    public function setDataREST($object,$opchar) // $opchar = c u
     {
         if($this->dataspeedform !== NULL)
             foreach($this->dataspeedform->values as $keyname => $value)
