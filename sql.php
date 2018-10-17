@@ -1116,7 +1116,7 @@ class DatabaseQuerySql extends DatabaseQuery
     {
         parent::__construct($querytype,$container, $container_alias, $container_options);
         $this->passed_parameters = [];
-        $this->valid_operands = ['=','!=','>','<','>=','<=','regex'];
+        $this->valid_operands = ['=','!=','>','<','>=','<=','regex','in'];
     }
 
     public function build_sql_query()
@@ -1331,6 +1331,10 @@ class DatabaseQuerySql extends DatabaseQuery
                 if(in_array($op,$this->valid_operands) !== TRUE)
                     throw new Exception('Unknown operand');
             }
+
+            if(in_array($cond['type'],['ff','fb','fn']) && $op == 'in')
+                throw new Exception('The \"in\" operand is not valid in this (ff,fb,fn) condition mode');
+
             if($op == '!=')
                 $op = '<>';
             if($op == 'regex')
@@ -1378,14 +1382,35 @@ class DatabaseQuerySql extends DatabaseQuery
 
                 $qsp .= " $op ";
 
-                if(isset($cond['opts']['vfunction']) && $cond['opts']['vfunction'] != '')
-                    $qsp .= $cond['opts']['vfunction'] . '(';
-                $qsp .= ':phi_'.$this->phidx;
-                if(isset($cond['opts']['vfunction']) && $cond['opts']['vfunction'] != '')
-                    $qsp .=  ')';
+                if($op == 'in')
+                {
+                    if(!is_array($cond['v']))
+                        throw new Exception('The value which passed to \"in\" operand is must be an array in Field-Value condition mode');
 
-                $this->passed_parameters[':phi_'.$this->phidx] = $cond['v'];
-                $this->phidx++;
+                    $qsp .= '(';
+                    $n = 0;
+                    foreach($cond['v'] as $vitem)
+                    {
+                        $qsp .= ($n > 0 ? ',' : '') . ':phiai_' . $this->phidx;
+                        $this->passed_parameters[':phiai_' . $this->phidx] = $vitem;
+                        $this->phidx++;
+                        ++$n;
+                    }
+                    $qsp .= ')';
+                }
+                else
+                {
+                    if(isset($cond['opts']['vfunction']) && $cond['opts']['vfunction'] != '')
+                        $qsp .= $cond['opts']['vfunction'] . '(';
+
+                    $qsp .= ':phi_' . $this->phidx;
+
+                    if(isset($cond['opts']['vfunction']) && $cond['opts']['vfunction'] != '')
+                        $qsp .= ')';
+
+                    $this->passed_parameters[':phi_' . $this->phidx] = $cond['v'];
+                    $this->phidx++;
+                }
             }
             if($cond['type'] == 'fe')
             {
@@ -1405,11 +1430,18 @@ class DatabaseQuerySql extends DatabaseQuery
 
                 $qsp .= " $op ";
 
-                if(isset($cond['opts']['efunction']) && $cond['opts']['efunction'] != '')
-                    $qsp .= $cond['opts']['efunction'] . '(';
-                $qsp .= $cond['e'];
-                if(isset($cond['opts']['efunction']) && $cond['opts']['efunction'] != '')
-                    $qsp .= ')';
+                if($op == 'in')
+                {
+                    $qsp .= '(' . $cond['e'] . ')';
+                }
+                else
+                {
+                    if(isset($cond['opts']['efunction']) && $cond['opts']['efunction'] != '')
+                        $qsp .= $cond['opts']['efunction'] . '(';
+                    $qsp .= $cond['e'];
+                    if(isset($cond['opts']['efunction']) && $cond['opts']['efunction'] != '')
+                        $qsp .= ')';
+                }
             }
             if($cond['type'] == 'fb')
             {

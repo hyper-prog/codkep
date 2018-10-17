@@ -1492,6 +1492,32 @@ function form_source_check($disable_auto_redirect = false)
     return true;
 }
 
+function par_date_def($name)
+{
+    par_def($name . '_year' ,'number0');
+    par_def($name . '_month','number0');
+    par_def($name . '_day'  ,'number0');
+}
+
+function par_date_ex($name)
+{
+    if(par_ex($name . '_year') && par_ex($name . '_month') && par_ex($name . '_day'))
+        return true;
+    return false;
+}
+
+function par_date($name,$define = false)
+{
+    if($define)
+        par_date_def($name);
+    if(!par_date_ex($name))
+        return null;
+    return sprintf("%04d-%02d-%02d",
+                intval(par($name . '_year')),
+                intval(par($name . '_month')),
+                intval(par($name . '_day')));
+}
+
 class HtmlFormFormatter
 {
     public $name;

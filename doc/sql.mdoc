@@ -505,7 +505,8 @@ DatabaseCond. This sub conditions can be stacked with the ***cond()*** method wh
   - *In SQL 1*: *** users.name = :placeholder *** and ***[':placeholder' => 'John Doe']***
   - *Example 2*: ***fv('surname','dave','=',['ffunction'=>'LOWER'])***
   - *In SQL 2*: *** LOWER(surname) = :placeholder *** and ***[':placeholder' => 'dave']***
- - Usable operands are: *** = , != , > , < , >= , <= , regex ***
+ - Usable operands are: *** = , != , > , < , >= , <= , regex, in ***
+  - If the operand is "in" the value have to be an array.
  - The ***$options*** is an optional associative array contains the options according
  \ to the [OPTIONS specification|url:#fieldopts]
 - @@@fe($fieldspec,$expression,$op,array $options = [])@@@
@@ -515,7 +516,8 @@ DatabaseCond. This sub conditions can be stacked with the ***cond()*** method wh
  \ value are compared to an database originated difficult expression.
   - *Example*: ***fe('itemcount','(height-10)','>')***
   - *In SQL*: *** itemcount > (height-10) ***
- - Usable operands are: *** = , != , > , < , >= , <= , regex ***
+ - Usable operands are: *** = , != , > , < , >= , <= , regex , in ***
+  - If the operand is "in" the expression have to contains an sql expression (eg. subquery) which returns an array.
  - The ***$options*** is an optional associative array contains the options according
  \ to the [OPTIONS specification|url:#fieldopts]
 - @@@fb($fieldspec,array $options = [])@@@

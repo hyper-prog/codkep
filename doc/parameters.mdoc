@@ -155,6 +155,26 @@ function mypage()
   return ob_get_clean();
 }
 ~~~
+.
+*There are some helper function to easy handle form date fields: (See [forms|url:doc/codkep/forms])*
+.
+@@@par_date_def($name)@@@
+<br/>
+This function defines the three parameter of the specified form date field. It means that you call this function
+with ***"birth"*** it will define the ***"birth_year"***, ***"birth_month"*** and ***"birth_day"*** parameters with ***"number0"*** security class.
+.
+@@@par_date_ex($name)@@@
+<br/>
+This function returns ***true*** if all three part of the specified form date field is passed. Otherwise returns ***false***.
+(It uses ***par_ex()*** inside)
+.
+@@@par_date($name,$define = false)@@@
+<br/>
+This function returns the isodate string (yyyy-mm-dd) from the parameter passed form date field if all parts is passed.
+If some parts are missing ***null*** value returned.
+If you pass ***true*** in parameter ***$define*** the function calls ***par_date_def($name)*** before the query.
+.
+
 == Other parameter related functions ==
 
 @@@par_reset()@@@
