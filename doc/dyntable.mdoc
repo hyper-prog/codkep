@@ -108,18 +108,55 @@ The code above generates the following table in the browser
  - Generated the inner body of the html codes of DynTable. Use ***getHtml()*** and ***ajax_add_refreshHtmlTable()***
  \ instead of this except if you exactly know what you do.
 - @@@ generateIntoTable($receiverobj,$skipheaders = false)@@@
+ - This function fills the received [HtmlTable|url:doc/codkep/tablegen#html_table_generator] or
+ \ [ExcelXmlDocument|url:doc/codkep/tablegen#excelxml] object with the data of DynTable according to the columns and rows.
+ - If the ***$skipheaders*** parameter is ***true*** the function generates a bare table only without the
+ \ the row and column labels.
+ - You can customise the generated table cell properties by set the ***gentable_*** prefixed
+ \ attributes in data definition array. (See below)
 - @@@ setData($name,$toValue,$method = '')@@@
+ - Sets the ***$name*** named data cell to ***$toValue*** value.
+ - The ***$method*** parameter is unused here. You can use it when you redefine this function in your subclass.
+ \ This way you can determine the source of the change.
+  - The dyntable setter method will call this function with method: "__set";
 - @@@ setDataFromAjax($name,$toValue,$method = 'ajax')@@@
+ - Sets a cell value according to the form name of the passed value. If a modification request received through ajax interface
+ \ the cell names are prefixed with "dync_". This function can received this prefixed names and correctly calculate the
+ \ normal cell name and set to a value by calling ***setData()***.
+ \ So use this method to set data cell in your ajax handler. By default this method
+ \ will call the ***setData()*** internal method with "ajax" method string parameter.
 - @@@ readFromDatabase($id)@@@
+ - Read DynTable from sql database with ***$id*** key.
+ - The DynTable object's current Id is available through ***dyntable_id*** property.
 - @@@ saveToDatabase()@@@
+ - Save the DynTable object to the database. It's only work when the id is set. (Already read or stored object)
+ - The DynTable object's current Id is available through ***dyntable_id*** property.
 - @@@ storeToDatabase()@@@
+ - Store (insert) the DynTable object to the database. This method fills the id field after the insert.
+ - The DynTable object's current Id is available through ***dyntable_id*** property.
 - @@@ sql_create_schema() @@@
+ - Creates the sql schema describe array of the DynTable. The generated array can directly used in
+ \ [***HOOK_required_sql_schema***|url:doc/codkep/sql#definesqlreq] hook.
+ - Example code in ***hook_mymodule_required_sql_schema()*** body:
+  - ***return ['mydyntable_def' => $dt->sql_create_schema()];***
 - @@@ ajax_add_refreshHtmlTable($readonly = false,$skipheaders = false)@@@
+ - Use this function in your ajax handler to makes refresh the table in the browser.
+ - The parameters works same way as ***getHtml()***
 .
+#rdmethods#
+**The following methods does nothing, they can be re defined in subclasses to achieve special needs.**
 - @@@html_table_body_before()@@@
+ - The return of this method will be inserted before the DynTable html codes when generated with ***html_table_body()***.
+ \ The ***genHtml()*** also use ***html_table_body()***.
 - @@@html_table_body_after()@@@
+ - The return of this method will be put after the DynTable html codes when generated with ***html_table_body()***.
+ \ The ***genHtml()*** also use ***html_table_body()***.
 - @@@generateIntoTable_before($receiverobj)@@@
-- @@@protected function generateIntoTable_after($receiverobj)@@@
+ - This method runs before the ***generateIntoTable()*** method start to generate the table.
+ \ It received the same parameter than ***generateIntoTable()*** so the object can be modified here.
+- @@@generateIntoTable_after($receiverobj)@@@
+ - This method runs after the ***generateIntoTable()*** method end with generate the table.
+ \ It received the same parameter than ***generateIntoTable()*** so the object can be modified here.
 - @@@readFromDatabase_preaction($queryobject)@@@
 - @@@readFromDatabase_postaction($resultobject)@@@
 - @@@saveToDatabase_preaction($queryobject)@@@
