@@ -649,7 +649,7 @@ function user_login_page()
     print "<input type=\"hidden\" name=\"fid\" value=\"$fs\"/>";
     print '<div class="login_div_internal">';
     print '<table class="login_table_internal">';
-    print '<tr><td>'.t('Username').'</td><td><input type="text" name="login" value="" maxlength="128"/></td></tr>';
+    print '<tr><td>'.t('Username').'</td><td><input type="text" name="login" value="" maxlength="128" id="ulitid"/></td></tr>';
     print '<tr><td>'.t('Password').'</td><td><input type="password" name="password" value="" maxlength="128" autocomplete="off"/></td></tr>';
     print '<tr><td colspan="2" align="center">';
     print '<input type="submit" name="loginbutton" value="'.t('Login').'"/></td></tr>';
@@ -667,9 +667,10 @@ function user_login_page()
     print "</form>";
     print '</div>';
     add_style('body { background-color: #eeeeee; }');
-    add_style('table.login_table_internal { background-color: #cccccc; margin: 6px; padding: 10px; border: 1px solid #aaaaaa; }');
+    add_style('table.login_table_internal { background-color: #cccccc; margin: 6px; padding: 10px; border: 1px solid #aaaaaa; box-shadow: 0px 10px 20px #454545;}');
     add_style('table.login_table_internal td { margin: 4px; padding: 4px;}');
-    add_style('table.login_table_internal input { padding: 2px; border-radius: 6px; }');
+    add_style('table.login_table_internal input { padding: 2px 8px 2px 8px; border-radius: 6px; }');
+    print "<script>jQuery(document).ready(function() { document.getElementById('ulitid').focus(); });</script>";
 
     global $site_config;
     $site_config->show_generation_time = false;
