@@ -634,7 +634,7 @@ function user_login_page()
 
     if($user->auth)
     {
-        if(par_ex('orignal_loc'))
+        if(par_ex('orignal_loc') && par('orignal_loc') != '')
         {
             ob_get_clean();
             goto_loc(par('orignal_loc'));
