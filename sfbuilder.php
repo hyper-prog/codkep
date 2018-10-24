@@ -244,7 +244,8 @@ function pc_speedform_builder()
                                                                              'generated number returned by PDO::lastInsertId(). '.
                                                                              'Only use if you have special id field.');
 
-    p_gral_item(2,'in_mode'      ,BTYPE_SEL ,BSEC_FUNC,['types' => ['submit'],'values' => ['insert','update','delete','select']]);
+    p_gral_item(2,'in_mode'      ,BTYPE_SEL ,BSEC_FUNC,['types' => ['submit'],'values' => ['insert','update','delete','select']],
+                                                                            'Restrict the rendering of the submit typed fields to a specific action.');
 
     p_gral_item(2,'row'          ,BTYPE_INT ,BSEC_FUNC,['types' => ['largetext']]);
     p_gral_item(2,'col'          ,BTYPE_INT ,BSEC_FUNC,['types' => ['largetext']]);
@@ -277,7 +278,7 @@ function pc_speedform_builder()
 
     p_gral_item(2,'ondelete'      ,BTYPE_SEL  ,BSEC_FUNC,['types' => ['file'],'values' => ['keep']]);
 
-    p_gral_item(2,'skip'          ,BTYPE_SEL ,BSEC_FUNC,['values' => ['all','visual','sql','modify','select','update','insert']]);
+    p_gral_item(2,'skip'          ,BTYPE_SEL ,BSEC_FUNC,['values' => ['all','visual','sql','modify','select','update','insert','exceptinsert','exceptupdate','exceptdelete']]);
     p_gral_item(2,'readonly'      ,BTYPE_SELB,BSEC_FUNC,['values' => ['true','false']]);
 
     p_gral_item(2,'color'         ,BTYPE_TEXT ,BSEC_LOOK,[],'The color of the table row of the field (only in table mode)');

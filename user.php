@@ -832,6 +832,7 @@ function hook_user_nodetype()
                         "converter" => 'scatter_string_local',
                         "default" => "",
                         "check_noempty" => "You have to fill the password field",
+                        "skip" => "exceptinsert",
                         "par_sec" => "text3ns",
                     ],
                     60 => [

@@ -2369,6 +2369,23 @@ class SpeedForm
     private $load_parameters_done;
     private $load_parameters_deferred_done;
 
+    protected static $valid_form_modes = ['all','select','insert','update','delete'];
+    protected static $valid_validate_modes = ['insert','update','delete'];
+    protected static $skipwords = [
+        'loadvalues' => ['all','sql'],
+        'sqlselect'  => ['all','sql','select','exceptinsert'],
+        'sqlupdate'  => ['all','sql','modify','update','exceptinsert','exceptdelete'],
+        'sqlinsert'  => ['all','sql','modify','insert','exceptupdate','exceptdelete'],
+        'all'        => ['all','visual'],
+        'select'     => ['all','visual','select','exceptinsert','exceptupdate','exceptdelete'],
+        'update'     => ['all','visual','modify','update','exceptinsert','exceptdelete'],
+        'insert'     => ['all','visual','modify','insert','exceptupdate','exceptdelete'],
+        'delete'     => ['all','visual','modify','delete','exceptinsert','exceptupdate'],
+        'valupdate'  => ['all','modify','update','exceptinsert','exceptdelete'],
+        'valinsert'  => ['all','modify','insert','exceptupdate','exceptdelete'],
+        'valdelete'  => ['all','modify','delete','exceptinsert','exceptupdate'],
+    ];
+
     public function __construct($definition)
     {
         global $speedform_handlers;
@@ -2643,12 +2660,12 @@ class SpeedForm
         global $speedform_handlers;
         foreach($this->def['fields'] as $idx => $f)
         {
-            if(isset($f['skip']) && ($f['skip'] == 'all' || $f['skip'] == 'sql' || $f['skip'] == 'select'))
+            if(isset($f['skip']) && in_array($f['skip'],SpeedForm::$skipwords['loadvalues']))
                 continue;
 
             $fnc = $speedform_handlers[$f['type']]['sqlname'];
             $str = call_user_func($fnc,$f,'SELECT');
-            if($str != '')
+            if($str != '' && isset($vals[$f['sql']]))
                 $this->values[$f['sql']] = $vals[$f['sql']];
         }
         $this->loaded_values = $this->values;
@@ -2698,7 +2715,7 @@ class SpeedForm
         $sf = '';
         foreach($this->def['fields'] as $idx => $f)
         {
-            if(isset($f['skip']) && ($f['skip'] == 'all' || $f['skip'] == 'sql' || $f['skip'] == 'select'))
+            if(isset($f['skip']) && in_array($f['skip'],SpeedForm::$skipwords['sqlselect']))
                 continue;
 
             if(!isset($f['table']) || $tablename == '' || $tablename == $f['table'])
@@ -2735,7 +2752,7 @@ class SpeedForm
         $this->load_parameters_deferred();
         foreach($this->def['fields'] as $idx => $f)
         {
-            if(isset($f['skip']) && ($f['skip'] == 'all' || $f['skip'] == 'sql' || $f['skip'] == 'modify' || $f['skip'] == 'update'))
+            if(isset($f['skip']) && in_array($f['skip'],SpeedForm::$skipwords['sqlupdate']))
                 continue;
 
             if(!isset($f['table']) || $tablename == '' || $tablename == $f['table'])
@@ -2805,7 +2822,7 @@ class SpeedForm
         $this->load_parameters_deferred();
         foreach($this->def['fields'] as $idx => $f)
         {
-            if(isset($f['skip']) && ($f['skip'] == 'all' || $f['skip'] == 'sql' || $f['skip'] == 'modify' || $f['skip'] == 'insert'))
+            if(isset($f['skip']) && in_array($f['skip'],SpeedForm::$skipwords['sqlinsert']))
                 continue;
 
             if(!isset($f['table']) || $tablename == '' || $tablename == $f['table'])
@@ -3010,10 +3027,13 @@ class SpeedForm
         return 1;
     }
 
-    public function do_validate($auto_handle = true)
+    public function do_validate($mode,$auto_handle = true)
     {
         global $speedform_handlers;
 
+        if(!in_array($mode,SpeedForm::$valid_validate_modes))
+            throw new Exception("The SpeedForm::do_validate() method's mode parameter contains bad value!\n".
+                                " Accepted values: ".implode(','.SpeedForm::$valid_validate_modes));
         $i = 1;
         $this->highlighted = array();
         $this->validate_errortext = '';
@@ -3028,6 +3048,9 @@ class SpeedForm
             load_loc('error',"<pre>".$this->validate_errortext."</pre>",t('Form validation error'));
         foreach($this->def['fields'] as $idx => $f)
         {
+            if(isset($f['skip']) && in_array($f['skip'],SpeedForm::$skipwords['val'.$mode]))
+                continue;
+
             //regex check
             if(isset($f['check_regex']))
             {
@@ -3106,6 +3129,11 @@ class SpeedForm
     public function generate_form($mode = 'all', $tablename = '')
     {
         global $speedform_handlers;
+
+        if(!in_array($mode,SpeedForm::$valid_form_modes))
+            throw new Exception("The SpeedForm::generate_form() method's mode parameter contains bad value!\n".
+                                " Accepted values: ".implode(','.SpeedForm::$valid_form_modes));
+
         $ff = NULL;
         if($this->def['show'] == 'table')
             $ff = new Table_SpeedFormFormFormmater($this->def,$this->highlighted);
@@ -3121,7 +3149,8 @@ class SpeedForm
         {
             if(!isset($f['hide']) || !$f['hide'])
             {
-                if(!isset($f['in_mode']) || $mode == 'all' || $f['in_mode'] == $mode)
+                if((!isset($f['skip']) || !in_array($f['skip'],SpeedForm::$skipwords[$mode])) &&
+                   ($f['type'] != 'submit' || !isset($f['in_mode']) || $mode == 'all' || $f['in_mode'] == $mode))
                 {
                     if(!isset($f['table']) || $tablename == '' || $tablename == $f['table'])
                     {
@@ -3156,7 +3185,7 @@ class SpeedForm
         global $db;
         if(!$disable_checks)
         {
-            $this->do_validate(); //auto_handle=true by default
+            $this->do_validate('insert'); //auto_handle=true by default
         }
 
         $pq = $this->sql_insert_string_PQ();
@@ -3179,7 +3208,7 @@ class SpeedForm
     {
         if(!$disable_checks)
         {
-            $this->do_validate(); //auto_handle=true by default
+            $this->do_validate('update'); //auto_handle=true by default
             $this->do_expirity_check(); //auto_handle=true by default
         }
 
@@ -3260,9 +3289,6 @@ class Table_SpeedFormFormFormmater extends HtmlFormFormatter
     public function item($txt,$name)
     {
         $f = $this->get_definition_of_field($name);
-
-        if(isset($f['skip']) && ($f['skip'] == 'all' || $f['skip'] == 'visual'))
-            return '';
 
         $cs = false;
         ob_start();
@@ -3384,9 +3410,6 @@ class Div_SpeedFormFormFormmater extends HtmlFormFormatter
     public function item($txt,$name)
     {
         $f = $this->get_definition_of_field($name);
-
-        if(isset($f['skip']) && ($f['skip'] == 'all' || $f['skip'] == 'visual'))
-            return '';
 
         ob_start();
         if(isset($f['before']))

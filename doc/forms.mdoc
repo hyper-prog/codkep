@@ -220,6 +220,8 @@ __Definition methods of HtmlForm class:__
   \ through the CodKep [parameter system|url:doc/codkep/parameters].
   \ If the parameter which defined by this field is set, the form value will display the already set value.
   \ (The method is automatically define the requested parameter)
+  - If the ***$opts*** array contains the ***'par_sec'*** index, the field will be defined
+  \ by the valued security class instead of the type default in the [CodKep parameter system|url:doc/codkep/parameters].
   - If the ***$opts*** array contains an index ***'no_par_def'*** with ***true*** value the parameter definition
   \ (with the par_def() function)is skipped.
   \ Use it if you already define the parameter before and only need to load the set value into the form.
@@ -230,6 +232,8 @@ __Definition methods of HtmlForm class:__
   \ through the CodKep [parameter system|url:doc/codkep/parameters].
   \ If the parameter which defined by this field is set, the form value will display the already set value.
   \ (The method is automatically define the requested parameter)
+  - If the ***$opts*** array contains the ***'par_sec'*** index, the field will be defined
+  \ by the valued security class instead of the type default in the [CodKep parameter system|url:doc/codkep/parameters].
   - If the ***$opts*** array contains an index ***'no_par_def'*** with ***true*** value the parameter definition
   \ (with the par_def() function)is skipped.
   \ Use it if you already define the parameter before and only need to load the set value into the form.
@@ -240,6 +244,8 @@ __Definition methods of HtmlForm class:__
   \ through the CodKep [parameter system|url:doc/codkep/parameters].
   \ If the parameter which defined by this field is set, the form value will display the already set value.
   \ (The method is automatically define the requested parameter)
+  - If the ***$opts*** array contains the ***'par_sec'*** index, the field will be defined
+  \ by the valued security class instead of the type default in the [CodKep parameter system|url:doc/codkep/parameters].
   - If the ***$opts*** array contains an index ***'no_par_def'*** with ***true*** value the parameter definition
   \ (with the par_def() function)is skipped.
   \ Use it if you already define the parameter before and only need to load the set value into the form.
@@ -250,6 +256,8 @@ __Definition methods of HtmlForm class:__
   \ through the CodKep [parameter system|url:doc/codkep/parameters].
   \ If the parameter which defined by this field is set, the form value will display the already set value.
   \ (The method is automatically define the requested parameter)
+  - If the ***$opts*** array contains the ***'par_sec'*** index, the field will be defined
+  \ by the valued security class instead of the type default in the [CodKep parameter system|url:doc/codkep/parameters].
   - If the ***$opts*** array contains an index ***'no_par_def'*** with ***true*** value the parameter definition
   \ (with the par_def() function)is skipped.
   \ Use it if you already define the parameter before and only need to load the set value into the form.
@@ -365,7 +373,31 @@ $f->set_formatter(new MyFormatter());
 ...
 print $f->get();
 ~~~
-
+.
+.
+**Hint: How to arrange HtmlForm fields by html table without form formatter**
+.
+~~~php
+$f = new HtmlForm();
+$f->action_post(current_loc());
+$f->hidden('somehiddenval',$hval);
+$f->text('tb','<table border="1">');
+.
+$f->text('l1','<tr><td>Data One</td>');
+ $f->input('text','name','',['before' => '<td>', 'after' => '</td></tr>']);
+.
+$f->text('l2','<tr><td>Data Two</td>');
+ $f->textarea('descr','',3,30,['before' => '<td>','after' => '</td></tr>']);
+.
+$f->text('l3','<tr><td>Data Three</td>');
+ $f->datefield('date','start',date('Y-m-d'),['before' => '<td>','after' => '</td></tr>']);
+.
+$f->text('te','</table>');
+ $f->input('submit','dosave','Save item');
+.
+print $f->get();
+~~~
+.
 #formcheck#
 === Form checker method ===
 
@@ -420,7 +452,7 @@ Simple example of using SpeedForm (it's only show an empty form):
 ~~~php
 // $def is contains the data definition, see next code block below
 $sf = new SpeedForm($def);
-$form = $sf->generate_form(); //Generating a HtmlFrom object
+$form = $sf->generate_form('update'); //Generating a HtmlFrom object
 $form->action_post('formsubmitlocation'); //Set the handle url of the form
 print $form->get(); //Generate & print the concrete html codes
 ~~~
@@ -576,14 +608,10 @@ $def =
  \ (with the special ***HtmlFormFormatter*** object set) which can generates necessary the html codes of the form.
  \ The shortest method is to call ***->get()*** on this returned object.
  \ See documentation of [HtmlForm|url:#htmlformclass].
-  - The ***$mode*** parameter can restrict the generated fields by skipping ones
-  \ where the ***"in_mode"*** attribute is set to something.
-   - If the parameter ***$mode*** is set to ***"insert"*** the fields
-   \ with attribute ***"in_mode" != "insert"*** are skipped.
-   - If the parameter ***$mode*** is set to ***"update"*** the fields
-   \ with attribute ***"in_mode" != "update"*** are skipped.
-   - If the parameter ***$mode*** is set to ***"delete"*** the fields
-   \ with attribute ***"in_mode" != "delete"*** are skipped.
+  - You have to specify the desired action achieved by form in ***$mode*** parameter.
+   - The possible values are ***'all'***,***'select'***,***'insert'***,***'update'***,***'delete'***.
+  - The correctly set ***$mode*** parameter is essential to work field skipping mechanism (See [skip table|url:#skiptable])
+  \ and "in_mode" field attribute for submit fields.
 - @@@do_select()@@@
  - Perform an SQL query (SELECT) and reads the results into the internal state of SpeedForm.
  \ The key field's value has to set to perform this query. Use ***set_key($v)*** function to do this.
@@ -598,7 +626,7 @@ $def =
   \ the data validation and form expiry checks before the operation.
 - @@@do_create()@@@
  - Creates the SQL table in the database.
-- @@@do_validate($auto_handle=true)@@@
+- @@@do_validate($mode,$auto_handle=true)@@@
  - Perform data validation check on values present in the internal state.
  \ The ***do_update()***,***do_insert()*** functions are automatically do this before save.
  \ This function marks the fields which not pass the checks so that bad fields is highlighted to the user
@@ -610,6 +638,9 @@ $def =
   - If ***$auto_handle*** parameter is ***true*** (default) the do_validate function perform
   \ an automatic [redirection|url:doc/codkep/routes#redirections] to an error page in case of non valid data found
   \ and shows the error describe text. (On that redirected error page)
+ - You have to specify the desired operation in ***$mode*** parameter by setting "insert","update" or "delete".
+ \ If you miss specification of this parameter you will get an exception. You have to specify this because the field
+ \ skipping logic, need to do if we need to skip or check the actual field. (See [skip table|url:#skiptable])
 - @@@do_expirity_check($auto_handle=true)@@@
  - Do a form expiry check. The ***do_update()*** function are automatically do this before save.
  - The expiry check only works if a ***timestamp_mod*** typed field is exists.
@@ -1842,7 +1873,7 @@ Attributes of the field
 | ***type***      | Mandatory |(background-color: #ff7777;) The type specification string | "***submit***" |
 | ***sql***       | Mandatory |(background-color: #ff7777;) The name of the sql row holds this data field + The identifier of the data field | string |
 | ***default***   | Optional |(background-color: #ffbb55;) The default value of this field | string |
-| ***in_mode***   | Optional |(background-color: #ffbb55;) Restrict the appearance of the field for specified typed function | "insert" or "update" or "delete" or "select" |
+| ***in_mode***   | Optional |(background-color: #ffbb55;) Restrict the appearance of the field for specified typed function (It's only works for ***submit*** typed fields) | "insert" or "update" or "delete" or "select" |
 You **can use more attributes here** which are [common and usable in all field definitions|url:#commonattributes].
 .
 A sample definition of this kind of field:
@@ -1880,13 +1911,34 @@ do data validation etc.
 | ***htmlname***   |(background-color: #ffbb55;) You can redefine the name of the html/form parameter. Useful to avoid name collision when more forms used in one page. If this option is specified the form css class names will also appears with this name. The sql identifiers and node and form object value names are unaffected by this. | string |
 | ***sqlcreatetype*** |(background-color: #ffbb55;) You can redefine the default SQL TYPE of the field type in case of sql table creation. If you set a string here, the field will be placed into CREATE TABLE with this type string. | sql string |
 | ***readonly***   |(background-color: #ffbb55;) Set the field to read-only. This option can turn every editable field to a simple read only text. | ***true*** or ***false*** |
-| ***skip***       |(background-color: #ffbb55;) If this option is set the SpeedForm completely skip the field in the specified situation. | ***all***, ***modify***, ***select***, ***update***, ***insert*** |
-| ***skip***       |(background-color: #ffbb55;) If this option is set to ***visual*** the SpeedForm completely skip the field's visual side. The sql part is stay working but the field is skipped out in the form. | ***visual*** |
-| ***skip***       |(background-color: #ffbb55;) If this option is set to ***sql*** the SpeedForm completely skip the field's sql side. The field still appear in form.  | ***sql*** |
+| ***skip***       |(background-color: #ffbb55;) If this option is set the SpeedForm completely skip the field in the specified situation. See the [skip table below|url:#skiptable] to understand the actual work method. | ***all***, ***sql***, ***visual***, ***modify***, ***select***, ***update***, ***insert***, ***delete*** ,***exceptinsert***, ***exceptupdate***, ***exceptdelete*** |
 | ***formatters*** |(background-color: #ffbb55;) This option can control the form formatter garnish. The form formatter html tags are only placed to the specified locations. This option can meld together two or more field visually if the first set to ***before*** the last to ***after*** and all intermediate fields to ***none***. | ***all***(default), ***before***, ***after***, ***none*** |
 | ***converter***  |(background-color: #ffbb55;) If you set a php callback function name here the loaded html value will send trough this function before saved into the database. | php function name |
 | ***script***     |(background-color: #ffbb55;) You can add arbitrary javascript code to the field, which inserted after the data between ___srcipt___ tags. | javascript code |
 | ***hide***       |(background-color: #ffbb55;) If this option is ***true*** the field will hided out in form. |***true*** or ***false***|
+
+
+.
+#skiptable#
+**Working of SKIP field attribute**
+.
+You can completely skip some fields by setting the skip attribute to a value show here (in table column labels).
+
+| <big>"SKIP" =&gt;</big>        | all                           | sql                           | visual                        | modify                        | select                        | update                        | insert                        | delete                        | except insert                 | except update                 | except delete                 |
+| ---                            | ---                           | ---                           | ---                           | ---                           |---                            | ---                           | ---                           | ---                           | ---                           | ---                           | ---                           |
+| ***load_values            ***  |(background-color: #ffaaaa;) S |(background-color: #ffaaaa;) S |                               |                               |                               |                               |                               |                               |                               |                               |                               |
+| ***sql_select_            ***  |(background-color: #ffaaaa;) S |(background-color: #ffaaaa;) S |                               |                               |(background-color: #ffaaaa;) S |                               |                               |                               |(background-color: #ffaaaa;) S |                               |                               |
+| ***sql_update_            ***  |(background-color: #ffaaaa;) S |(background-color: #ffaaaa;) S |                               |(background-color: #ffaaaa;) S |                               |(background-color: #ffaaaa;) S |                               |                               |(background-color: #ffaaaa;) S |                               |(background-color: #ffaaaa;) S |
+| ***sql_insert_            ***  |(background-color: #ffaaaa;) S |(background-color: #ffaaaa;) S |                               |(background-color: #ffaaaa;) S |                               |                               |(background-color: #ffaaaa;) S |                               |                               |(background-color: #ffaaaa;) S |(background-color: #ffaaaa;) S |
+| ***generate_form('all')   ***  |(background-color: #ffaaaa;) S |                               |(background-color: #ffaaaa;) S |                               |                               |                               |                               |                               |                               |                               |                               |
+| ***generate_form('select')***  |(background-color: #ffaaaa;) S |                               |(background-color: #ffaaaa;) S |                               |(background-color: #ffaaaa;) S |                               |                               |                               |(background-color: #ffaaaa;) S |(background-color: #ffaaaa;) S |(background-color: #ffaaaa;) S |
+| ***generate_form('update')***  |(background-color: #ffaaaa;) S |                               |(background-color: #ffaaaa;) S |(background-color: #ffaaaa;) S |                               |(background-color: #ffaaaa;) S |                               |                               |(background-color: #ffaaaa;) S |                               |(background-color: #ffaaaa;) S |
+| ***generate_form('insert')***  |(background-color: #ffaaaa;) S |                               |(background-color: #ffaaaa;) S |(background-color: #ffaaaa;) S |                               |                               |(background-color: #ffaaaa;) S |                               |                               |(background-color: #ffaaaa;) S |(background-color: #ffaaaa;) S |
+| ***generate_form('delete')***  |(background-color: #ffaaaa;) S |                               |(background-color: #ffaaaa;) S |(background-color: #ffaaaa;) S |                               |                               |                               |(background-color: #ffaaaa;) S |(background-color: #ffaaaa;) S |(background-color: #ffaaaa;) S |                               |
+| ***do_validate('update')***    |(background-color: #ffaaaa;) S |                               |                               |(background-color: #ffaaaa;) S |                               |(background-color: #ffaaaa;) S |                               |                               |(background-color: #ffaaaa;) S |                               |(background-color: #ffaaaa;) S |
+| ***do_validate('insert')***    |(background-color: #ffaaaa;) S |                               |                               |(background-color: #ffaaaa;) S |                               |                               |(background-color: #ffaaaa;) S |                               |                               |(background-color: #ffaaaa;) S |(background-color: #ffaaaa;) S |
+| ***do_validate('delete')***    |(background-color: #ffaaaa;) S |                               |                               |(background-color: #ffaaaa;) S |                               |                               |                               |(background-color: #ffaaaa;) S |(background-color: #ffaaaa;) S |(background-color: #ffaaaa;) S |                               |
+
 
 #comm_fatt_t2#
 **Change appearance of the fields:**

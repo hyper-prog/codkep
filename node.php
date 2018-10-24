@@ -612,7 +612,7 @@ class Node
         sql_exec("DELETE FROM $table WHERE $keyname = :keyval",[':keyval' => $keyval]);
     }
 
-    public function getform($mode = '')
+    public function getform($mode = 'all')
     {
         if($this->dataspeedform === NULL)
             return NULL;
@@ -1225,7 +1225,7 @@ function sys_node_restapi_type_callback()
     sys_node_check_rest_action_is_enabled($node);
     $node->setDataREST($decoded,'c');
     $sf = $node->get_speedform_object();
-    if($sf->do_validate(false))
+    if($sf->do_validate('insert',false))
     {
         d1('Node REST: Received content has data validation error!');
         load_loc('restapi/error',
@@ -1281,7 +1281,7 @@ function sys_node_restapi_update_nid($nid)
 
     $node->setDataREST($decoded,'u');
     $sf = $node->get_speedform_object();
-    if($sf->do_validate(false))
+    if($sf->do_validate('update',false))
     {
         d1('Node REST: Received content has data validation error!');
         load_loc('restapi/error',
@@ -1308,7 +1308,7 @@ function sys_node_restapi_update_joinid($nodetype,$join_id)
 
     $node->setDataREST($decoded,'u');
     $sf = $node->get_speedform_object();
-    if($sf->do_validate(false))
+    if($sf->do_validate('update',false))
     {
         d1('Node REST: Received content has data validation error!');
         load_loc('restapi/error',

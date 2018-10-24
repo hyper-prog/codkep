@@ -1,6 +1,22 @@
 This file describes the non fully compatible
 changes between the released versions
 
+1.115 -> 1.116
+ - The SpeedForm::do_validate() function now has an obligatory $mode parameter with 'insert','update','delete' text:
+   Definition changed from: do_validate($auto_handle=true) to do_validate($mode,$auto_handle=true)
+   You have to specify the desired operation to validate the form/node.
+   Search this method in your code and put this first parameter to the function calls.
+   (If you miss this you will get an exception)
+ - The SpeedForm::generate_form() 's $mode parameter only accepts 'all','select','insert','update','delete'.
+   (If you pass different value you will get an exception)
+ - Node::getform() default $mode parameter value changed to 'all' from empty because the changes of generate_form() above.
+ - Now in SpeedForm data definition array the "in_mode" only works on "type" => "submit" fields.
+   (In the old codes it can skip other kind of fields from form generation)
+   Use 'skip' => 'exceptinsert' or 'exceptupdate' or 'exceptdelete' instead of in_mode when the field type is not 'submit'.
+ - The fields which was "skip" attribute set to "all" or "visual" was skipped in HtmForm's form formatter,
+   now they are skipped in SpeedForm's generate_form(). (And the formatter didn't skip the hidden form fields)
+   This change can cause different behaviour in some special situation, where you skip some field.
+
 1.109 -> 1.110
 
  - In SpeedForm class the delete_previous_files() and sql_update_part_CMN() and sql_insert_part_CMN()
