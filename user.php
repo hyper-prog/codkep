@@ -32,6 +32,9 @@ function hook_user_boot()
     $user_module_settings->faillogin_block_count       = 3;
     $user_module_settings->faillogin_block_exipire_sec = 3600; //1 hour
 
+    $user_module_settings->enable_own_passwordchange   = true;
+    $user_module_settings->enable_admin_passwordchange = false;
+
     $user_module_settings->password_scattered          = true;
     $user_module_settings->password_scatter_salt       = 'OiZ+o-*F4buC31Sw]80(=FeX~ge9D#t@';
     $user_module_settings->password_scatter_log2i      = 14;
@@ -126,6 +129,17 @@ function hook_user_defineroute()
             'fid'         => ['security' => 'text1ns','source' => 'post'],
             'act'         => ['security' => 'text1ns','source' => 'post'],
         ],
+    ];
+
+    $items[] = [
+        "path" => "user/mypasswordchange",
+        "callback" => "user_mypasswordchange_page",
+        "title" => "User passowrd change page",
+    ];
+    $items[] = [
+        "path" => "user/{uid}/passwordchange",
+        "callback" => "user_passwordchange_page",
+        "title" => "User passowrd change page",
     ];
 
     return $items;
@@ -886,7 +900,7 @@ function hook_user_nodetype()
         $user_module_settings->userpass_reset =
         [
             "name" => "codkep_user_pwd_reset",
-            "table" => "users",
+            "table" => $user_module_settings->sql_tablename,
             "show" => "table",
             "color" => "#cc2222",
             "table_border" => "1",
@@ -908,19 +922,19 @@ function hook_user_nodetype()
                     "hide" => true,
                 ],
                 30 => [
-                    "sql" => "login",
+                    "sql" => $user_module_settings->sql_login_column,
                     "text" => "Login",
                     "type" => "smalltext",
                     "readonly" => true,
                     "par_sec" => "text3ns",
                 ],
                 50 => [
-                    "sql" => "password",
+                    "sql" => $user_module_settings->sql_password_column,
                     "text" => "Password",
                     "type" => "password",
                     "converter" => 'scatter_string_local',
                     "default" => "",
-                    "check_noempty" => "You have to fill the password field",
+                    "check_noempty" => "You have to fill the password field!",
                     "par_sec" => "text3ns",
                 ],
                 100 => [
@@ -932,6 +946,64 @@ function hook_user_nodetype()
                 ],
             ],
         ];
+
+        $user_module_settings->mypassword_set =
+        [
+            "name" => "codkep_my_pwd_reset",
+            "table" => $user_module_settings->sql_tablename,
+            "show" => "table",
+            "color" => "#ff6666",
+            "table_border" => "1",
+            "table_style" => "border-collapse: collapse;",
+            "fields" => [
+                10 => [
+                    "sql" => "statictitle",
+                    "type" => "static",
+                    "default" => "Change my password",
+                    "centered" => true,
+                    "prefix" => "<strong>",
+                    "suffix" => "</strong>",
+                ],
+                20 => [
+                    "sql" => "uid",
+                    "text" => "User identifier",
+                    "type" => "keyn",
+                    "readonly" => true,
+                    "hide" => true,
+                ],
+                30 => [
+                    "sql" => $user_module_settings->sql_login_column,
+                    "text" => "User login name",
+                    "type" => "smalltext",
+                    "readonly" => true,
+                    "hide" => true,
+                    "par_sec" => "text3ns",
+                ],
+                40 => [
+                    'sql' => 'oldpwd',
+                    'text' => 'Old password',
+                    'type' => 'password',
+                    'skip' => 'sql',
+                ],
+                50 => [
+                    "sql" => $user_module_settings->sql_password_column,
+                    "text" => "New password",
+                    "type" => "password",
+                    "converter" => 'scatter_string_local',
+                    "default" => "",
+                    "check_noempty" => "You have to fill the password field!",
+                    "par_sec" => "text3ns",
+                ],
+                100 => [
+                    "sql" => "submit_edit",
+                    "type" => "submit",
+                    "default" => "Save",
+                    "centered" => true,
+                    "in_mode" => "update",
+                ],
+            ],
+        ];
+
     }
 
     return $def;
@@ -993,6 +1065,134 @@ function usernid_from_loginname($login)
     if($r == null || !isset($r[0]) || $r[0] == null)
         return null;
     return $r[0];
+}
+
+
+function user_mypasswordchange_page()
+{
+    global $user;
+    global $user_module_settings;
+
+    if(!$user->auth)
+        return '';
+    if(!$user_module_settings->enable_own_passwordchange)
+        return '';
+    return user_mypasswordchange();
+}
+
+function user_mypasswordchange()
+{
+    global $user;
+    global $user_module_settings;
+
+    if(!$user->auth)
+        return '';
+    if(!isset($user_module_settings->mypassword_set))
+        return '';
+
+    ob_start();
+    $sf = new SpeedForm($user_module_settings->mypassword_set);
+    if($sf->in_action('update'))
+    {
+        $sf->set_key($user->uid);
+        $sf->do_select();
+        $sf->load_parameters();
+        $old_is = sql_exec_single("SELECT " . $user_module_settings->sql_password_column .
+                                  " FROM " . $user_module_settings->sql_tablename .
+                                  " WHERE uid=:uid",[':uid' => $user->uid]);
+        $cs = substr($old_is,0,8);
+        $old_get = scatter_string_local($sf->values['oldpwd'],$cs);
+        if(userblocking_check() ||
+            !isset($old_is) && $old_is == NULL ||
+            !isset($old_get) && $old_get == NULL ||
+            $old_get != $old_is )
+        {
+            userblocking_set('Pwd-Change: wrong old pwd');
+            load_loc('error',t('The given old password is wrong!'),t('Warning!'));
+        }
+
+        $sf->do_update();
+        print "<center><h2>Ok</h2><br/>" . l(t('Startpage'),get_startpage(),['class' => 'lnk']) . "</center>";
+    }
+    else
+    {
+        $sf->set_key($user->uid);
+        $sf->do_select();
+        $form = $sf->generate_form('update');
+        $form->action_post(current_loc());
+        print '<center>'.$form->get().'</center>';
+    }
+    return ob_get_clean();
+}
+
+function user_passwordchange_page()
+{
+    global $user;
+    global $user_module_settings;
+
+    par_def('uid','number0');
+    if(!$user->auth)
+        return '';
+    if(!$user_module_settings->enable_admin_passwordchange)
+        return '';
+    if($user->role != ROLE_ADMIN)
+        return '';
+    return user_passwordchange(par('uid'));
+}
+
+function user_passwordchange($uid)
+{
+    global $user;
+    global $user_module_settings;
+
+    if(!$user->auth)
+        return '';
+    if(!isset($user_module_settings->userpass_reset))
+        return '';
+
+    ob_start();
+    $sf = new SpeedForm($user_module_settings->userpass_reset);
+    if($sf->in_action('update'))
+    {
+        $sf->set_key($uid);
+        $sf->do_select();
+        $sf->load_parameters();
+        $sf->do_update();
+        print "<center><h2>Ok</h2><br/>" . l(t('Startpage'),get_startpage(),['class' => 'lnk']) . "</center>";
+    }
+    else
+    {
+        $sf->set_key($uid);
+        $sf->do_select();
+        $form = $sf->generate_form('update');
+        $form->action_post(current_loc());
+        print '<center>'.$form->get().'</center>';
+    }
+    return ob_get_clean();
+}
+
+function hook_user_introducer()
+{
+    $html = '';
+    global $db;
+    if(isset($db->open) && $db->open)
+    {
+        global $user;
+        if($user->auth)
+        {
+            $html .= t('The "_username_" user logged in',['_username_' => $user->name]).'<br/>';
+            $html .= l(t('Logout'), 'user/logout').'<br/>';
+            $html .= l(t('Whoami?'), 'user/whoami').'<br/>';
+            $html .= l(t('Change my password'), 'user/mypasswordchange').'<br/>';
+            //user/{uid}/passwordchange
+        }
+        else
+        {
+            $html .= t('Nobody logged in').'<br/>';
+            $html .= l(t('Login'), 'user/login') . '<br/>';
+        }
+    }
+    return ['User' => $html];
 }
 
 /** @ignore

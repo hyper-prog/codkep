@@ -1539,6 +1539,23 @@ class DatabaseQuerySql extends DatabaseQuery
 
 /* == End of general database query/mode parts == */
 
+function hook_sql_introducer()
+{
+    $html = '';
+    global $db;
+    if(isset($db->open) && $db->open)
+    {
+        $html =  "There is active/opened SQL connection.<br/>".
+                 "You can fulfil the schema requirement of your modules at ".l('sqlchema','sqlschema')." page.";
+    }
+    else
+    {
+        $html =  "There is no configured sql connection.";
+    }
+
+    return ['Sql' => $html];
+}
+
 function hook_sql_documentation($section)
 {
     $docs = [];

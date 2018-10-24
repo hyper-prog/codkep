@@ -798,7 +798,7 @@ function sys_node_view_uni($node)
     global $user;
     $op = 'view';
 
-    if($node->node_nid == NULL)
+    if($node == null || $node->node_nid == NULL)
     {
         load_loc('error',t('The requested node is not found'),t('Not found'));
         return 'Not found';
@@ -834,7 +834,7 @@ function sys_node_edit_uni($node)
     global $user;
     $op = 'edit';
 
-    if($node->node_nid == NULL)
+    if($node == null || $node->node_nid == NULL)
     {
         load_loc('error',t('The requested node is not found'),t('Not found'));
         return 'Not found';
@@ -892,7 +892,7 @@ function sys_node_delete_uni($node)
     $op = 'delete';
 
     $type = $node->node_type;
-    if($node->node_nid == NULL)
+    if($node == null || $node->node_nid == NULL)
     {
         load_loc('error',t('The requested node is not found'),t('Not found'));
         return 'Not found';

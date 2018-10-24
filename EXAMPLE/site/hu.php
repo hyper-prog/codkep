@@ -11,6 +11,7 @@ function hook_hu_init()
         'Add' => 'Hozzáad',
         'Permission denied' => 'Hozzáférés megtagadva',
         'Login' => 'Bejelentkezés',
+        'Logout' => 'Kijelentkezés',
         'Username' => 'Felhasználói név',
         'Password' => 'Jelszó',
         'Not found' => 'Nem található',
@@ -58,6 +59,14 @@ function hook_hu_init()
         'Just now' => 'Éppen most',
         'Delete this comment' => 'Töröld ezt a megjegyzést',
         'Send' => 'Elküld',
+        'The "_username_" user logged in' => 'A "_username_" nevű felhasználó bejelentkezve',
+        'Change my password' => 'Jelszavam megváltoztatása',
+        'Nobody logged in' => 'Senki sincs bejelentkezve',
+        'Whoami?' => 'Kivagyok?',
+        'Startpage' => 'Nyitóoldal',
+        'Warning!' => 'Figyelem!',
+        'The given old password is wrong!' => 'A megadott régi jelszó hibás!',
+        'Add page' => 'Lap felvétele',
     ]);
 
     add_t_array('hu',[

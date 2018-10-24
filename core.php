@@ -31,6 +31,7 @@ function hook_core_boot()
     $site_config->notfound_location     = 'notfound';
     $site_config->lang                  = 'en';
     $site_config->show_generation_time  = true;
+    $site_config->hide_module_intros    = false;
 
     $site_config->logo_img_url = NULL;
     $site_config->site_name    = NULL;
@@ -1572,6 +1573,8 @@ function core_paramundefinederror_page($name)
  *  This will be show if no override in _settings.php */
 function core_notconfigured_startpage()
 {
+    global $site_config;
+
     set_title("Welcome");
     ob_start();
     print "<h2>Welcome on CodKep start page!</h2>";
@@ -1583,17 +1586,23 @@ function core_notconfigured_startpage()
 
     print 'Requirements';
     print core_requirements_table();
-    print '<br/>';
-
-    global $db;
-    if(isset($db->open) && $db->open)
+    if(!$site_config->hide_module_intros)
     {
-        print "There is active/opened SQL connection.<br/>".
-              "You can fulfil the schema requirement of your modules at ".l('sqlchema','sqlschema')." page.";
-    }
-    else
-    {
-        print "There is no configured sql connection.";
+        print "<h3>Message from modules:</h3>";
+        $module_introducers = run_hook('introducer');
+        print '<div class="module_introducers">';
+        foreach($module_introducers as $name => $string)
+        {
+            if($string == '')
+                continue;
+            print '<div class="single_module_introducer" style="margin: 10px 0px 10px 0px;">';
+            print '<strong>' . $name . '</strong>';
+            print '<div class="rstr" style="margin: 0px; padding: 0px 0px 0px 15px;">';
+            print $string;
+            print '</div>'; //.rstr
+            print '</div>'; //.single_module_introducer
+        }
+        print '</div>';
     }
     return ob_get_clean();
 }
@@ -1642,6 +1651,11 @@ function core_requirements_table()
                .yellow {background-color: #ffff00;}
                .red {background-color: #ff6666;}');
     return ob_get_clean();
+}
+
+function hook_core_introducer()
+{
+    return ['Core' => l('emptycache','emptycache')];
 }
 
 /** Returns true if the $host seems valid host name

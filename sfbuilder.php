@@ -461,4 +461,12 @@ function correct_bool_values(&$d)
     }
 }
 
+function hook_sfbuilder_introducer()
+{
+    global $user;
+    if(!$user->auth || $user->role != ROLE_ADMIN)
+        return ['SpeedForm builder' => ''];
+    return ['SpeedForm builder' => l('Speedform builder','speedformbuilder')];
+}
+
 //end code.

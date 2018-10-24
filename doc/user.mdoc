@@ -80,6 +80,9 @@ The login page looks like this way:
 {file:loginpage.png}
 .
 *Note: There is a [user/whoami|url:user/whoami] location which shows the name of the currently authenticated user.*
+.
+*Node2: There is a [user/mypasswordchange|url:user/mypasswordchange] location where the current logged user*
+*can change the password if the ***$user_module_settings->enable_own_passwordchange*** site settings is enabled.*
 ----------------------------------
 You can also login and logout users from your php codes. In case your site have custom login form,
 you can use the following functions to start a login:
@@ -269,6 +272,8 @@ The user module have some settings which can set [in site settings|url:doc/codke
 .
 | name                                                              | default                          | description |
 |---                                                                |---       | ---                              |---          |
+|<small> ***$user_module_settings->enable_own_passwordchange***    </small>|<small> true                </small>| Enables the built in ***user/mypasswordchange*** location to change the password of current logged in user. (It asks the current password to change it.) |
+|<small> ***$user_module_settings->enable_admin_passwordchange***  </small>|<small> false               </small>| Enables the built in ***user/UID/passwordchange*** location for the administrator role users to change the password of the given UID user. |
 |<small> ***$user_module_settings->session_timeout_sec***          </small>|<small> 28800               </small>| The user will be kicked out after this time of inactivity. In sec. (default 8 hour, 0 means disabled) |
 |<small> ***$user_module_settings->login_timeout_sec***            </small>|<small> 0                   </small>| The user will be kicked out after this time from login In sec. (0 means disabled) |
 |<small> ***$user_module_settings->login_garbagecoll***            </small>|<small> 28800               </small>| The inactive sessions (not logged out) will be deleted after this time of inactivity. In sec. (default 8 hour, 0 means disabled) |

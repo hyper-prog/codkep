@@ -233,6 +233,23 @@ function hook_page_nodetype()
     return $n;
 }
 
+function hook_page_introducer()
+{
+    global $user;
+
+    if(!$user->auth || $user->role != ROLE_ADMIN)
+        return ['Page' => ''];
+
+    $html = l(t('Add page'),'node/page/add');
+    $r = sql_exec_fetchAll("SELECT pid,path,title FROM page WHERE published");
+    $ps = [];
+    foreach($r as $rr)
+        $ps[] = l($rr['title'],$rr['path']);
+    if(count($ps) > 0)
+        $html .= '<br> Pages: '.implode(', ',$ps);
+    return ['Page' => $html];
+}
+
 function hook_page_documentation($section)
 {
     $docs = [];
