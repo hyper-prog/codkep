@@ -1413,6 +1413,26 @@ function node_get_field_display_value($type,$sqlname,$value)
     return speedform_get_field_display_value($d,$sqlname,$value);
 }
 
+function hook_node_introducer()
+{
+    global $user;
+    global $sys_data;
+
+    if(!$user->auth || $user->role != ROLE_ADMIN)
+        return ['Node' => ''];
+
+    $html = t('Node types') .': ';
+    $ps = [];
+    foreach($sys_data->node_types as $name => $b)
+        $ps[] = $name . '('.l('+','node/' . $name . '/add').')';
+
+    foreach($sys_data->node_otypes as $name => $b)
+        $ps[] = $name . '('.l('+','node/' . $name . '/add').')';
+    if(count($ps) > 0)
+        $html .= implode(', ',$ps);
+    return ['Node' => $html];
+}
+
 function hook_node_documentation($section)
 {
     $docs = [];

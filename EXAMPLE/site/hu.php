@@ -67,6 +67,7 @@ function hook_hu_init()
         'Warning!' => 'Figyelem!',
         'The given old password is wrong!' => 'A megadott régi jelszó hibás!',
         'Add page' => 'Lap felvétele',
+        'Node types' => 'Node típusok',
     ]);
 
     add_t_array('hu',[
