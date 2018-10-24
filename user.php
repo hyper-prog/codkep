@@ -98,7 +98,7 @@ function hook_user_defineroute()
             'password'    => ['security' => 'text3ns','source' => 'post'],
             'orignal_loc' => ['security' => 'text4'  ,'source' => 'post'],
             'fid'         => ['security' => 'text1ns','source' => 'post'],
-            'loginbutton' => 'text2ns',
+            'loginbutton' => ['security' => 'text2ns','source' => 'post'],
         ],
     ];
 
@@ -617,7 +617,7 @@ function user_login_page()
 
     $fs = getFormSalt(true);
     ob_start();
-    if(par_is('loginbutton',t('Login'),['postonly' => true]))
+    if(par_is('loginbutton',t('Login')))
     {
         $pfs = par('fid');
         if($fs != $pfs)
@@ -634,12 +634,15 @@ function user_login_page()
 
     if($user->auth)
     {
-        if(par_ex('orignal_loc',['notempty' => true,'postonly'=>true]))
+        if(par_ex('orignal_loc'))
         {
             ob_get_clean();
             goto_loc(par('orignal_loc'));
             return;
         }
+        $sp = get_startpage();
+        if($sp != '' && $sp != 'not_configured_startpage')
+            goto_loc($sp);
         print "User ".$user->name." logged in";
         return ob_get_clean();
     }
@@ -653,12 +656,12 @@ function user_login_page()
     print '<tr><td>'.t('Password').'</td><td><input type="password" name="password" value="" maxlength="128" autocomplete="off"/></td></tr>';
     print '<tr><td colspan="2" align="center">';
     print '<input type="submit" name="loginbutton" value="'.t('Login').'"/></td></tr>';
-    if($sys_data->original_requested_location != current_loc())
+    if(trim($sys_data->original_requested_location) != '' && $sys_data->original_requested_location != current_loc())
     {
         print "<input type=\"hidden\" name=\"orignal_loc\" value=\"".
               $sys_data->original_requested_location."\"/></td></tr>";
     }
-    elseif(par_ex('orignal_loc',['notempty' => true,'postonly'=>true]))
+    elseif(par_ex('orignal_loc'))
     {
         print "<input type=\"hidden\" name=\"orignal_loc\" value=\"".
             par('orignal_loc')."\"/></td></tr>";
@@ -728,7 +731,7 @@ function user_login_block_inner()
 function user_block_ajax_handler()
 {
     global $user;
-    if(!$user->auth && par_is('act','in',['postonly' => true]))
+    if(!$user->auth && par_is('act','in'))
     {
         $fs = getFormSalt(true);
         $pfs = par('fid');
@@ -747,7 +750,7 @@ function user_block_ajax_handler()
             ajax_add_alert(t("Login failed!"));
         }
     }
-    else if($user->auth && par_is('act','out',['postonly' => true]))
+    else if($user->auth && par_is('act','out'))
     {
         user_logout();
         run_hook("user_ajax_logout");
