@@ -37,6 +37,8 @@ function hook_hu_init()
         'This page require the parameter "_name_" <br/>_text_' => 'Ez az oldal elvár egy "_name_" paramétert <br/>_text_',
         'Undefined parameter error' => 'Definiálatlan paraméter hiba',
         'This page try to access a parameter which is undefined "_name_"' => 'Ez a lap próbál hozzáférni a "_name_" paraméterhez, ami nincs definiálva',
+        'The uploaded file type is "_upltype_" not in "_reqtype_". Please upload the allowed kind of file' => 'A feltöltött fájl típusa "_upltype_" ami nincs rajta az engedélyezett "_reqtype_" típusok listáján. Kérlek csak engedélyezett típusú fájlokat tölts fel!',
+        'The uploaded file type is not image file. Please upload image file' => 'A feltöltött fájl nem képfájl. Kérlek csak képfájlokat tölts fel!',
         'Node creating requested with unknown node type: "_unktype_"' => 'Node létrehozási utasítás történt ismeretlen node-on: "_unktype_"',
         'Unknown type error' => 'Hiba: Ismeretlen típus',
         'Value set request received for an uninitialized (typeless) node: "_namereq_"' => 'Adatmódosítási kérelem érkezett nem betöltött (típus nélküli) node-ra: "_namereq_"',
