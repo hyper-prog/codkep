@@ -147,10 +147,10 @@ The code above generates the following table in the browser
 **The following methods does nothing, they can be re defined in subclasses to achieve special needs.**
 - @@@html_table_body_before()@@@
  - The return of this method will be inserted before the DynTable html codes when generated with ***html_table_body()***.
- \ The ***genHtml()*** also use ***html_table_body()***.
+ \ The ***genHtml()*** also use ***html_table_body()*** inside.
 - @@@html_table_body_after()@@@
  - The return of this method will be put after the DynTable html codes when generated with ***html_table_body()***.
- \ The ***genHtml()*** also use ***html_table_body()***.
+ \ The ***genHtml()*** also use ***html_table_body()*** inside.
 - @@@generateIntoTable_before($receiverobj)@@@
  - This method runs before the ***generateIntoTable()*** method start to generate the table.
  \ It received the same parameter than ***generateIntoTable()*** so the object can be modified here.
@@ -158,15 +158,71 @@ The code above generates the following table in the browser
  - This method runs after the ***generateIntoTable()*** method end with generate the table.
  \ It received the same parameter than ***generateIntoTable()*** so the object can be modified here.
 - @@@readFromDatabase_preaction($queryobject)@@@
+ - This method called immediately before the database query is executed which queries the DynTable.
+ - The method receive the (already set) [DatabaseQuery|url:doc/codkep/sql#databasequery] object, so the redefined
+ \ methods can modify it. (For example add more field queries).
 - @@@readFromDatabase_postaction($resultobject)@@@
+ - This method called after the database query is executed and the field data is read from it. (from the query results).
+ - The method receive the array resulted by the query.
 - @@@saveToDatabase_preaction($queryobject)@@@
+ - This method called immediately before the database save request is executed which save the DynTable.
+ - The method receive the (already set) [DatabaseQuery|url:doc/codkep/sql#databasequery] object, so the redefined
+ \ methods can modify it. (For example add more field to save).
 - @@@saveToDatabase_postaction()@@@
+ - This method called after the database save is executed.
 - @@@storeToDatabase_preaction($queryobject)@@@
+ - This method called immediately before the database store (insert) request is executed which save the DynTable.
+ - The method receive the (already set) [DatabaseQuery|url:doc/codkep/sql#databasequery] object, so the redefined
+ \ methods can modify it. (For example add more field to insert).
 - @@@storeToDatabase_postaction()@@@
-
-***dyntable_id*** and ***dyntable_definition*** attribute
+ - This method called after the database store is executed.
 .
-- "sqltable" = string
+**Attributes of DynTable:**
+.
+Every defined field is accessible for read and write as object attribute. Except that ones there are more attributes to
+read:
+- ***dyntable_id*** (Read only)
+ - The Id of the DynTable. If you read the DynTable from the database the Id is same you gave to ***readFromDatabase()***
+ \ If your created DynTable without database existence a temporally id is generated with "temp_" prefix.
+ \ After success store the Id is set to database given value.
+- ***dyntable_definition*** (Read only)
+ - You can read the data definition structure which passed to constructor.
+
+
+#dyntabledatadef#
+=== Data definition structure ===
+
+The data definition array is php associative array structure to driven DynTable
+object features, specify fields, look and feel, and other features of the generated tables or database values.
+This definition structure described here is passed to the constructor of DynTable. (Above)
+.
+#dnydeftoplevel#
+** The structure : Top level attributes **
+.
+- **Top level attributes**
+ # Associated sql table
+ # Properties of sql record
+ # Look and feel of html table
+ # Features of ajax edit interface
+ # Features of popup ajax edit dialog
+ # Generated table properties
+  - ***"rows" =>***
+   - Generated table row indexes and labels
+  - ***"cols" =>***
+   - Generated table column indexes and labels
+  - ***"datacells" =>***
+   - Contains array items, each is a single field where the index is the field name.
+    - The array value can contains optional elements to set some properties of the field.
+     # Type of the field
+     # Associated row and column
+     # Optional (different) sql name, if the sql field name is differs from the DynTable field name.
+
+**List of top level attributes/features:**
+
+- ***"sqltable"*** => sql_table_name
+ - The SQL table name in the database. This attribute is necessary if you intend to read/save this DynTable from/to database.
+ \ If defined the DynTable values are appears as a record of the given named database table.
+.
 - "idfield" = string
 - "table_border" = numeric
 - "table_class" = string
