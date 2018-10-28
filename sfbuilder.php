@@ -408,6 +408,8 @@ function pc_speedform_builder_nodetypedef_req()
     {
         $c = $datadef_repository[par('nodename')];
         $def = call_user_func($c);
+        if(!isset($def['fields']))
+            return 'ERROR'; //This probably a DynTable which is unsupported by SpeeformBuilder
     }
     if($def == NULL)
         return 'NOTFOUND';

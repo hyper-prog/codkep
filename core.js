@@ -372,7 +372,11 @@ function save_and_close_dyntable_dialog(id)
 {
     var mname = jQuery('#dynpopup_mname').val();
     var mval = jQuery('#dynpopup_valueinput').val();
-    var rurl = dyntable_objs[id].ajaxurl+'?subtype=' + dyntable_objs[id].ajaxsubtype + '&id=' + dyntable_objs[id].id +
+
+    var sep = '?';
+    if ((dyntable_objs[id].ajaxurl).indexOf('?') > -1)
+        sep = '&';
+    var rurl = dyntable_objs[id].ajaxurl + sep + 'subtype=' + dyntable_objs[id].ajaxsubtype + '&id=' + dyntable_objs[id].id +
         '&modname=' + mname + '&value='+b64EncodeUnicodeString(mval);
     jQuery.ajax({
         url: rurl,

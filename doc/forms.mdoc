@@ -2137,21 +2137,23 @@ function sfh_gps_validator($field_def,$value)
 }
 ~~~
 
+#datadefstrrepository#
 === Data definition structure repository ===
 
-A data definition structure is usually used to specify a [Node|url:doc/codkep/node]. This case the structure are stored
-in CodKep's node subsystem.
+A data definition structure is usually used to specify a [Node|url:doc/codkep/node]
+or a [SpeedForm|url:doc/codkep/forms#speedform] or a [DynTable|url:doc/codkep/dyntable].
+In case the structure is specify a node it's stored in CodKep's node subsystem.
 You can also load this structures into the [SpeedFormBuilder|url:speedformbuilder] to make further edit of this
 (Load is located under the "state" button)
 .
 Other data definition structures (Which are not acts as node definition) can add into a global repository which store
 this definitions and makes it possible to get this definitions anywhere by ***datadef_from_repository($name)***
-function. This definition will also available by speedformbuilder just as node definitions.
+function. This definition will also available by speedformbuilder just as node definitions. (Except DynTable definitions)
 .
 _Note: Using of data field repository subsystem is fully optional. The SpeedForm class does not require it._
 .
 Adding data definitions to the repository:
-- Use ***HOOK__datadef_repository*** [hook|url:doc/codkep/hooks] to add a data definition structure to the repository.
+- Use ***HOOK_datadef_repository*** [hook|url:doc/codkep/hooks] to add a data definition structure to the repository.
  - The hook should returns an associative array where the indexes is the unique names of the structures while
  \ the values are a callback function names which generates the data definition structures itself.
 
