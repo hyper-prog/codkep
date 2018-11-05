@@ -389,6 +389,7 @@ function builderPreview()
     editor_current = '';
     var json_text = JSON.stringify(struct);
     jQuery.ajax({
+        cache: false,
         type: 'POST',
         url: builder_ajax_preview_url,
         data: {level: 0,json_send:json_text},
@@ -662,6 +663,7 @@ function builderLoadFrom()
     var requrl = builder_ajax_loaddef_url.replace('NODETYPENAME',jQuery("#codkep_def_name_id").val());
 
     jQuery.ajax({
+        cache: false,
         type: 'GET',
         url: requrl,
         error: function() {
@@ -715,6 +717,7 @@ function builderLoadAvailableFromNames()
         return;
     }
     jQuery.ajax({
+        cache: false,
         type: 'GET',
         url: builder_ajax_loadnames_url,
         error: function() {

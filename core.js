@@ -6,11 +6,13 @@ function initializeAjaxLinks()
 {
     var items;
 
+    jQuery.ajaxSetup({ cache: false });
     items = jQuery("a.use-ajax").not(".ajaxl-processed");
     jQuery.each(items,function(idx,val) {
         var aurl= jQuery(val).attr('href');
         jQuery(this).on("click",function(e) {
             jQuery.ajax({
+                cache: false,
                 url: aurl,
                 context: document.body,
                 error: function() {
@@ -35,6 +37,7 @@ function initializeAjaxLinks()
             var value = submit_element.val();
             jQuery(this).append('<input type="hidden" name="'+name+'" value="'+value+'" />');
             jQuery.ajax({
+                cache: false,
                 type: 'POST',
                 url: aurl,
                 data: jQuery(val).serializeArray(),
@@ -131,6 +134,7 @@ function delayedAjaxCall(arg)
     //console.log('Will call ajax to url '+arg['url']+ ' in '+arg['msec']+ ' msec...');
     setTimeout(function() {
         jQuery.ajax({
+            cache: false,
             type: 'POST',
             url: arg['url'],
             error: function() {
@@ -379,6 +383,7 @@ function save_and_close_dyntable_dialog(id)
     var rurl = dyntable_objs[id].ajaxurl + sep + 'subtype=' + dyntable_objs[id].ajaxsubtype + '&id=' + dyntable_objs[id].id +
         '&modname=' + mname + '&value='+b64EncodeUnicodeString(mval);
     jQuery.ajax({
+        cache: false,
         url: rurl,
         context: document.body,
         error: function() {
