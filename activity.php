@@ -254,12 +254,6 @@ function register_poll($pollname,$container,$title,$choices,$default = '')
             sql_rollback();
             throw new Exception("The choice index defined with register_poll() only accepts length <= 5 character");
         }
-        if(strlen($v) > 128)
-        {
-            sql_rollback();
-            throw new Exception("The choice text defined with register_poll() only accepts length <= 128 character");
-        }
-
         db_insert('poll_choices')
             ->set_fv_a(['name' => $pollname,'choice_idx' => $i,'choice_text' => $v])
             ->execute();
@@ -270,91 +264,49 @@ function register_poll($pollname,$container,$title,$choices,$default = '')
 function unregister_poll($pollname)
 {
     sql_transaction();
+    $container = db_query('poll_parameters')->get('container')->cond_fv('name',$pollname,'=')->execute_to_single();
     db_delete('poll_parameters')
         ->cond_fv(['name' => $pollname])
         ->execute();
     db_delete('poll_choices')
         ->cond_fv(['name' => $pollname])
         ->execute();
+    db_delete('pollcont_' . $container)
+        ->cond_fv(['name' => $pollname])
+        ->execute();
     sql_commit();
 }
 
-function get_poll_block($pollname,$id,$maincssclass = 'ckpoll_main')
+function get_poll_parameters_by_pollname($pollname)
 {
-    global $user;
-
-    if(!$user->auth)
-        return '';
-
     $rp = db_query('poll_parameters')
         ->get_a(['container','titletext','defidx'])
         ->cond_fv('name',$pollname,'=')
         ->execute_and_fetch();
     if(!isset($rp['container']))
-        return '';
-
-    ob_start();
-    print '<div class="'.$maincssclass.'">';
-    print '<div class="ckpoll_title">'.$rp['titletext'].'</div>';
-
-    print '<div class="ckpoll_body_' . $pollname . '_' . $id . '">';
-    print get_poll_block_inner($rp['container'],$pollname,$id);
-    print '</div>';
-    return ob_get_clean();
+        return null;
+    return $rp;
 }
 
-function get_poll_block_inner($container,$pollname,$id)
+function get_poll_parametervalue_by_pollname($pollname,$what)
 {
-    global $user;
+    return db_query('poll_parameters')
+        ->get($what)
+        ->cond_fv('name',$pollname,'=')
+        ->execute_to_single();
+}
 
+function get_poll_choices_array_by_pollname($pollname)
+{
     $rc = db_query('poll_choices')
         ->get_a(['choice_idx','choice_text'])
         ->cond_fv('name',$pollname,'=')
         ->execute_to_arrays();
 
-    $varr = [];
+    $chs = [];
     foreach($rc as $rcc)
-        $varr[$rcc['choice_idx']] = $rcc['choice_text'];
-
-    if(poll_is_user_voted($pollname,$container,$id,$user->uid))
-    {
-        if(poll_access($pollname,$id,'view',$user) != ACTIVITY_ACCESS_ALLOW)
-            return '';
-
-        $ns = sql_exec_fetchAll("SELECT COUNT(pid) as cnt,choice
-                                 FROM pollcont_$container
-                                 WHERE name=:pollname AND ref=:refid
-                                 GROUP BY choice",[':pollname' => $pollname,':refid' => $id]);
-        $all = 0;
-        foreach($ns as $nss)
-            $all += $nss['cnt'];
-        $t = new HtmlTable();
-        foreach($varr as $idx => $text)
-        {
-            $cnt = 0;
-            foreach($ns as $nss)
-                if($nss['choice'] == $idx)
-                {
-                    $cnt = $nss['cnt'];
-                    break;
-                }
-            $t->cell($text);
-            $t->cell(($cnt * 100 / $all) . '% ('.$cnt.')');
-            $t->nrow();
-        }
-        return $t->get();
-    }
-
-    if(poll_access($pollname,$id,'add',$user) != ACTIVITY_ACCESS_ALLOW)
-        return '';
-
-    $f = new HtmlForm('form_poll_' . $pollname . '_' . $id);
-    $f->action_ajax('votepollajax');
-    $f->select('radio','poll_' . $pollname . '_' . $id,'',$varr,['itemsuffix' => '<br/>']);
-    $f->hidden('pollname',$pollname);
-    $f->hidden('pollid',$id);
-    $f->input('submit','Ok','Ok');
-    return $f->get();
+        $chs[$rcc['choice_idx']] = $rcc['choice_text'];
+    return $chs;
 }
 
 function poll_is_user_voted($pollname,$container,$id,$uid)
@@ -368,6 +320,111 @@ function poll_is_user_voted($pollname,$container,$id,$uid)
     if($cnt > 0)
         return true;
     return false;
+}
+
+function get_poll_results($container,$pollname,$id)
+{
+    $choices = get_poll_choices_array_by_pollname($pollname);
+    $ns = sql_exec_fetchAll("SELECT COUNT(pid) as cnt,choice
+                             FROM pollcont_$container
+                             WHERE name=:pollname AND ref=:refid
+                             GROUP BY choice",[':pollname' => $pollname,':refid' => $id]);
+    $all = 0;
+    foreach($ns as $nss)
+        $all += $nss['cnt'];
+    $results = [];
+    foreach($choices as $idx => $text)
+    {
+        $cnt = 0;
+        foreach($ns as $nss)
+            if($nss['choice'] == $idx)
+            {
+                $cnt = $nss['cnt'];
+                break;
+            }
+        $results[$text] = [
+            'all' => $all,
+            'count' => $cnt,
+            'percent' => intval(($cnt * 100) / $all),
+        ];
+    }
+    return $results;
+}
+
+function get_poll_block($pollname,$id,$maincssclass = 'ckpoll_default_style')
+{
+    global $user;
+
+    if(!$user->auth)
+        return '';
+
+    $rp = get_poll_parameters_by_pollname($pollname);
+    if($rp == null)
+        return '';
+
+    if(poll_access($pollname,$id,'view',$user) != ACTIVITY_ACCESS_ALLOW &&
+       poll_access($pollname,$id,'add',$user) != ACTIVITY_ACCESS_ALLOW )
+        return '';
+
+    ob_start();
+    print '<div class="'.$maincssclass.'">';
+    print '<div class="ckpoll_title">'.$rp['titletext'].'</div>';
+
+    print '<div class="ckpoll_body_' . $pollname . '_' . $id . ' ckpoll_mbody">';
+    print get_poll_block_inner($rp['container'],$pollname,$id);
+    print '</div>';
+    return ob_get_clean();
+}
+
+function get_poll_block_inner($container,$pollname,$id)
+{
+    global $user;
+
+    if(poll_is_user_voted($pollname,$container,$id,$user->uid))
+    {
+        if(poll_access($pollname,$id,'view',$user) != ACTIVITY_ACCESS_ALLOW)
+            return '<div class="ckpoll_msg">' . t("You've already cast your vote.") . '</div>';
+
+        $results = get_poll_results($container,$pollname,$id);
+        $t = new HtmlTable('poll_result_table');
+        foreach($results as $text => $values)
+        {
+            $t->cell($text);
+            /*$t->cell('<div style="background-color: #565656; width: '.$values['percent'].'%; height: 1em;">',
+                    ['style' => 'border: 1px solid #565656; min-width: 100px;']);
+            */
+            $t->cell('<div class="ckpoll_innerbar" style="width: '.$values['percent'].'%;">',
+                     ['class' => 'ckpoll_outbar']);
+            $t->cell($values['percent'] . '% <small>(' . $values['count'] . ')</small>');
+            $t->nrow();
+        }
+        return '<div class="ckpoll_result">' . $t->get() . '</div>';
+    }
+
+    if(poll_access($pollname,$id,'add',$user) != ACTIVITY_ACCESS_ALLOW)
+        return '';
+
+    $f = new HtmlForm('form_poll_' . $pollname . '_' . $id);
+    $f->action_ajax('votepollajax');
+
+    $default = get_poll_parametervalue_by_pollname($pollname,'defidx');
+    $choices = get_poll_choices_array_by_pollname($pollname);
+    foreach($choices as $chidx => $chtext)
+    {
+        $cssid = 'opt_' . $pollname . '_' . $chidx;
+        $name = 'poll_' . $pollname . '_' . $id;
+        $selected = $default == $chidx ? ' checked ' : '';
+        $f->text('pitem_' . $chidx,
+            "<div class=\"ckpoll_vitem\">
+               <input id=\"$cssid\" type=\"radio\" name=\"$name\" value=\"$chidx\" $selected>
+               <label for=\"$cssid\">$chtext</label>
+             </div>");
+    }
+
+    $f->hidden('pollname',$pollname);
+    $f->hidden('pollid',$id);
+    $f->input('submit','Ok','Ok');
+    return $f->get();
 }
 
 function aj_addvote_poll()
@@ -388,10 +445,16 @@ function aj_addvote_poll()
     if(poll_access($pollname,par('pollid'),'add',$user) != ACTIVITY_ACCESS_ALLOW)
         return;
 
-    $container = db_query('poll_parameters')->get('container')->cond_fv('name',$pollname,'=')->execute_to_single();
+    $container = $default = get_poll_parametervalue_by_pollname($pollname,'container');
     if(poll_is_user_voted($pollname,$container,par('pollid'),$user->uid))
+    {
+        run_hook('poll_already_vote');
         return; //Aready vote.
+    }
 
+    $choices = get_poll_choices_array_by_pollname($pollname);
+    if(!array_key_exists(par($pollvarname),$choices))
+        return;
     db_insert('pollcont_'.$container)
         ->set_fv_a([
             'name' => $pollname,
@@ -400,6 +463,7 @@ function aj_addvote_poll()
             'choice' => par($pollvarname)])
         ->set_fe('created',sql_t('current_timestamp'))
         ->execute();
+    run_hook('poll_vote',$pollname,par('pollid'),par($pollvarname));
     ajax_add_html('.ckpoll_body_' . $pollname . '_' . par('pollid'),
         get_poll_block_inner($container,$pollname,par('pollid')));
 }
@@ -418,9 +482,6 @@ function poll_access($pollname,$refid,$op,$account)
     //Default comment permissions:
     // Allows everything for admins
     if($account->role == ROLE_ADMIN)
-        return ACTIVITY_ACCESS_ALLOW;
-    // Allows view for everyone. (You can disable by send DENY from a hook.)
-    if($op == 'view')
         return ACTIVITY_ACCESS_ALLOW;
     return ACTIVITY_ACCESS_DENY;
 }
@@ -468,7 +529,7 @@ function hook_activity_required_sql_schema()
                 "columns" => [
                     'name'      => 'VARCHAR(16) UNIQUE',
                     'container' => 'VARCHAR(128)',
-                    'titletext' => 'VARCHAR(128)',
+                    'titletext' => sql_t('longtext_type'),
                     'defidx'    => 'VARCHAR(5)',
                 ],
             ];
@@ -478,7 +539,7 @@ function hook_activity_required_sql_schema()
                 "columns" => [
                     'name'        => 'VARCHAR(16)',
                     'choice_idx'  => 'VARCHAR(5)',
-                    'choice_text' => 'VARCHAR(128)',
+                    'choice_text' => sql_t('longtext_type'),
                 ],
             ];
     }

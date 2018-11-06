@@ -62,7 +62,9 @@ function page_page_view($node)
 {
     ob_start();
     set_title($node->title);
+    print implode('',run_hook('pageview_before',$node));
     print $node->body;
+    print implode('',run_hook('pageview_after',$node));
     return ob_get_clean();
 }
 
@@ -243,10 +245,14 @@ function hook_page_introducer()
     $html = l(t('Add page'),'node/page/add');
     $r = sql_exec_fetchAll("SELECT pid,path,title FROM page WHERE published");
     $ps = [];
+    $eps = [];
     foreach($r as $rr)
+    {
         $ps[] = l($rr['title'],$rr['path']);
+        $eps[] = l($rr['title'],'nodeintype/page/' . $rr['pid'] . '/edit');
+    }
     if(count($ps) > 0)
-        $html .= '<br> Pages: '.implode(', ',$ps);
+        $html .= '<br> View: '.implode(', ',$ps) . '<br> Edit: '.implode(', ',$eps);
     return ['Page' => $html];
 }
 

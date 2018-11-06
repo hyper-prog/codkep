@@ -86,7 +86,9 @@ The following [hooks|url:doc/codkep/hooks] can be implement to interact with pag
 *Note: Many of this hooks has an ***$obj*** parameter which is a container object holding references to the*
 *object and other data structures which are modifiable by the hook.*
 
-| Hook                         | Description |
-| ---                          | ---         |
-| HOOK_alter_pageroutes($obj)  | It can alter the locations before defined by the page module. |
-| HOOK_alter_pageshow($obj)    | It runs before the page will show, it receives the page route. (It can modify the loaded location or do a redirection.) |
+| Hook                            | Description |
+| ---                             | ---         |
+| HOOK_pageview_before($pagenode) | The return of this hook will be show before the page content. |
+| HOOK_pageview_after($pagenode)  | The return of this hook will be show after the page content.  |
+| HOOK_alter_pageroutes($obj)     | It can alter the locations before defined by the page module. |
+| HOOK_alter_pageshow($obj)       | It runs before the page will show, it receives the page route. (It can modify the loaded location or do a redirection.) |

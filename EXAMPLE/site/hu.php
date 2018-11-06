@@ -70,6 +70,7 @@ function hook_hu_init()
         'The given old password is wrong!' => 'A megadott régi jelszó hibás!',
         'Add page' => 'Lap felvétele',
         'Node types' => 'Node típusok',
+        "You've already cast your vote." => "Már leadtad a szavazatod."
     ]);
 
     add_t_array('hu',[

@@ -104,4 +104,96 @@
     cursor: pointer;
 }
 
+.ckpoll_default_style .ckpoll_title {
+    font-weight: bold;
+    font-size: 110%;
+    margin: 2px 0px 6px 0px;
+}
+
+.ckpoll_default_style .ckpoll_mbody {
+    margin: 4px 5px 4px 10px;
+}
+.ckpoll_default_style .ckpoll_vitem {
+    margin: 2px;
+}
+
+.ckpoll_default_style [type="radio"]:checked,
+.ckpoll_default_style [type="radio"]:not(:checked) {
+    position: absolute;
+    left: -9999px;
+}
+.ckpoll_default_style [type="radio"]:checked + label,
+.ckpoll_default_style [type="radio"]:not(:checked) + label
+{
+    position: relative;
+    padding-left: 28px;
+    cursor: pointer;
+    line-height: 20px;
+    display: inline-block;
+    color: #666;
+}
+.ckpoll_default_style [type="radio"]:checked + label:before,
+.ckpoll_default_style [type="radio"]:not(:checked) + label:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 18px;
+    height: 18px;
+    border: 1px solid #ddd;
+    border-radius: 100%;
+    background: #fff;
+}
+.ckpoll_default_style [type="radio"]:checked + label:after,
+.ckpoll_default_style [type="radio"]:not(:checked) + label:after {
+    content: '';
+    width: 12px;
+    height: 12px;
+    background: #787df9;
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    border-radius: 100%;
+    -webkit-transition: all 0.2s ease;
+    transition: all 0.2s ease;
+}
+.ckpoll_default_style [type="radio"]:not(:checked) + label:after {
+    opacity: 0;
+    -webkit-transform: scale(0);
+    transform: scale(0);
+}
+.ckpoll_default_style [type="radio"]:checked + label:after {
+    opacity: 1;
+    -webkit-transform: scale(1);
+    transform: scale(1);
+}
+
+.ckpoll_default_style input[type="submit"] {
+    margin: 5px 2px 5px 0px;
+    padding: 2px 25px 2px 25px;
+    background-color: #a7a7a7;
+    color: #ffffff;
+    font-weight: bold;
+    border-radius: 8px;
+    border: 1px solid #858585;
+    cursor: pointer;
+    box-shadow: 0px 4px 2px #656565;
+}
+.ckpoll_default_style input[type="submit"]:hover {
+    background-color: #a7a7b7;
+    color: #f0f0ff;
+    box-shadow: 0px 6px 4px #656565;
+}
+
+.ckpoll_default_style .ckpoll_innerbar {
+    background-color: #565676;
+    height: 1em;
+    padding: 0;
+    margin: 0;
+}
+.ckpoll_default_style .ckpoll_outbar {
+    border: 1px solid #565656; min-width: 100px;
+    padding: 1px;
+    margin: 0;
+}
 /* end css */
