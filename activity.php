@@ -15,6 +15,7 @@ function hook_activity_boot()
 {
     global $site_config;
     $site_config->comment_containers = [];
+    $site_config->poll_containers    = [];
 
     $site_config->comment_delete_own_until_sec = 60*60; //1 hour
     $site_config->acitvity_comment_block_css_class = 'commentblk_default_style';
@@ -38,11 +39,24 @@ function register_comment_container($containername)
     load_loc('error','Illegal comment container class (text0nsne allowed)','Internal activity module error');
 }
 
+function register_poll_container($containername)
+{
+    global $site_config;
+    if(check_str($containername,'text0nsne'))
+    {
+        if(!in_array($containername, $site_config->poll_containers))
+            array_push($site_config->poll_containers, $containername);
+        return;
+    }
+    load_loc('error','Illegal poll container class (text0nsne allowed)','Internal activity module error');
+}
+
 function hook_activity_defineroute()
 {
     return [
         ['path' => 'addnewcommentajax','callback' => 'addnewcomment_comment', 'type' => 'ajax'],
         ['path' => 'delcommentajax'   ,'callback' => 'delcomment_comment'   , 'type' => 'ajax'],
+        ['path' => 'votepollajax'     ,'callback' => 'aj_addvote_poll'      , 'type' => 'ajax'],
     ];
 }
 
@@ -221,6 +235,196 @@ function codkep_render_commentblock($cont,$cid,$name,$created,$text,$deletelink)
     return ob_get_clean();
 }
 
+
+function register_poll($pollname,$container,$title,$choices,$default = '')
+{
+    sql_transaction();
+    db_insert('poll_parameters')
+        ->set_fv_a([
+            'name' => $pollname,
+            'container' => $container,
+            'titletext' => $title,
+            'defidx' => $default
+        ])
+        ->execute();
+    foreach($choices as $i => $v)
+    {
+        if(strlen($i) > 5)
+        {
+            sql_rollback();
+            throw new Exception("The choice index defined with register_poll() only accepts length <= 5 character");
+        }
+        if(strlen($v) > 128)
+        {
+            sql_rollback();
+            throw new Exception("The choice text defined with register_poll() only accepts length <= 128 character");
+        }
+
+        db_insert('poll_choices')
+            ->set_fv_a(['name' => $pollname,'choice_idx' => $i,'choice_text' => $v])
+            ->execute();
+    }
+    sql_commit();
+}
+
+function unregister_poll($pollname)
+{
+    sql_transaction();
+    db_delete('poll_parameters')
+        ->cond_fv(['name' => $pollname])
+        ->execute();
+    db_delete('poll_choices')
+        ->cond_fv(['name' => $pollname])
+        ->execute();
+    sql_commit();
+}
+
+function get_poll_block($pollname,$id,$maincssclass = 'ckpoll_main')
+{
+    global $user;
+
+    if(!$user->auth)
+        return '';
+
+    $rp = db_query('poll_parameters')
+        ->get_a(['container','titletext','defidx'])
+        ->cond_fv('name',$pollname,'=')
+        ->execute_and_fetch();
+    if(!isset($rp['container']))
+        return '';
+
+    ob_start();
+    print '<div class="'.$maincssclass.'">';
+    print '<div class="ckpoll_title">'.$rp['titletext'].'</div>';
+
+    print '<div class="ckpoll_body_' . $pollname . '_' . $id . '">';
+    print get_poll_block_inner($rp['container'],$pollname,$id);
+    print '</div>';
+    return ob_get_clean();
+}
+
+function get_poll_block_inner($container,$pollname,$id)
+{
+    global $user;
+
+    $rc = db_query('poll_choices')
+        ->get_a(['choice_idx','choice_text'])
+        ->cond_fv('name',$pollname,'=')
+        ->execute_to_arrays();
+
+    $varr = [];
+    foreach($rc as $rcc)
+        $varr[$rcc['choice_idx']] = $rcc['choice_text'];
+
+    if(poll_is_user_voted($pollname,$container,$id,$user->uid))
+    {
+        if(poll_access($pollname,$id,'view',$user) != ACTIVITY_ACCESS_ALLOW)
+            return '';
+
+        $ns = sql_exec_fetchAll("SELECT COUNT(pid) as cnt,choice
+                                 FROM pollcont_$container
+                                 WHERE name=:pollname AND ref=:refid
+                                 GROUP BY choice",[':pollname' => $pollname,':refid' => $id]);
+        $all = 0;
+        foreach($ns as $nss)
+            $all += $nss['cnt'];
+        $t = new HtmlTable();
+        foreach($varr as $idx => $text)
+        {
+            $cnt = 0;
+            foreach($ns as $nss)
+                if($nss['choice'] == $idx)
+                {
+                    $cnt = $nss['cnt'];
+                    break;
+                }
+            $t->cell($text);
+            $t->cell(($cnt * 100 / $all) . '% ('.$cnt.')');
+            $t->nrow();
+        }
+        return $t->get();
+    }
+
+    if(poll_access($pollname,$id,'add',$user) != ACTIVITY_ACCESS_ALLOW)
+        return '';
+
+    $f = new HtmlForm('form_poll_' . $pollname . '_' . $id);
+    $f->action_ajax('votepollajax');
+    $f->select('radio','poll_' . $pollname . '_' . $id,'',$varr,['itemsuffix' => '<br/>']);
+    $f->hidden('pollname',$pollname);
+    $f->hidden('pollid',$id);
+    $f->input('submit','Ok','Ok');
+    return $f->get();
+}
+
+function poll_is_user_voted($pollname,$container,$id,$uid)
+{
+    $cnt = db_query('pollcont_'.$container)
+        ->counting()
+        ->cond_fv('name',$pollname,'=')
+        ->cond_fv('ref',$id,'=')
+        ->cond_fv('uid',$uid,'=')
+        ->execute_to_single();
+    if($cnt > 0)
+        return true;
+    return false;
+}
+
+function aj_addvote_poll()
+{
+    global $user;
+    if(!$user->auth)
+        return '';
+
+    par_def('pollname','text0nsne');
+    par_def('pollid','number0');
+    if(!par_ex('pollname') || !par_ex('pollid'))
+        return;
+
+    $pollname = par('pollname');
+    $pollvarname = 'poll_'.$pollname.'_'.par('pollid');
+    par_def($pollvarname,'text0nsne');
+
+    if(poll_access($pollname,par('pollid'),'add',$user) != ACTIVITY_ACCESS_ALLOW)
+        return;
+
+    $container = db_query('poll_parameters')->get('container')->cond_fv('name',$pollname,'=')->execute_to_single();
+    if(poll_is_user_voted($pollname,$container,par('pollid'),$user->uid))
+        return; //Aready vote.
+
+    db_insert('pollcont_'.$container)
+        ->set_fv_a([
+            'name' => $pollname,
+            'ref' => par('pollid'),
+            'uid' => $user->uid,
+            'choice' => par($pollvarname)])
+        ->set_fe('created',sql_t('current_timestamp'))
+        ->execute();
+    ajax_add_html('.ckpoll_body_' . $pollname . '_' . par('pollid'),
+        get_poll_block_inner($container,$pollname,par('pollid')));
+}
+
+function poll_access($pollname,$refid,$op,$account)
+{
+    if(!in_array($op,['view','add']))
+        return ACTIVITY_ACCESS_DENY;
+    $n = run_hook('poll_access',$pollname,$refid,$op,$account);
+
+    if(in_array( ACTIVITY_ACCESS_DENY,$n))
+        return ACTIVITY_ACCESS_DENY;
+    if(in_array( ACTIVITY_ACCESS_ALLOW,$n))
+        return ACTIVITY_ACCESS_ALLOW;
+
+    //Default comment permissions:
+    // Allows everything for admins
+    if($account->role == ROLE_ADMIN)
+        return ACTIVITY_ACCESS_ALLOW;
+    // Allows view for everyone. (You can disable by send DENY from a hook.)
+    if($op == 'view')
+        return ACTIVITY_ACCESS_ALLOW;
+    return ACTIVITY_ACCESS_DENY;
+}
+
 function hook_activity_required_sql_schema()
 {
     global $site_config;
@@ -232,10 +436,49 @@ function hook_activity_required_sql_schema()
                 "tablename" => "comment_$cnt",
                 "columns" => [
                     'cid' => 'SERIAL',
-                    'ref' => 'BIGINT(20) UNSIGNED',
-                    'uid' => 'BIGINT(20) UNSIGNED',
+                    'ref' => 'BIGINT UNSIGNED',
+                    'uid' => 'BIGINT UNSIGNED',
                     'created' => 'TIMESTAMP',
                     'body' => sql_t('longtext_type'),
+                ],
+            ];
+    }
+    $poll_active = false;
+    foreach($site_config->poll_containers as $cnt)
+    {
+        $t["activity_module_poll_table_$cnt"] =
+            [
+                "tablename" => "pollcont_$cnt",
+                "columns" => [
+                    'pid'     => 'SERIAL',
+                    'name'    => 'VARCHAR(16)',
+                    'ref'     => 'BIGINT',
+                    'uid'     => 'BIGINT',
+                    'created' => 'TIMESTAMP',
+                    'choice'  => 'VARCHAR(5)',
+                ],
+            ];
+        $poll_active = true;
+    }
+    if($poll_active)
+    {
+        $t["activity_module_pollparameters_table"] =
+            [
+                "tablename" => "poll_parameters",
+                "columns" => [
+                    'name'      => 'VARCHAR(16) UNIQUE',
+                    'container' => 'VARCHAR(128)',
+                    'titletext' => 'VARCHAR(128)',
+                    'defidx'    => 'VARCHAR(5)',
+                ],
+            ];
+        $t["activity_module_pollchoices_table"] =
+            [
+                "tablename" => "poll_choices",
+                "columns" => [
+                    'name'        => 'VARCHAR(16)',
+                    'choice_idx'  => 'VARCHAR(5)',
+                    'choice_text' => 'VARCHAR(128)',
                 ],
             ];
     }
