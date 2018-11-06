@@ -449,6 +449,8 @@ function aj_addvote_poll()
     if(poll_is_user_voted($pollname,$container,par('pollid'),$user->uid))
     {
         run_hook('poll_already_vote');
+        ajax_add_html('.ckpoll_body_' . $pollname . '_' . par('pollid'),
+            get_poll_block_inner($container,$pollname,par('pollid')));
         return; //Aready vote.
     }
 
