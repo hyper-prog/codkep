@@ -235,9 +235,17 @@ function codkep_render_commentblock($cont,$cid,$name,$created,$text,$deletelink)
     return ob_get_clean();
 }
 
+// Poll codes -----------------------------------------------------------
 
 function register_poll($pollname,$container,$title,$choices,$default = '')
 {
+    $cnt = db_query('poll_parameters')
+        ->counting()
+        ->cond_fv('name',$pollname,'=')
+        ->execute_to_single();
+    if($cnt > 0)
+        return false;
+
     sql_transaction();
     db_insert('poll_parameters')
         ->set_fv_a([
@@ -259,6 +267,8 @@ function register_poll($pollname,$container,$title,$choices,$default = '')
             ->execute();
     }
     sql_commit();
+    run_hook('poll_registered',$pollname);
+    return true;
 }
 
 function unregister_poll($pollname)
@@ -266,15 +276,16 @@ function unregister_poll($pollname)
     sql_transaction();
     $container = db_query('poll_parameters')->get('container')->cond_fv('name',$pollname,'=')->execute_to_single();
     db_delete('poll_parameters')
-        ->cond_fv(['name' => $pollname])
+        ->cond_fv('name',$pollname,'=')
         ->execute();
     db_delete('poll_choices')
-        ->cond_fv(['name' => $pollname])
+        ->cond_fv('name',$pollname,'=')
         ->execute();
     db_delete('pollcont_' . $container)
-        ->cond_fv(['name' => $pollname])
+        ->cond_fv('name',$pollname,'=')
         ->execute();
     sql_commit();
+    run_hook('poll_unregistered',$pollname);
 }
 
 function get_poll_parameters_by_pollname($pollname)
@@ -390,9 +401,6 @@ function get_poll_block_inner($container,$pollname,$id)
         foreach($results as $text => $values)
         {
             $t->cell($text);
-            /*$t->cell('<div style="background-color: #565656; width: '.$values['percent'].'%; height: 1em;">',
-                    ['style' => 'border: 1px solid #565656; min-width: 100px;']);
-            */
             $t->cell('<div class="ckpoll_innerbar" style="width: '.$values['percent'].'%;">',
                      ['class' => 'ckpoll_outbar']);
             $t->cell($values['percent'] . '% <small>(' . $values['count'] . ')</small>');

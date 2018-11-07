@@ -130,7 +130,7 @@
     cursor: pointer;
     line-height: 20px;
     display: inline-block;
-    color: #666;
+    color: #333333;
 }
 .ckpoll_default_style [type="radio"]:checked + label:before,
 .ckpoll_default_style [type="radio"]:not(:checked) + label:before {
@@ -140,9 +140,9 @@
     top: 0;
     width: 18px;
     height: 18px;
-    border: 1px solid #ddd;
+    border: 1px solid #dddddd;
     border-radius: 100%;
-    background: #fff;
+    background: #ffffff;
 }
 .ckpoll_default_style [type="radio"]:checked + label:after,
 .ckpoll_default_style [type="radio"]:not(:checked) + label:after {
