@@ -20,6 +20,7 @@ function hook_activity_boot()
     $site_config->comment_delete_own_until_sec = 60*60; //1 hour
     $site_config->acitvity_comment_block_css_class = 'commentblk_default_style';
     $site_config->acitvity_comment_renderer_callback = 'codkep_render_commentblock';
+    $site_config->activity_poll_main_css_class = 'ckpoll_default_style';
 }
 
 function hook_activity_before_start()
@@ -54,9 +55,10 @@ function register_poll_container($containername)
 function hook_activity_defineroute()
 {
     return [
-        ['path' => 'addnewcommentajax','callback' => 'addnewcomment_comment', 'type' => 'ajax'],
-        ['path' => 'delcommentajax'   ,'callback' => 'delcomment_comment'   , 'type' => 'ajax'],
-        ['path' => 'votepollajax'     ,'callback' => 'aj_addvote_poll'      , 'type' => 'ajax'],
+        ['path' => 'addnewcommentajax'        ,'callback' => 'addnewcomment_comment' ,'type' => 'ajax'],
+        ['path' => 'delcommentajax'           ,'callback' => 'delcomment_comment'    ,'type' => 'ajax'],
+        ['path' => 'votepollajax'             ,'callback' => 'aj_addvote_poll'       ,'type' => 'ajax'],
+        ['path' => 'showpoll/{pollname}/{id}' ,'callback' => 'showpollpage_callback' ],
     ];
 }
 
@@ -356,18 +358,23 @@ function get_poll_results($container,$pollname,$id)
         $results[$text] = [
             'all' => $all,
             'count' => $cnt,
-            'percent' => intval(($cnt * 100) / $all),
+            'percent' => ($all == 0 ? 0 : intval(($cnt * 100) / $all)),
         ];
     }
     return $results;
 }
 
-function get_poll_block($pollname,$id,$maincssclass = 'ckpoll_default_style')
+function get_poll_block($pollname,$id,$maincssclass = '')
 {
     global $user;
+    global $site_config;
 
     if(!$user->auth)
         return '';
+
+    $mcssclass = $site_config->activity_poll_main_css_class;
+    if($maincssclass != '')
+        $mcssclass = $maincssclass;
 
     $rp = get_poll_parameters_by_pollname($pollname);
     if($rp == null)
@@ -378,13 +385,26 @@ function get_poll_block($pollname,$id,$maincssclass = 'ckpoll_default_style')
         return '';
 
     ob_start();
-    print '<div class="'.$maincssclass.'">';
+    print "<div class=\"$mcssclass\">";
     print '<div class="ckpoll_title">'.$rp['titletext'].'</div>';
-
     print '<div class="ckpoll_body_' . $pollname . '_' . $id . ' ckpoll_mbody">';
     print get_poll_block_inner($rp['container'],$pollname,$id);
     print '</div>';
     return ob_get_clean();
+}
+
+function get_poll_resultblock($results)
+{
+    $t = new HtmlTable('poll_result_table');
+    foreach($results as $text => $values)
+    {
+        $t->cell($text);
+        $t->cell('<div class="ckpoll_innerbar" style="width: '.$values['percent'].'%;">',
+            ['class' => 'ckpoll_outbar']);
+        $t->cell($values['percent'] . '% <small>(' . $values['count'] . ')</small>');
+        $t->nrow();
+    }
+    return '<div class="ckpoll_result">' . $t->get() . '</div>';
 }
 
 function get_poll_block_inner($container,$pollname,$id)
@@ -397,16 +417,7 @@ function get_poll_block_inner($container,$pollname,$id)
             return '<div class="ckpoll_msg">' . t("You've already cast your vote.") . '</div>';
 
         $results = get_poll_results($container,$pollname,$id);
-        $t = new HtmlTable('poll_result_table');
-        foreach($results as $text => $values)
-        {
-            $t->cell($text);
-            $t->cell('<div class="ckpoll_innerbar" style="width: '.$values['percent'].'%;">',
-                     ['class' => 'ckpoll_outbar']);
-            $t->cell($values['percent'] . '% <small>(' . $values['count'] . ')</small>');
-            $t->nrow();
-        }
-        return '<div class="ckpoll_result">' . $t->get() . '</div>';
+        return get_poll_resultblock($results);
     }
 
     if(poll_access($pollname,$id,'add',$user) != ACTIVITY_ACCESS_ALLOW)
@@ -489,6 +500,38 @@ function poll_access($pollname,$refid,$op,$account)
     if($account->role == ROLE_ADMIN)
         return ACTIVITY_ACCESS_ALLOW;
     return ACTIVITY_ACCESS_DENY;
+}
+
+function showpollpage_callback()
+{
+    global $site_config;
+    global $user;
+
+    par_def('pollname','text0nsne');
+    par_def('id','number0');
+    if(!par_ex('pollname') || !par_ex('id'))
+        return;
+
+    $pollname = par('pollname');
+    $id = par('id');
+
+    $rp = get_poll_parameters_by_pollname($pollname);
+    if($rp == null)
+        return '';
+
+    if(poll_access($pollname,$id,'view',$user) != ACTIVITY_ACCESS_ALLOW)
+        return '';
+
+    $container = get_poll_parametervalue_by_pollname($pollname,'container');
+    $results = get_poll_results($container,$pollname,$id);
+
+    ob_start();
+    print '<div class="'.$site_config->activity_poll_main_css_class.'">';
+    print '<div class="ckpoll_title">'.$rp['titletext'].'</div>';
+    print '<div class="ckpoll_body_' . $pollname . '_' . $id . ' ckpoll_mbody">';
+    print get_poll_resultblock($results);
+    print '</div>';
+    return ob_get_clean();
 }
 
 function hook_activity_required_sql_schema()
