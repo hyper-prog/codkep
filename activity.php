@@ -510,7 +510,9 @@ function showpollpage_callback()
     par_def('pollname','text0nsne');
     par_def('id','number0');
     if(!par_ex('pollname') || !par_ex('id'))
-        return;
+        return '';
+    if(count($site_config->poll_containers) == 0)
+        return '';
 
     $pollname = par('pollname');
     $id = par('id');
@@ -518,7 +520,6 @@ function showpollpage_callback()
     $rp = get_poll_parameters_by_pollname($pollname);
     if($rp == null)
         return '';
-
     if(poll_access($pollname,$id,'view',$user) != ACTIVITY_ACCESS_ALLOW)
         return '';
 
