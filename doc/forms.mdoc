@@ -165,9 +165,11 @@ __Definition methods of HtmlForm class:__
     - ***"readonly"=true*** - Sets the field readonly.
     - ***"autofocus"=true*** - Sets the form item has the initial focus
     - ***"itemprefix"=string*** - This string is written immediately before the item tags.
-    \ Before the option tags in select mode and before the input tags in radio mode.
+    \ Before the option tags in select mode and before the input and label tags in radio mode.
     - ***"itemsuffix"=string*** - This string is written immediately after the item tags.
-    \ After the option tags in select mode and after the input tags in radio mode.
+    \ After the option tags in select mode and after the input and label tags in radio mode.
+    - ***"itemlabelprefix"=string*** - This string is written before the label text ind radio mode.
+    - ***"itemlabelsuffix"=string*** - This string is written after the label text ind radio mode.
  - @@@textarea($n, $v, $row, $col, $opts = array())@@@
   - Adds a textarea field to the form. (Large text editor field)
    - The ***$name*** parameter is the name of the field.

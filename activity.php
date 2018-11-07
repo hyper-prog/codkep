@@ -417,17 +417,12 @@ function get_poll_block_inner($container,$pollname,$id)
 
     $default = get_poll_parametervalue_by_pollname($pollname,'defidx');
     $choices = get_poll_choices_array_by_pollname($pollname);
-    foreach($choices as $chidx => $chtext)
-    {
-        $cssid = 'opt_' . $pollname . '_' . $chidx;
-        $name = 'poll_' . $pollname . '_' . $id;
-        $selected = $default == $chidx ? ' checked ' : '';
-        $f->text('pitem_' . $chidx,
-            "<div class=\"ckpoll_vitem\">
-               <input id=\"$cssid\" type=\"radio\" name=\"$name\" value=\"$chidx\" $selected>
-               <label for=\"$cssid\">$chtext</label>
-             </div>");
-    }
+    $name = 'poll_' . $pollname . '_' . $id;
+    $f->select('radio',$name,$default,$choices,
+        ['id' => $name .'_'. rand(100,999),
+         'itemprefix' => '<div class="ckpoll_vitem">',
+         'itemsuffix' => '</div>'
+        ]);
 
     $f->hidden('pollname',$pollname);
     $f->hidden('pollid',$id);

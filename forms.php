@@ -916,6 +916,8 @@ class HtmlForm
              'autofocus' => (isset($opts['autofocus']) ? $opts['autofocus'] : false),
              'itemprefix' => (isset($opts['itemprefix']) ? $opts['itemprefix'] : ''),
              'itemsuffix' => (isset($opts['itemsuffix']) ? $opts['itemsuffix'] : ''),
+             'itemlabelprefix' => (isset($opts['itemlabelprefix']) ? $opts['itemlabelprefix'] : ''),
+             'itemlabelsuffix' => (isset($opts['itemlabelsuffix']) ? $opts['itemlabelsuffix'] : ''),
             ]);
         return $this;
     }
@@ -1249,17 +1251,20 @@ class HtmlForm
         if($dta['type'] == 'radio')
         {
             $t = '';
+            $cssid = $dta['id'];
+            if($cssid == '')
+                $cssid = 'r_'.$dta['name'].'_'.rand(1000,9999);
             foreach($dta['values'] as $h => $v)
             {
-                $s = $dta['value'] == $h ? ' checked="checked"' : ''; 
+                $s = $dta['value'] == $h ? ' checked="checked"' : '';
                 $t .= $dta['itemprefix'].
                     "<input type=\"radio\" name=\"".$dta['name']."\" value=\"$h\"".
                     ($dta['class']==''?'':' class="'.$dta['class'].'"').
                     ($dta['style']==''?'':' style="'.$dta['style'].'"').
                     ($dta['onclick']==''?'':' onclick="'.$dta['onclick'].'"').
                     ($dta['onchange']==''?'':' onchange="'.$dta['onchange'].'"').
-                    ($dta['id']==''?'':' id="'.$dta['id'].'"').
-                    "$s>$v".$dta['itemsuffix'];
+                    ' id="'.$cssid.'_'.$h.'"'.
+                    "$s><label for=\"".$cssid.'_'.$h."\">".$dta['itemlabelprefix'].$v.$dta['itemlabelsuffix']."</label>".$dta['itemsuffix'];
             }
             print $this->formatter->item($dta['before'].$t.$dta['after'],$dta['name']);
         }
