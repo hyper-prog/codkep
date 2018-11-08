@@ -321,7 +321,7 @@ function hook_mymodule_defineroute()
              '#mainmenu' => 'My own page',
              '#public' => 'My own page',
            ];
-
+.
     $r[] = [
              'path' => 'secondsample',
              'callback' => 'mysecondpage',
@@ -375,24 +375,23 @@ _Note: The index.php of CodKep can receive the original query string and it can 
 Sample configs for webservers to use clean urls:
 ~~~code
 # nginx config
-
+.
 server {
     listen 80;
     listen [::]:80;
-
     server_name sandbox.example.com;
-
+.
     root /var/www/mypage;
     index index.php;
-
+.
     location / {
         try_files $uri @rewrite;
     }
-
+.
     location @rewrite {
         rewrite ^ /index.php;
     }
-
+.
     location ~ \.php$ {
         include snippets/fastcgi-php.conf;
         # For php5:
@@ -416,13 +415,13 @@ server {
     <Directory /var/www/mypage/>
         Options -Indexes +FollowSymLinks
         AllowOverride None
-
+.
         #On apache 2.2
          Order allow,deny
          allow from all
         #On apache 2.4
          Require all granted
-
+.
         RewriteEngine on
         RewriteBase /
         RewriteCond %{REQUEST_FILENAME} !-f
