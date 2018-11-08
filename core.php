@@ -1305,6 +1305,7 @@ function sys_init_hook_table()
         }
     }
 
+    run_hook('hooktable_generated');
     ccache_store('hookcache',$sys_data->available_hooks,3600);
 }
 
@@ -1873,6 +1874,11 @@ function hook_core_documentation($section)
     }
     return $docs;
 }
+
+/**
+ * This hook is run after the hook table is generated but the result is not stored to the cache yet.
+ * @package core */
+function _HOOK_hooktable_generated() {}
 
 /**
  * This hook is run at first before all hooks and before the settings is loaded.

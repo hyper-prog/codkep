@@ -273,3 +273,11 @@ function _HOOK_alter_pageroutes() {}
 /** It runs before the page will show, it receives the page route. (It can modify the loaded location or do a redirection.)
  *  @package page */
 function _HOOK_alter_pageshow() {}
+
+/** It runs before the page will show, it receives the page node. The return will prepend before the page content.
+ *  @package page */
+function _HOOK_pageview_before() {}
+
+/** It runs after the page will show, it receives the page node. The return will append after the page content.
+ *  @package page */
+function _HOOK_pageview_after() {}

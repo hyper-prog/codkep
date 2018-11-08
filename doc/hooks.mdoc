@@ -153,6 +153,31 @@ You can drop the current caches by hit the following CodKep [internal url|url:do
 
 *Note: The APC is an optional requirement of CodKep. If it is not available the system work properly but a bit slower.*
 
+#changehookorder#
+=== Change hook order ===
+
+By default the hooks defined by the modules are executed undefined order.
+(It usually means module definition order but this is not guaranteed)
+You can change the order by implement
+***HOOK_hooktable_generated()*** where you can modify the<br/>
+***global $sys_data;***<br/>
+***$sys_data->available_hooks***<br/>
+associative array which holds the available/defined hook calls to a hook name. (hook table)<br/>
+This hook is called immediately after the hook table is generated, but
+the result is not stored to cache yet. (It means that the modified version of the table will be store to the cache)
+.
+The following example reverse the hook execution order of ***HOOK_pageview_after***:
+~~~php
+// In mymodule.php
+function hook_mymodule_hooktable_generated()
+{
+    global $sys_data;
+    $sys_data->available_hooks['pageview_after'] =
+            array_reverse($sys_data->available_hooks['pageview_after']);
+}
+
+~~~
+
 == Debugging hooks ==
 
 If you enable these settings below  in your [site settings|url:doc/codkep/modules#site_settings] you can use same hook
@@ -168,3 +193,10 @@ The hook information/debugging pages
 |---                                    | ---            |
 |[System hook call table|url:hookcalls] | hookcalls      |
 |[Available hooks|url:hooks]            | hooks          |
+
+== Hooks ==
+
+The following hooks can be implement related to hook table or other hooks.
+| Hook                                | Description |
+| ---                                 | ---         |
+| HOOK_hooktable_generated()          | This hook is run after the hook call table is generated but the data is not stored to the cache yet. |

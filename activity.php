@@ -389,7 +389,8 @@ function get_poll_block($pollname,$id,$maincssclass = '')
     print '<div class="ckpoll_title">'.$rp['titletext'].'</div>';
     print '<div class="ckpoll_body_' . $pollname . '_' . $id . ' ckpoll_mbody">';
     print get_poll_block_inner($rp['container'],$pollname,$id);
-    print '</div>';
+    print '</div>'; // .ckpoll_body
+    print '</div>'; // .$mcssclass
     return ob_get_clean();
 }
 
@@ -399,7 +400,7 @@ function get_poll_resultblock($results)
     foreach($results as $text => $values)
     {
         $t->cell($text);
-        $t->cell('<div class="ckpoll_innerbar" style="width: '.$values['percent'].'%;">',
+        $t->cell('<div class="ckpoll_innerbar" style="width: '.$values['percent'].'%;"></div>',
             ['class' => 'ckpoll_outbar']);
         $t->cell($values['percent'] . '% <small>(' . $values['count'] . ')</small>');
         $t->nrow();
