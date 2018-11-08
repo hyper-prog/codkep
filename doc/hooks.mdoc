@@ -137,7 +137,7 @@ function hook_mymodule_customaction($v)
 
 The return values of invoked hooks are merged to an array and returned by ***run_hook*** function.
 .
-*After booting the framework it collects the possible hooks in an associated array, so that a run_hook*
+*After booting the framework collects the possible hooks in an associated array, so that a run_hook*
 *does not need to scan the modules for hooks, the execution is fast and does not have extra overhead.*
 .
 *The hook calling order is depends on the listing order of modules in ***sys/modules.php*** and ***site/_modules.php***.*
