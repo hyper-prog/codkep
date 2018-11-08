@@ -6,6 +6,10 @@
  Webpage:        http://hyperprog.com/codkep
  Documentation:  http://hyperprog.com/codkep/doc
 
+                 The documentation on hyperprog.com can be very outdated.
+                 After installing use the local "doc/codkep" url to reach
+                 the newest available documentation.
+
 Install:
 ===================================================================
 Note: The github repository contains the "sys" directory.
@@ -58,31 +62,33 @@ server {
 }
 
 ===================================================================
-APACHE2 config
+APACHE2.X config
 
 <VirtualHost *:80>
     ServerAdmin webmaster@localhost
     ServerName sandbox.example.com
     DocumentRoot /var/www/mypage
     <Directory /var/www/mypage/>
-        Options -Indexes FollowSymLinks MultiViews
+        DirectoryIndex index.php
         AllowOverride None
-        Order allow,deny
-        allow from all
+        Options -Indexes +FollowSymLinks
+
+        #On apache 2.2
+         Order allow,deny
+         allow from all
+        #On apache 2.4
+         Require all granted
+
         RewriteEngine on
         RewriteBase /
         RewriteCond %{REQUEST_FILENAME} !-f
         RewriteCond %{REQUEST_FILENAME} !-d
         RewriteRule ^(.*)$ index.php [L]
-        #RewriteRule ^(.*)$ index.php?q=$1 [L,QSA]
     </Directory>
-    ErrorLog ${APACHE_LOG_DIR}/error.log
-    LogLevel warn
-    CustomLog ${APACHE_LOG_DIR}/access.log combined
 </VirtualHost>
 
 ===================================================================
-.htaccess
+If you use apache you can put the rewrite rules into .htaccess file:
 
 DirectoryIndex index.php
 Options -Indexes

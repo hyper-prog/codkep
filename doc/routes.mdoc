@@ -404,7 +404,7 @@ server {
 ~~~
 
 ~~~code
-# apache2 config
+# apache2.x config
 #
 # Have to enable rewrite module:
 #  a2enmod rewrite
@@ -414,10 +414,15 @@ server {
     ServerName sandbox.example.com
     DocumentRoot /var/www/mypage
     <Directory /var/www/mypage/>
-        Options -Indexes FollowSymLinks MultiViews
+        Options -Indexes +FollowSymLinks
         AllowOverride None
-        Order allow,deny
-        allow from all
+
+        #On apache 2.2
+         Order allow,deny
+         allow from all
+        #On apache 2.4
+         Require all granted
+
         RewriteEngine on
         RewriteBase /
         RewriteCond %{REQUEST_FILENAME} !-f
@@ -430,7 +435,7 @@ server {
 </VirtualHost>
 ~~~
 
-On apache2 it is possible to do this redirection from htaccess file
+On apache2 it is possible to do this redirection from ***.htaccess*** file
 ~~~code
 DirectoryIndex index.php
 Options -Indexes
@@ -449,9 +454,9 @@ In case the webserver are correctly set the only thing to do is enable clean url
 ~~~code
 // _settings.php
 global $site_config;
-
+.
 // ...
-
+.
 $site_config->clean_urls = true;
 ~~~
 
