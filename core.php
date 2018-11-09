@@ -82,6 +82,7 @@ function hook_core_boot()
          'number1'  => '/^[0-9\.\,\s\-]*$/u',
          'number1ns'=> '/^[0-9\.\,\-]*$/u',
          'numberi'  => '/^[0-9\-]*$/u',
+         'number2'  => '/^[0-9\;\+\.\,\s\-]*$/u',
          'text0'    => '/^[\sa-zA-Z0-9]*$/u',
          'text0nsne'=> '/^[a-zA-Z0-9]+$/u',
          'text1'    => '/^[\s\-\_a-zA-Z0-9]*$/u',
