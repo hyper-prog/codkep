@@ -857,6 +857,7 @@ class HtmlForm
              'maxlength' => (isset($opts['maxlength']) ? $opts['maxlength'] : ''),
              'readonly' => (isset($opts['readonly']) ? $opts['readonly'] : false),
              'autofocus' => (isset($opts['autofocus']) ? $opts['autofocus'] : false),
+             'lang' => (isset($opts['lang']) ? $opts['lang'] : '')
             ]);
         return $this;
     }
@@ -1148,6 +1149,7 @@ class HtmlForm
                     ($dta['size']==''?'':' size="'.$dta['size'].'"').
                     ($dta['type'] == 'password' ? ' autocomplete="off"' : '').
                     ($dta['maxlength']==''?'':' maxlength="'.$dta['maxlength'].'"').
+                    ($dta['lang']==''?'':' lang="'.$dta['lang'].'"').
                     ($dta['autofocus']?' autofocus':'').
                     "/>".$dta['after'],$dta['name']);
         }
@@ -1545,6 +1547,12 @@ class HtmlFormFormatter
     {
         return $txt;
     }
+}
+
+function hook_forms_boot()
+{
+    global $site_config;
+    $site_config->speedform_number_langtag = ""; //Defautl empty -> not added
 }
 
 function hook_forms_init()
@@ -1987,9 +1995,12 @@ function sfh_smalltext_form($field_def,$form,$value,$opts)
 
 function sfh_number_form($field_def,$form,$value,$opts)
 {
+    global $site_config;
     $htmlname = $field_def['sql'];
     if(isset($field_def['htmlname']) && $field_def['htmlname'] != '')
         $htmlname = $field_def['htmlname'];
+    if(!array_key_exists('lang',$opts) && $site_config->speedform_number_langtag != '')
+        $opts['lang'] = $site_config->speedform_number_langtag;
     $form->input('number',$htmlname,$value,$opts);
 }
 

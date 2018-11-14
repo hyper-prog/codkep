@@ -118,6 +118,7 @@ __Definition methods of HtmlForm class:__
     - ***"maxlength"=number*** - Sets the maxlength attribute of the field.
     - ***"readonly"=true*** - Sets the field readonly.
     - ***"autofocus"=true*** - Sets the form item has the initial focus
+    - ***"lang"=text*** - Adds the "lang" attribute to the input tag to avoid locale specific number format problems.
  - @@@text($name, $t, $opts = array())@@@
   - Adds a simple text to the form (Not an input field, this is only a text to display)
    - The ***$name*** parameter is the name of the item. (Not displayed)
@@ -2206,6 +2207,17 @@ The function converts the ***$value*** parameter to a display value according to
 structure and the ***$sqlname*** field parameter. Returns the passed value unchanged if not success.
 .
 
+
+#formssettings#
+== Settings of the forms module ==
+
+The SpeedForm settings which can set [in site settings|url:doc/codkep/modules#site_settings].
+.
+
+| name                                                     | default                       | description |
+|---                                                       |--                             | ---                              |---          |
+|<small> ***$site_config->speedform_number_langtag*** </small>      |<small> "" </small>   | If this value is not empty the SpeedForm adds the "lang" tag with the specified value to every HtmlForm's number input to avoid locale specific problems. |
+
 == Hooks ==
 
 
@@ -2228,3 +2240,4 @@ The following [hooks|url:doc/codkep/hooks] can be implement to interact with for
 | HOOK_speedform_form_generated($obj) |  This hook runs immediately after the SpeedForm is generate the HtmlForm object. It can modify the SpeedForm and the form data too. |
 | HOOK_field_repository($obj)  | You can define global field types with this hook, which can be used and reused in ***to_table()*** function anywhere to build nice and well formatted tables. [See this chapter|url:doc/codkep/totable#fieldrepository]. |
 | HOOK_datadef_repository()    | You can add one or more data definition structure to a global repository by this hook and receive its when needed. (By ***datadef_from_repository($name)*** function) This data definition are accessible by speedform builder, if the settings makes it possible. |
+
