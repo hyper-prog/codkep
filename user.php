@@ -212,10 +212,10 @@ function user_init_local()
         if($user_module_settings->keychange_interval_sec > 0 &&
                 $sys_data->request_time - $row['changed'] > $user_module_settings->keychange_interval_sec)
         {
-            $chkname = substr(base_convert(hash('sha256',generateRandomString(128)),16,36),0,32);
+            $chkname = encOneway62(hash('sha256',generateRandomString(128),true),32);
             generateRandomString(32);
             $chkval = generateRandomString(16) .
-                      substr(base_convert(hash('sha256',generateRandomString(128)),16,36),0,32) .
+                      encOneway62(hash('sha256',generateRandomString(128),true),32) .
                       generateRandomString(16);
 
             sql_exec_noredirect('UPDATE authsess SET chkname=:chkname,chkval=:chkval,changed=:changed
@@ -342,7 +342,7 @@ function getFormSalt($force_unauth_salt = false)
     if(!$force_unauth_salt && $user->auth && $formsalt != '')
         return $formsalt;
     $string = $_SERVER['REMOTE_ADDR'].date('Y-z');
-    return substr(base_convert(hash('sha256',$string.$user_module_settings->form_salt),16,36),0,32);
+    return encOneway62(hash('sha256',$string.$user_module_settings->form_salt,true),32);
 }
 
 /** Try to login an user with the passed credentials.
@@ -413,19 +413,20 @@ function user_login_local($login,$password)
         if($row[$user_module_settings->sql_password_column] == scatter_string_local($password,$cs))
         {
             //success
-            $chkname = substr(base_convert(hash('sha256',generateRandomString(128)),16,36),0,32);
+            $chkname = encOneway62(hash('sha256',generateRandomString(128),true),32);
             $authsess_value =
                 substr(
-                    substr(
-                        base_convert(hash('sha256',generateRandomString(128).'_'.$login.'_'.$_SERVER['REMOTE_ADDR']),16,36)
-                    ,0,46) . base_convert(strval(time()),10,36) . generateRandomString(16)
+                    generateRandomString(8) .
+                    encOneway62(hash('sha256',generateRandomString(128).'_'.$login.'_'.$_SERVER['REMOTE_ADDR'],true),36)
+                     . base_convert(strval(time()),10,36) . generateRandomString(24)
                 ,0,64);
 
             generateRandomString(32);
             $chkval = generateRandomString(16) .
-                      substr(base_convert(hash('sha256',generateRandomString(128)),16,36),0,32) .
+                      encOneway62(hash('sha256',generateRandomString(128),true),32) .
                       generateRandomString(16);
-            $fsalt =  substr(base_convert(hash('sha256',generateRandomString(92).getFormSalt(true)),16,36),0,32);
+
+            $fsalt =  encOneway62(hash('sha256',generateRandomString(92).getFormSalt(true),true),32);
 
             sql_exec('INSERT INTO authsess(uid,authsessval,chkname,chkval,changed,created,access,ip,fsalt,cksess)
                       VALUES(:uid,:authserssval,:chkname,:chkval,:changed,:timec,:timea,:ip,:formsalt,:cksess);',

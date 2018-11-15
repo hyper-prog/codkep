@@ -1675,6 +1675,18 @@ function valid_http_host($host)
 }
 
 /** @ignore */
+function encOneway62($binarydata,$maxlength)
+{
+    $chars = 'v389NdSTwxL267JKghioMtuXABCmnYZabFGHI45qrUVWjeRfyz01cEpQsDOPkl';
+    $ecstr = str_replace('=','',base64_encode($binarydata));
+    $length = strlen($ecstr);
+    for($i = 0 ; $i < $length ; ++$i)
+        while($ecstr[$i] == '+' || $ecstr[$i] == '/')
+            $ecstr[$i] = $chars[(ord($ecstr[$i]) + $i)%62];
+    return substr($ecstr,0,$maxlength);
+}
+
+/** @ignore */
 function generate_authcookie_name()
 {
     global $sys_data;
@@ -1696,9 +1708,7 @@ function generate_authcookie_name()
         $cookie_domain = $sys_data->base_url;
     $prefix = $is_https ? 'CACS' : 'CAC';
     $sys_data->authcookie_name =
-        $prefix . substr(base_convert(
-                            hash('sha256',$site_config->authcookie_name_salt.$cookie_domain.$_SERVER['REMOTE_ADDR'])
-                        ,16,36),0,32);
+        $prefix . encOneway62(hash('sha256',$site_config->authcookie_name_salt.$cookie_domain.$_SERVER['REMOTE_ADDR'],true),32);
     $sys_data->request_time = $_SERVER['REQUEST_TIME'];
 }
 
