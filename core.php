@@ -1695,8 +1695,10 @@ function generate_authcookie_name()
     if($cookie_domain == NULL)
         $cookie_domain = $sys_data->base_url;
     $prefix = $is_https ? 'CACS' : 'CAC';
-    $sys_data->authcookie_name = $prefix . substr(hash('sha256',
-                $site_config->authcookie_name_salt.$cookie_domain.$_SERVER['REMOTE_ADDR']), 0, 32);
+    $sys_data->authcookie_name =
+        $prefix . substr(base_convert(
+                            hash('sha256',$site_config->authcookie_name_salt.$cookie_domain.$_SERVER['REMOTE_ADDR'])
+                        ,16,36),0,32);
     $sys_data->request_time = $_SERVER['REQUEST_TIME'];
 }
 

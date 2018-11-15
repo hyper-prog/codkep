@@ -212,9 +212,11 @@ function user_init_local()
         if($user_module_settings->keychange_interval_sec > 0 &&
                 $sys_data->request_time - $row['changed'] > $user_module_settings->keychange_interval_sec)
         {
-            $chkname = substr(hash('sha256',generateRandomString(128)), 0, 32);
+            $chkname = substr(base_convert(hash('sha256',generateRandomString(128)),16,36),0,32);
             generateRandomString(32);
-            $chkval = substr(hash('sha256',generateRandomString(128)), 0, 64);
+            $chkval = generateRandomString(16) .
+                      substr(base_convert(hash('sha256',generateRandomString(128)),16,36),0,32) .
+                      generateRandomString(16);
 
             sql_exec_noredirect('UPDATE authsess SET chkname=:chkname,chkval=:chkval,changed=:changed
                                  WHERE authsessval = :authsessval;',
@@ -340,25 +342,27 @@ function getFormSalt($force_unauth_salt = false)
     if(!$force_unauth_salt && $user->auth && $formsalt != '')
         return $formsalt;
     $string = $_SERVER['REMOTE_ADDR'].date('Y-z');
-    $bytes = hash('sha256',$string.$user_module_settings->form_salt);
-    $r = substr(base64_encode($bytes),0,32);
-    $length = strlen($r);
-    for($i = 0 ; $i < $length ; ++$i)
-        while($r[$i] == '+' || $r[$i] == '/')
-            $r[$i] = '_';
-    return $r;
+    return substr(base_convert(hash('sha256',$string.$user_module_settings->form_salt),16,36),0,32);
 }
 
 /** Try to login an user with the passed credentials.
  *  @package user */
 function user_login($login,$password)
 {
-    global $user_module_settings;
-    if($user_module_settings->user_login_callback != NULL)
+    try
     {
-        return call_user_func($user_module_settings->user_login_callback,$login,$password);
+        global $user_module_settings;
+        if($user_module_settings->user_login_callback != NULL)
+        {
+            return call_user_func($user_module_settings->user_login_callback,$login,$password);
+        }
+        return user_login_local($login,$password);
     }
-    return user_login_local($login,$password);
+    catch(Exception $e)
+    {
+        user_unload();
+        return 0;
+    }
 }
 
 /** Logouts the current logged user
@@ -409,11 +413,19 @@ function user_login_local($login,$password)
         if($row[$user_module_settings->sql_password_column] == scatter_string_local($password,$cs))
         {
             //success
-            $chkname = substr(hash('sha256',generateRandomString(128)), 0, 32);
-            $authsess_value = substr(hash('sha256',generateRandomString(128).'_'.$login.'_'.$_SERVER['REMOTE_ADDR']), 0, 64);
+            $chkname = substr(base_convert(hash('sha256',generateRandomString(128)),16,36),0,32);
+            $authsess_value =
+                substr(
+                    substr(
+                        base_convert(hash('sha256',generateRandomString(128).'_'.$login.'_'.$_SERVER['REMOTE_ADDR']),16,36)
+                    ,0,46) . base_convert(strval(time()),10,36) . generateRandomString(16)
+                ,0,64);
+
             generateRandomString(32);
-            $chkval = substr(hash('sha256',generateRandomString(128)), 0, 64);
-            $fsalt = substr(hash('sha256',generateRandomString(92).getFormSalt(true)), 0, 32);
+            $chkval = generateRandomString(16) .
+                      substr(base_convert(hash('sha256',generateRandomString(128)),16,36),0,32) .
+                      generateRandomString(16);
+            $fsalt =  substr(base_convert(hash('sha256',generateRandomString(92).getFormSalt(true)),16,36),0,32);
 
             sql_exec('INSERT INTO authsess(uid,authsessval,chkname,chkval,changed,created,access,ip,fsalt,cksess)
                       VALUES(:uid,:authserssval,:chkname,:chkval,:changed,:timec,:timea,:ip,:formsalt,:cksess);',
