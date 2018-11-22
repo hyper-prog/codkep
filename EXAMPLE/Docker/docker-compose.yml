@@ -1,0 +1,27 @@
+version: '2'
+services:
+  ckapacke:
+    image: codkep_apache
+    build: .
+    container_name: codkep_apache
+    restart: always
+    links:
+      - ckdatabase
+    ports:
+      - "80:80"
+    volumes:
+      - ./site:/var/www/html/site
+      - ./data:/var/www/html/data
+  ckdatabase:
+    image: "mysql:5"
+    container_name: codkep_database
+    volumes:
+      - ./mysql:/etc/mysql/conf.d
+      - ./dbfiles/:/var/lib/mysql/
+    environment:
+      MYSQL_ROOT_PASSWORD: codkepapptest
+      MYSQL_DATABASE: codkep
+
+
+
+
