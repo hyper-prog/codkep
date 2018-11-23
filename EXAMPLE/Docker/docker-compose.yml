@@ -1,6 +1,6 @@
 version: '2'
 services:
-  ckapacke:
+  ckapache:
     image: codkep_apache
     build: .
     container_name: codkep_apache
@@ -15,6 +15,7 @@ services:
   ckdatabase:
     image: "mysql:5"
     container_name: codkep_database
+    restart: always
     volumes:
       - ./mysql:/etc/mysql/conf.d
       - ./dbfiles/:/var/lib/mysql/
