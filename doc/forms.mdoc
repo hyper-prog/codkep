@@ -1922,8 +1922,8 @@ do data validation etc.
 | ***formatters*** |(background-color: #ffbb55;) This option can control the form formatter garnish. The form formatter html tags are only placed to the specified locations. This option can meld together two or more field visually if the first set to ***before*** the last to ***after*** and all intermediate fields to ***none***. | ***all***(default), ***before***, ***after***, ***none*** |
 | ***converter***  |(background-color: #ffbb55;) If you set a php callback function name here the loaded html value will send trough this function before saved into the database. | php function name |
 | ***script***     |(background-color: #ffbb55;) You can add arbitrary javascript code to the field, which inserted after the data between ___srcipt___ tags. | javascript code |
+| ***check_loaded_function*** |(background-color: #ffbb55;) You can add function callback/name here which is called immediately after parameter is loaded by load_parameters() function. The function can do some early parameter check and can do redirection to error targets if something wrong. The function cannot change the loaded value! | php function name |
 | ***hide***       |(background-color: #ffbb55;) If this option is ***true*** the field will hided out in form. |***true*** or ***false***|
-
 
 .
 #skiptable#

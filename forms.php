@@ -2585,6 +2585,8 @@ class SpeedForm
                 if ($lp != NULL)
                 {
                     $v = call_user_func($lp, $f, $this->def['table']);
+                    if(isset($f['check_loaded_function']) && $f['check_loaded_function'] != '')
+                        call_user_func($f['check_loaded_function'],$v,$f);
                     if(isset($f['converter']) && $f['converter'] != '')
                         $v = call_user_func($f['converter'],$v);
                     if($v !== NULL)
@@ -2606,6 +2608,8 @@ class SpeedForm
                     if (par_ex($htmlname) && !$skip)
                     {
                         $v = par($htmlname);
+                        if(isset($f['check_loaded_function']) && $f['check_loaded_function'] != '')
+                            call_user_func($f['check_loaded_function'],$v,$f);
                         if(isset($f['converter']) && $f['converter'] != '')
                             $v = call_user_func($f['converter'],$v);
                         $this->values[$f['sql']] = $v;

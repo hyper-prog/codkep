@@ -39,6 +39,14 @@ function hook_user_boot()
     $user_module_settings->password_scatter_salt       = 'OiZ+o-*F4buC31Sw]80(=FeX~ge9D#t@';
     $user_module_settings->password_scatter_log2i      = 14;
 
+    $user_module_settings->password_complexity_check      = false;
+    $user_module_settings->password_complexity_minlength  = 20;
+    $user_module_settings->password_complexity_minlower   = 2;
+    $user_module_settings->password_complexity_minupper   = 2;
+    $user_module_settings->password_complexity_minnumber  = 2;
+    $user_module_settings->password_complexity_cplx       = true;
+    $user_module_settings->password_complexity_checkerfnc = NULL;
+
     $user_module_settings->form_salt                   = 'Rt0o+i_52PosC6=KeS';
 
     $user_module_settings->define_user_nodetype = true;
@@ -565,6 +573,48 @@ function scatter_string($string,$salt,$i_lo2)
     return base64_encode($s);
 }
 
+function complexity_check_local($string,$fbl)
+{
+    global $user_module_settings;
+
+    if(!$user_module_settings->password_complexity_check)
+        return;
+
+    if(strlen($string) < $user_module_settings->password_complexity_minlength)
+        load_loc('error',
+            t('The password has to be at least _len_ character long!',
+                ['_len_' => $user_module_settings->password_complexity_minlength]),
+            t('Password security warning'));
+
+    $l=0; $u=0; $n=0;
+    for($i=0;$i<strlen($string);++$i)
+    {
+        if(is_numeric($string[$i])) ++$n;
+        if(ctype_upper($string[$i])) ++$u;
+        if(ctype_lower($string[$i])) ++$l;
+    }
+
+    if($l < $user_module_settings->password_complexity_minlower)
+        load_loc('error',
+            t('The password has to contains at least _len_ lowercase letter!',
+                ['_len_' => $user_module_settings->password_complexity_minlower]),
+            t('Password security warning'));
+    if($u < $user_module_settings->password_complexity_minupper)
+        load_loc('error',
+            t('The password has to contains at least _len_ uppercase letter!',
+                ['_len_' => $user_module_settings->password_complexity_minupper]),
+            t('Password security warning'));
+    if($n < $user_module_settings->password_complexity_minnumber)
+        load_loc('error',
+            t('The password has to contains at least _len_ numeric letter!',
+                ['_len_' => $user_module_settings->password_complexity_minnumber]),
+            t('Password security warning'));
+
+    if($user_module_settings->password_complexity_cplx && (strlen($string) > strlen(gzcompress($string,9))))
+        load_loc('error',t('The complexity of the password is too low!'),t('Password security warning'));
+}
+
+
 function userblocking_check()
 {
     global $sys_data;
@@ -809,6 +859,10 @@ function hook_user_nodetype()
 {
     global $user_module_settings;
 
+    $pcc = 'complexity_check_local';
+    if($user_module_settings->password_complexity_checkerfnc != NULL)
+        $pcc = $user_module_settings->password_complexity_checkerfnc;
+
     $def = array();
     if($user_module_settings->define_user_nodetype)
     {
@@ -856,6 +910,7 @@ function hook_user_nodetype()
                         "sql" => "password",
                         "text" => "Password",
                         "type" => "password",
+                        "check_loaded_function" => $pcc,
                         "converter" => 'scatter_string_local',
                         "default" => "",
                         "check_noempty" => "You have to fill the password field",
@@ -945,6 +1000,7 @@ function hook_user_nodetype()
                     "sql" => $user_module_settings->sql_password_column,
                     "text" => "Password",
                     "type" => "password",
+                    "check_loaded_function" => $pcc,
                     "converter" => 'scatter_string_local',
                     "default" => "",
                     "check_noempty" => "You have to fill the password field!",
@@ -1002,6 +1058,7 @@ function hook_user_nodetype()
                     "sql" => $user_module_settings->sql_password_column,
                     "text" => "New password",
                     "type" => "password",
+                    "check_loaded_function" => $pcc,
                     "converter" => 'scatter_string_local',
                     "default" => "",
                     "check_noempty" => "You have to fill the password field!",
@@ -1079,7 +1136,6 @@ function usernid_from_loginname($login)
         return null;
     return $r[0];
 }
-
 
 function user_mypasswordchange_page()
 {
