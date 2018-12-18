@@ -58,7 +58,7 @@ function page_page_callback()
     return '';
 }
 
-function page_page_view($node)
+function page_page_view(Node $node)
 {
     ob_start();
     set_title($node->title);
@@ -68,7 +68,7 @@ function page_page_view($node)
     return ob_get_clean();
 }
 
-function hook_page_node_access($node,$op,$acc)
+function hook_page_node_access(Node $node,$op,$acc)
 {
     if($node->node_type == 'page')
     {
@@ -84,7 +84,7 @@ function hook_page_node_access($node,$op,$acc)
 }
 
 
-function hook_page_node_form_before($node,$op)
+function hook_page_node_form_before(Node $node,$op)
 {
     if($node->node_type == 'page' && ($op == 'add' || $op == 'edit'))
     {

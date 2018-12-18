@@ -71,7 +71,7 @@ __Methods of HtmlTable class:__
   - Sets more row of the table with a two dimensional array.
  - @@@get()@@@
   - Generates the html code of the table.
- - @@@setCallback($name, $callback)@@@
+ - @@@setCallback($name, callable $callback)@@@
   - You can add a named callback to the object and run it later with the given name. This callbacks can used as macros.
   \ This callback mechanism works same in HtmlTable,HtmlForm and ExcelXmlDocument. It possible to set different
   \ callbacks with same names to achieve different mechanism on same event.
@@ -164,7 +164,7 @@ __Methods of ExcelXmlDocument class:__
  - This function sets a default options of the table cells.
  \ The options set in ***nrow()*** function will overwrite these, while the options passed
  \ in ***cell()*** and ***head()*** will overwrite both.
-- @@@setCallback($name, $callback)@@@
+- @@@setCallback($name, callable $callback)@@@
  - You can add a named callback to the object and run it later with the given name. This callbacks can used as macros.
  \ This callback mechanism works same in HtmlTable,HtmlForm and ExcelXmlDocument. It possible to set different
  \ callbacks with same names to achieve different mechanism on same event.

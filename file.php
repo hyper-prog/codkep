@@ -432,7 +432,7 @@ class File
     }
 };
 
-function file_access($file,$op,$account)
+function file_access(File $file,$op,$account)
 {
     if(!in_array($op,['create','delete','view']))
         return FILE_ACCESS_DENY;
@@ -464,7 +464,7 @@ function register_image_sizeclass($name,$w,$h)
     $sys_data->image_file_sizeclass_list[$name] = [$w,$h];
 }
 
-function file_image_sizeclass($file,$sizeclass)
+function file_image_sizeclass(File $file,$sizeclass)
 {
     $far = run_hook('file_image_sizeclass',$file,$sizeclass);
     if(in_array(FILE_ACCESS_DENY,$far))
@@ -501,7 +501,7 @@ function file_get_secure()
 }
 
 /** Manages after the form submitted part of a file upload procedure */
-function file_create_upload($name,$opts = array())
+function file_create_upload($name,array $opts = array())
 {
     if($_FILES[$name]['error'] == UPLOAD_ERR_OK)
     {

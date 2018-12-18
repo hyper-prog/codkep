@@ -635,7 +635,7 @@ function ajax_add_log($message)
  *
  *  Only use in ajax handler. ( _defineroute 'type'=>'ajax' ) 
  *  @package core */
-function ajax_add_run($command,$arg = array())
+function ajax_add_run($command,array $arg = array())
 {
     global $sys_data;
     $sys_data->content->commands[] = ['run','global',$command,$arg];

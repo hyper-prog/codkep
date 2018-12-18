@@ -144,7 +144,7 @@ function sql_disconnect()
 /** Executes an sql command and do error handlings.
  *  It returns an executed pdo object
  *  @package sql  */
-function sql_exec($sql,$parameters=array(),$errormsg='')
+function sql_exec($sql,array $parameters = array(),$errormsg='')
 {
     global $db;
     if(!$db->open)
@@ -180,7 +180,7 @@ function sql_exec($sql,$parameters=array(),$errormsg='')
 /** Executes an sql command and does not do error handling.
  *  It returns an executed pdo object
  *  @package sql  */
-function sql_exec_noredirect($sql,$parameters=array())
+function sql_exec_noredirect($sql,array $parameters = array())
 {
     global $db;
     if(!$db->open)
@@ -206,7 +206,7 @@ function sql_exec_noredirect($sql,$parameters=array())
 /** Executes and fetch an sql command and do error handlings.
  *  It returns an executed and fetched array
  *  @package sql  */
-function sql_exec_fetch($sql,$parameters=array(),$errormsg='')
+function sql_exec_fetch($sql,array $parameters = array(),$errormsg='')
 {
     $r = array();
     $do = sql_exec($sql,$parameters,$errormsg);
@@ -229,7 +229,7 @@ function sql_exec_fetch($sql,$parameters=array(),$errormsg='')
 /** Executes and fetch an sql command and do error handlings.
  *  It returns an executed and fetched array 
  *  Allows empty result */
-function sql_exec_fetchN($sql,$parameters=array(),$errormsg='')
+function sql_exec_fetchN($sql,array $parameters = array(),$errormsg='')
 {
     $r = array();
     $do = sql_exec($sql,$parameters,$errormsg);
@@ -240,7 +240,7 @@ function sql_exec_fetchN($sql,$parameters=array(),$errormsg='')
 
 /** Executes and fetch an sql command and do error handlings.
  *  It returns a single value. The first field of first row */
-function sql_exec_single($sql,$parameters=array(),$errormsg='')
+function sql_exec_single($sql,array $parameters = array(),$errormsg='')
 {
     $r = sql_exec_fetch($sql,$parameters,$errormsg);
     if(!isset($r[0]))
@@ -259,7 +259,7 @@ function sql_exec_single($sql,$parameters=array(),$errormsg='')
 
 /** Executes and fetchAll an sql command and do error handlings.
  *  It returns an executed and fetchAll() fetched array of arrays */
-function sql_exec_fetchAll($sql,$parameters=array(),$errormsg='',$fetch_names_only = false)
+function sql_exec_fetchAll($sql,array $parameters = array(),$errormsg='',$fetch_names_only = false)
 {
     $r = array();
     $do = sql_exec($sql,$parameters,$errormsg);
@@ -455,7 +455,7 @@ function sql_column_exists($tablename,$colname)
     return true;
 }
 
-function sql_check_and_build($name,$tablename,$fields)
+function sql_check_and_build($name,$tablename,array $fields)
 {
     $table_exists = sql_table_exists($tablename);
     $full_exists = true;
@@ -862,7 +862,7 @@ class DatabaseQuery
         return $this;
     }
 
-    public function set_fv_a($field_value_array)
+    public function set_fv_a(array $field_value_array)
     {
         foreach($field_value_array as $n => $v)
             $this->set_fv($n,$v);
@@ -874,7 +874,7 @@ class DatabaseQuery
         $this->conf['sets'][] = ['name' => $fieldspec,'value' => $expression,'type' => 'expr','opts' => $options];
         return $this;
     }
-    public function join($container,$alias,$conditions)
+    public function join($container,$alias,DatabaseCond $conditions)
     {
         $this->conf['joins'][] =
             ['type' => 'normal','container' => $container,'alias' => $alias,'conditions' => $conditions];
@@ -890,7 +890,7 @@ class DatabaseQuery
         ];
         return $this;
     }
-    public function join_opt($container,$alias,$conditions)
+    public function join_opt($container,$alias,DatabaseCond $conditions)
     {
         $this->conf['joins'][] =
             ['type' => 'optional','container' => $container,'alias' => $alias,'conditions' => $conditions];
@@ -970,7 +970,7 @@ class DatabaseQuery
         return $this;
     }
 
-    public function cond($cond)
+    public function cond(DatabaseCond $cond)
     {
         $this->conf['conditions']->cond($cond);
         return $this;
@@ -1061,12 +1061,12 @@ class DatabaseCond
         $this->logic = $logic;
         $this->conds = [];
     }
-    public function cond($cond)
+    public function cond(DatabaseCond $cond)
     {
         $this->conds[] = $cond;
         return $this;
     }
-    public function add($cond)
+    public function add(DatabaseCond $cond)
     {
         $this->conds[] = $cond;
         return $this;

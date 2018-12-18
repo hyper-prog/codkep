@@ -97,7 +97,7 @@ __Definition methods of HtmlForm class:__
   \ The response will processed by the CodKep's [ajax framework|url:doc/codkep/ajax].
   \ The other parameters are passed to the ***url()*** function.
   \ See the [documentation of ***url()***|url:doc/codkep/routes#urlfunc]
- - @@@input($type, $n, $v, $opts = array())@@@
+ - @@@input($type, $n, $v, array $opts = array())@@@
   - Adds an input tag to the form with type received in ***$type*** parameter.
    - The ***$type*** parameter can receive the following values:
     - ***"text" "number" "password" "submit" "file"*** - These values are generates a single html input tag and the type
@@ -119,7 +119,7 @@ __Definition methods of HtmlForm class:__
     - ***"readonly"=true*** - Sets the field readonly.
     - ***"autofocus"=true*** - Sets the form item has the initial focus
     - ***"lang"=text*** - Adds the "lang" attribute to the input tag to avoid locale specific number format problems.
- - @@@text($name, $t, $opts = array())@@@
+ - @@@text($name, $t, array $opts = array())@@@
   - Adds a simple text to the form (Not an input field, this is only a text to display)
    - The ***$name*** parameter is the name of the item. (Not displayed)
    - The ***$t*** parameter is the text to display
@@ -131,7 +131,7 @@ __Definition methods of HtmlForm class:__
     - ***"before"=string*** - Put this text before the tag.
     - ***"after"=string*** - Put this text after the tag.
     - ***"readonly"=true*** - Sets the field readonly.
- - @@@upload($n, $v, $opts = array())@@@
+ - @@@upload($n, $v, array $opts = array())@@@
   - Adds a file upload field to the form (This is an ***input type="file"*** tag)
    - The ***$name*** parameter is the name of the field.
    - The ***$v*** parameter is the default value of the input tag. (Leave it empty)
@@ -145,7 +145,7 @@ __Definition methods of HtmlForm class:__
     - ***"size"=number*** - Sets the size attribute of the field.
     - ***"maxlength"=number*** - Sets the maxlength attribute of the field.
     - ***"readonly"=true*** - Sets the field readonly.
- - @@@select($type, $n, $v, $values = array(), $opts = array())@@@
+ - @@@select($type, $n, $v, array $values = array(), $opts = array())@@@
   - Adds a select (dropdown), radio or optional select field to the form.
    - The ***$type*** parameter can receive the following values:
     - ***"select"*** - Generates a html select. (Dropdown select)
@@ -171,7 +171,7 @@ __Definition methods of HtmlForm class:__
     \ After the option tags in select mode and after the input and label tags in radio mode.
     - ***"itemlabelprefix"=string*** - This string is written before the label text ind radio mode.
     - ***"itemlabelsuffix"=string*** - This string is written after the label text ind radio mode.
- - @@@textarea($n, $v, $row, $col, $opts = array())@@@
+ - @@@textarea($n, $v, $row, $col, array $opts = array())@@@
   - Adds a textarea field to the form. (Large text editor field)
    - The ***$name*** parameter is the name of the field.
    - The ***$v*** parameter is the default value of the select.
@@ -188,7 +188,7 @@ __Definition methods of HtmlForm class:__
     - ***"readonly"=true*** - Sets the field readonly.
     - ***"softreadonly"=true*** - Disable input of textarea. (See the standard html textarea readonly attribute)
     - ***"autofocus"=true*** - Sets the form item has the initial focus
- - @@@hidden($n, $v, $opts = array())@@@
+ - @@@hidden($n, $v, array $opts = array())@@@
   - Adds a hidden field to the form (This is an ***input type="hidden"*** tag)
    - The ***$name*** parameter is the name of the field.
    - The ***$v*** parameter is the value of the field.
@@ -199,11 +199,11 @@ __Definition methods of HtmlForm class:__
     - ***"id"=string*** - Sets the ID of the field.
     - ***"before"=string*** - Put this text before the tag.
     - ***"after"=string*** - Put this text after the tag.
- - @@@hidden_array(array $keyvalue,$opts=array())@@@
+ - @@@hidden_array(array $keyvalue,array $opts=array())@@@
   - Adds the parameter passed ***$keyvalue*** associative array every elements to the form as hidden fields.
   \ The keys of the array is the parameter names while the values act as hidden values.
   - The ***$opts*** parameter is added for every fields and works same as ***hidden()*** method above.
- - @@@datefield($type, $n, $v, $opts = array())@@@
+ - @@@datefield($type, $n, $v, array $opts = array())@@@
   - Adds a date typed field to the form. This will be a dropdown select for years, months and days.
   - The parameter ***$type*** should be ***"date"*** or ***"dateu"***
    - The type ***"date"*** means a simple date field with year, month and day selector.
@@ -218,7 +218,7 @@ __Definition methods of HtmlForm class:__
    - ***"id"=string*** - Sets the ID of the field.
    - ***"before"=string*** - Put this text before the tag.
    - ***"after"=string*** - Put this text after the tag.
- - @@@input_p($type, $n, $v, $opts = array())@@@
+ - @@@input_p($type, $n, $v, array $opts = array())@@@
   - Same as ***input()*** method but define and query the previous set HTML parameter value
   \ through the CodKep [parameter system|url:doc/codkep/parameters].
   \ If the parameter which defined by this field is set, the form value will display the already set value.
@@ -230,7 +230,7 @@ __Definition methods of HtmlForm class:__
   \ Use it if you already define the parameter before and only need to load the set value into the form.
   - If the ***$opts*** array contains an index ***'no_par_load'*** with ***true*** value the parameter loading
   \ is skipped even if the value is received, and the original default value is used instead.
- - @@@select_p($type, $n, $v, $values = array(), $opts = array())@@@
+ - @@@select_p($type, $n, $v, array $values = array(), array $opts = array())@@@
   - Same as ***select()*** method but define and query the previous set HTML parameter value
   \ through the CodKep [parameter system|url:doc/codkep/parameters].
   \ If the parameter which defined by this field is set, the form value will display the already set value.
@@ -242,7 +242,7 @@ __Definition methods of HtmlForm class:__
   \ Use it if you already define the parameter before and only need to load the set value into the form.
   - If the ***$opts*** array contains an index ***'no_par_load'*** with ***true*** value the parameter loading
   \ is skipped even if the value is received, and the original default value is used instead.
- - @@@textarea_p($n, $v, $row, $col, $opts = array())@@@
+ - @@@textarea_p($n, $v, $row, $col, array $opts = array())@@@
   - Same as ***textarea()*** method but define and query the previous set HTML parameter value
   \ through the CodKep [parameter system|url:doc/codkep/parameters].
   \ If the parameter which defined by this field is set, the form value will display the already set value.
@@ -254,7 +254,7 @@ __Definition methods of HtmlForm class:__
   \ Use it if you already define the parameter before and only need to load the set value into the form.
   - If the ***$opts*** array contains an index ***'no_par_load'*** with ***true*** value the parameter loading
   \ is skipped even if the value is received, and the original default value is used instead.
- - @@@datefield_p($type, $n, $v, $opts = array())@@@
+ - @@@datefield_p($type, $n, $v, array $opts = array())@@@
   - Same as ***datefield()*** method but define and query the previous set HTML parameter value
   \ through the CodKep [parameter system|url:doc/codkep/parameters].
   \ If the parameter which defined by this field is set, the form value will display the already set value.
@@ -266,7 +266,7 @@ __Definition methods of HtmlForm class:__
   \ Use it if you already define the parameter before and only need to load the set value into the form.
   - If the ***$opts*** array contains an index ***'no_par_load'*** with ***true*** value the parameter loading
   \ is skipped even if the value is received, and the original default value is used instead.
- - @@@custom($name, $value, $callback, $opts = array())@@@
+ - @@@custom($name, $value, callable $callback, array  $opts = array())@@@
    - Adds a custom form element to the form with a user defined callback function to generate html codes.
     - The ***$name*** parameter is the name of the from element.
     - The ***$value*** parameter is the value of the field.
@@ -294,7 +294,7 @@ __Definition methods of HtmlForm class:__
      - ***"autofocus"=true*** - Sets the form item has the initial focus
      - ***"itemprefix"=string*** - This string is written immediately before the item tags.
      - ***"itemsuffix"=string*** - This string is written immediately after the item tags.
- - @@@setCallback($name, $callback)@@@
+ - @@@setCallback($name, callable $callback)@@@
   - You can add a named callback to the object and run it later with the given name. This callbacks can used as macros.
   \ This callback mechanism works same in HtmlTable,HtmlForm and ExcelXmlDocument. It possible to set different
   \ callbacks with same names to achieve different mechanism on same event.

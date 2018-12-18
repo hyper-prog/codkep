@@ -41,7 +41,7 @@ class HtmlTable
         $this->callbacks = array();
     }
 
-    public function setCallback($name,$callback)
+    public function setCallback($name,callable $callback)
     {
         $this->callbacks[$name] = $callback;
     }
@@ -274,7 +274,7 @@ class ExcelXmlDocument
         return $this;
     }
 
-    public function setCallback($name,$callback)
+    public function setCallback($name,callable $callback)
     {
         $this->callbacks[$name] = $callback;
     }
@@ -797,7 +797,7 @@ class HtmlForm
         return $this;
     }
 
-    public function setCallback($name,$callback)
+    public function setCallback($name,callable $callback)
     {
         $this->callbacks[$name] = $callback;
     }
@@ -807,7 +807,7 @@ class HtmlForm
         return call_user_func($this->callbacks[$name],$this,$parameter);
     }
 
-    public function opts($o)
+    public function opts(array $o)
     {
         $this->o = array_merge($this->o,$o);
         return $this;
@@ -840,7 +840,7 @@ class HtmlForm
         return $this;
     }
 
-    public function input($type,$n,$v,$opts=array())
+    public function input($type,$n,$v,array $opts=array())
     {
         array_push($this->d,
             ['type' => $type,
@@ -862,7 +862,7 @@ class HtmlForm
         return $this;
     }
 
-    public function upload($n,$v,$opts=array())
+    public function upload($n,$v,array $opts=array())
     {
         array_push($this->d,
             ['type' => 'upload',
@@ -883,7 +883,7 @@ class HtmlForm
         return $this;
     }
 
-    public function datefield($type,$n,$v,$opts=array())
+    public function datefield($type,$n,$v,array $opts=array())
     {
         array_push($this->d,
             ['type' => $type,
@@ -899,7 +899,7 @@ class HtmlForm
         return $this;
     }
 
-    public function select($type,$n,$v,$values=array(),$opts=array())
+    public function select($type,$n,$v,array $values=array(),array $opts=array())
     {
         array_push($this->d,
             ['type' => $type,
@@ -923,7 +923,7 @@ class HtmlForm
         return $this;
     }
 
-    public function textarea($n,$v,$row,$col,$opts=array())
+    public function textarea($n,$v,$row,$col,array $opts=array())
     {
         array_push($this->d,
             ['type' => 'textarea',
@@ -945,7 +945,7 @@ class HtmlForm
         return $this;
     }
 
-    public function text($name,$t,$opts=array())
+    public function text($name,$t,array $opts=array())
     {
         array_push($this->d,
             ['type' => 'raw',
@@ -964,7 +964,7 @@ class HtmlForm
         return $this;
     }
 
-    public function custom($name,$value,$callback,$opts=array())
+    public function custom($name,$value,callable $callback,array $opts=array())
     {
         array_push($this->d,
             ['type' => 'custom',
@@ -986,19 +986,19 @@ class HtmlForm
         return $this;
     }
 
-    public function hidden($n,$v,$opts=array())
+    public function hidden($n,$v,array $opts=array())
     {
         $this->input('hidden',$n,$v,$opts);
         return $this;
     }
 
-    public function hidden_array(array $keyvalue,$opts=array())
+    public function hidden_array(array $keyvalue,array $opts=array())
     {
         foreach($keyvalue as $key => $value)
             $this->input('hidden',$key,$value,$opts);
     }
 
-    public function input_p($type,$n,$v,$opts=array())
+    public function input_p($type,$n,$v,array $opts=array())
     {
         if(!isset($opts['no_par_def']) || !$opts['no_par_def'])
             par_def($n,isset($opts['par_sec']) ? $opts['par_sec'] : 'text4');
@@ -1009,7 +1009,7 @@ class HtmlForm
         return $this;
     }
 
-    public function select_p($type,$n,$v,$values=array(),$opts=array())
+    public function select_p($type,$n,$v,array $values=array(),array $opts=array())
     {
         if(!isset($opts['no_par_def']) || !$opts['no_par_def'])
             par_def($n,isset($opts['par_sec']) ? $opts['par_sec'] : 'text4');
@@ -1020,7 +1020,7 @@ class HtmlForm
         return $this;
     }
 
-    public function textarea_p($n,$v,$row,$col,$opts=array())
+    public function textarea_p($n,$v,$row,$col,array $opts=array())
     {
         if(!isset($opts['no_par_def']) || !$opts['no_par_def'])
             par_def($n,isset($opts['par_sec']) ? $opts['par_sec'] : 'text4');
@@ -1031,7 +1031,7 @@ class HtmlForm
         return $this;
     }
 
-    public function datefield_p($type,$n,$v,$opts=array())
+    public function datefield_p($type,$n,$v,array $opts=array())
     {
         if(!isset($opts['no_par_def']) || !$opts['no_par_def'])
         {
@@ -2818,22 +2818,22 @@ class SpeedForm
         return $uf;
     }
 
-    public function sql_insert_part($tablename = '',$extra = [])
+    public function sql_insert_part($tablename = '',array $extra = [])
     {
         return $this->sql_insert_part_CMN($tablename,0,$extra);
     }
 
-    public function sql_insert_part_PQ($tablename = '',$extra = [])
+    public function sql_insert_part_PQ($tablename = '',array $extra = [])
     {
         return $this->sql_insert_part_CMN($tablename,1,$extra);
     }
 
-    public function sql_insert_part_PA($tablename = '',$extra = [])
+    public function sql_insert_part_PA($tablename = '',array $extra = [])
     {
         return $this->sql_insert_part_CMN($tablename,2,$extra);
     }
 
-    protected function sql_insert_part_CMN($tablename,$mode,$extra) // 0-normal,1-PQ,2-PA
+    protected function sql_insert_part_CMN($tablename,$mode,array $extra) // 0-normal,1-PQ,2-PA
     {
         global $speedform_handlers;
         $npart = '';
@@ -2938,19 +2938,19 @@ class SpeedForm
         return $pa;
     }
 
-    public function sql_insert_string($tablename = '',$extra = [])
+    public function sql_insert_string($tablename = '',array $extra = [])
     {
         return 'INSERT into ' . ($tablename != '' ? $tablename : $this->def['table']) .
                $this->sql_insert_part($tablename,$extra);
     }
 
-    public function sql_insert_string_PQ($tablename = '',$extra = [])
+    public function sql_insert_string_PQ($tablename = '',array $extra = [])
     {
         return 'INSERT into ' . ($tablename != '' ? $tablename : $this->def['table']) .
         $this->sql_insert_part_PQ($tablename,$extra);
     }
 
-    public function sql_insert_string_PA($tablename = '',$extra = [])
+    public function sql_insert_string_PA($tablename = '',array $extra = [])
     {
         return $this->sql_insert_part_PA($tablename,$extra);
     }
