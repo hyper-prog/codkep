@@ -332,8 +332,16 @@ function user_unload()
 function generateRandomString($length = 10)
 {
     $chars = 'opQRwxLMNdefyz01cE2XABCmnYZabFGHI45qrsDOP67JKghiSTUVWjkltuv389';
-    $crypto_strong = false;
-    $bytes = openssl_random_pseudo_bytes($length,$crypto_strong);
+    if(function_exists('random_bytes'))
+        $bytes = random_bytes($length);
+    else
+    {
+        $crypto_strong = false;
+        $bytes = openssl_random_pseudo_bytes($length, $crypto_strong);
+        if(!$crypto_strong)
+            d1('Security warning: Cannot generate cryptographically strong random bytes!');
+    }
+
     $r = substr(base64_encode($bytes),0,$length);
     for($i = 0 ; $i < $length ; ++$i)
         while($r[$i] == '+' || $r[$i] == '/')
@@ -1271,16 +1279,15 @@ function hook_user_check_module_requirements()
 {
     ob_start();
 
-    $sslrand_has = function_exists('openssl_random_pseudo_bytes');
+    $cryptrand_has = function_exists('random_bytes') || function_exists('openssl_random_pseudo_bytes');
     $hash_has = function_exists('hash');
     $hash1a_has = in_array('sha512',hash_algos());
     $hash2a_has = in_array('ripemd320',hash_algos());
     $gzc_has = function_exists('gzcompress');
 
-
     print '<tr>';
-    print '<td class="normal">Php OpenSSL random pseudo function</td>';
-    print '<td class="'.($sslrand_has ? 'green':'red').'">'.($sslrand_has ? 'Installed' : 'Not installed').'</td>';
+    print '<td class="normal">Php random_bytes or OpenSSL random</td>';
+    print '<td class="'.($cryptrand_has ? 'green':'red').'">'.($cryptrand_has ? 'Available' : 'Not available').'</td>';
     print '</tr>';
 
     print '<tr>';
@@ -1305,7 +1312,6 @@ function hook_user_check_module_requirements()
 
     return ob_get_clean();
 }
-
 
 function hook_user_documentation($section)
 {
