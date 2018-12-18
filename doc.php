@@ -10,7 +10,7 @@ function hook_doc_boot()
 function hook_doc_defineroute()
 {
     global $site_config;
-    $route = array();
+    $route = [];
     if($site_config->disable_system_doc_target)
         return $route;
 
@@ -53,7 +53,7 @@ function codkep_doc_callback()
 
     $docbase = run_hook('documentation',$section);
 
-    $contents = array();
+    $contents = [];
     $title_is_set = false;
 
     ob_start();
@@ -107,11 +107,11 @@ function mmark_to_html($input,$name,&$contents,$imagepath = '',$scan_content_onl
 {
     $state = [
         'nextheading' => 1,
-        'content' => array(),
+        'content' => [],
         'imagepath' => $imagepath,
-        'stack_tag' => array(),
-        'stack_cr'  => array(),
-        'stack_level'  => array(),
+        'stack_tag' => [],
+        'stack_cr'  => [],
+        'stack_level'  => [],
         'scanonly' => false,
     ];
 
@@ -188,7 +188,7 @@ function existsTagStack($name,&$state)
 //state-t kellene megcsinalni
 function mmint_process_line($i,&$state)
 {
-    $m = array();
+    $m = [];
     if(substr($i,0,1) == '=' && topTagStack('cr',$state) < 2)
         if(preg_match("/([=]{1,4})\\s+([^=]*)\\s+[=]{1,4}/",$i,$m) == 1)
         {
@@ -359,8 +359,8 @@ function mmint_process_linestring($i,&$state)
     $i = preg_replace("/\\*\\*([^\\*]+)\\*\\*/",'<strong>$1</strong>',$i);
     $i = preg_replace("/\\*([^\\*]+)\\*/",'<em>$1</em>',$i);
 
-    $mm = array();
-    $m_sub = array();
+    $mm = [];
+    $m_sub = [];
     $orig_i = $i;
 
     if(preg_match_all("/\\{([^\\{\\}]+)\\}/",$orig_i,$mm,PREG_SET_ORDER) > 0)
@@ -462,11 +462,11 @@ function extractStyleFromCellSpec($line,&$style)
 
 function explodeNotIn($sep,$string,$start_end)
 {
-    $ret_array = array();
+    $ret_array = [];
     $len = strlen($string);
     $spos = 0;
     $in_deep = 0;
-    $closer = array();
+    $closer = [];
     for($i=0 ; $i<$len ; ++$i)
     {
         if(array_key_exists($string[$i],$start_end))

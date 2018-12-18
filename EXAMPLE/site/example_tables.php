@@ -3,7 +3,7 @@
 
 function hook_example_tables_defineroute()
 {
-    $r = array();
+    $r = [];
     $r[] = ['path' => 'querytables',
             'callback' => 'page_querytables',
             '#menu' => 'QueryTables',

@@ -19,7 +19,7 @@ function hook_sfbuilder_boot()
 
 function hook_sfbuilder_defineroute()
 {
-    $i = array();
+    $i = [];
     $i[] = [
             "title" => "SpeedForm definition builder",
             "path" => "speedformbuilder",
@@ -65,7 +65,7 @@ define('BSEC_FUNC'    ,0);
 define('BSEC_VALID'   ,1);
 define('BSEC_LOOK'    ,2);
 
-function p_gral_item($level,$name,$type,$cat,$opts=array(),$text='')
+function p_gral_item($level,$name,$type,$cat,$opts=[],$text='')
 {
 /* Array elements:
   0 - level,

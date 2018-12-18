@@ -162,7 +162,7 @@ to generate web urls correctly unified way.
 __Strongly recommend to use url generator functions of CodKep both internal locations and outer urls too!__
 .
 Generation of an url in codkep:<br/>
-@@@url($loc, array $query = array(), array $options = array())@@@
+@@@url($loc, array $query = [], array $options = [])@@@
 
 - ***$loc*** parameter
  - This is a location or external url to build the generated url.
@@ -214,7 +214,7 @@ Many cases we have to generate html links instead of simple urls.
 The CodKep have a html anchor tag generator function, which uses the ***url()*** function
 to generate a formatted html link.
 .
-@@@l($text, $loc, array $options = array(), array $query = array(), $fragment = NULL)@@@
+@@@l($text, $loc, array $options = [], array $query = [], $fragment = NULL)@@@
 
 - ***$text*** parameter
  - The link text for the anchor tag. Accept html tags too.
@@ -287,7 +287,7 @@ _After this kind of redirection the client cannot detect the redirection._
 _It will know that it see the requested url, but the content will change._
 .
 
-@@@goto_loc($location,array $query = array())@@@
+@@@goto_loc($location,array $query = [])@@@
 .
 Stops (or won't start) the current executing, drops the outputs, and immediately send
 redirection headers to the browsers with the parameter passed location.

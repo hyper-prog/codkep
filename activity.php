@@ -539,7 +539,7 @@ function showpollpage_callback()
 function hook_activity_required_sql_schema()
 {
     global $site_config;
-    $t = array();
+    $t = [];
     foreach($site_config->comment_containers as $cnt)
     {
         $t["activity_module_comment_table_$cnt"] =

@@ -25,7 +25,7 @@ function hook_core_boot()
     $site_config->cookie_domain         = NULL;
 
     $site_config->startpage_location    = 'not_configured_startpage';
-    $site_config->startpage_location_byhost = array();
+    $site_config->startpage_location_byhost = [];
     $site_config->default_theme_name    = 'flex';
     $site_config->site_icon             = '/sys/images/cklogo.ico';
     $site_config->notfound_location     = 'notfound';
@@ -37,7 +37,7 @@ function hook_core_boot()
     $site_config->site_name    = NULL;
     $site_config->site_slogan  = NULL;
 
-    $site_config->mainmenu = array();
+    $site_config->mainmenu = [];
     $site_config->mainmenu_append_tag_mainmenu = true;
 
     $site_config->main_script           = 'index.php';
@@ -54,7 +54,7 @@ function hook_core_boot()
         'security'  => 'param_security_error',
     ];
 
-    $translations = array();
+    $translations = [];
     //------------------------------------------------
 
     $sys_data->current_route = NULL;
@@ -118,7 +118,7 @@ function add_t($lang,$orig,$translated)
 {
     global $translations;
     if(!isset($translations[$lang]))
-        $translations[$lang] = array();
+        $translations[$lang] = [];
     $translations[$lang][$orig] = $translated;
 }
 
@@ -132,7 +132,7 @@ function add_t_array($lang,array $trs)
 {
     global $translations;
     if(!isset($translations[$lang]))
-        $translations[$lang] = array();
+        $translations[$lang] = [];
     $translations[$lang] = array_merge($translations[$lang],$trs);
 }
 
@@ -220,7 +220,7 @@ function ccache_delete($key)
  * @param array $args Optional associative array of replacements to make after translation.
  * @return string The translated string. If no translation found the original (substituted) string is returned 
  * @package core */
-function t($string,array $args = array())
+function t($string,array $args = [])
 {
     global $site_config;
     global $translations;
@@ -263,7 +263,7 @@ function get_lang()
  *  @param array $options Options of the build of url
  *  @return string The printable url can be used in browser of clients
  *  @package core */
-function url($loc,array $query=array(),array $options=array())
+function url($loc,array $query=[],array $options=[])
 {
     global $sys_data;
     global $site_config;
@@ -411,10 +411,10 @@ function url($loc,array $query=array(),array $options=array())
  *  @param array $query An optional url anchor tag to append to the URL
  *  @return string The printable html code
  *  @package core */
-function l($text,$loc,array $options = array(),array $query = array(),$fragment = NULL)
+function l($text,$loc,array $options = [],array $query = [],$fragment = NULL)
 {
     ob_start();
-    $url_options = array();
+    $url_options = [];
     if(isset($options['query']))
         $query = array_merge($query,$options['query']);
     if(isset($options['url_options']))
@@ -503,7 +503,7 @@ function load_loc()
  *  @see load_loc()
  *  @param string $location The location to go/exec
  *  @package core */
-function goto_loc($location,array $query = array())
+function goto_loc($location,array $query = [])
 {
     while(ob_get_level() > 0)
         ob_end_clean();
@@ -518,7 +518,7 @@ function goto_loc($location,array $query = array())
 function ajax_reset()
 {
     global $sys_data;
-    $sys_data->content->commands = array();
+    $sys_data->content->commands = [];
 }
 
 /** Creates an ajax (jQuery) 'html' command and adds to the output queue.
@@ -635,7 +635,7 @@ function ajax_add_log($message)
  *
  *  Only use in ajax handler. ( _defineroute 'type'=>'ajax' ) 
  *  @package core */
-function ajax_add_run($command,array $arg = array())
+function ajax_add_run($command,array $arg = [])
 {
     global $sys_data;
     $sys_data->content->commands[] = ['run','global',$command,$arg];
@@ -829,7 +829,7 @@ function par_def($name,$security_class,$source = 'all',$accept_empty = true,$def
 function par_reset()
 {
     global $sys_data;
-    $sys_data->content->par = array();
+    $sys_data->content->par = [];
 }
 
 /** Returns a key-value array with the defined and set parameters
@@ -841,9 +841,9 @@ function par_reset()
  *          The names of parameters which are skipped from the returned parameters.
  *  @return array Returns an associative array contains the parameters set on this page
  *  @package core  */
-function parameters(array $change = array(),array $infilter = array(),array $outfilter = array())
+function parameters(array $change = [],array $infilter = [],array $outfilter = [])
 {
-    $r = array();
+    $r = [];
     global $sys_data;
     foreach($sys_data->content->par as $p)
     {
@@ -1016,7 +1016,7 @@ function routes_tag_array($tag)
 {
     global $sys_data;
 
-    $r = array();
+    $r = [];
     foreach($sys_data->loaded_routes as $route)
         if(isset($route['#'.$tag]))
             $r[$route['#'.$tag]] = $route['path'];
@@ -1135,7 +1135,7 @@ function run_hook()
     global $sys_data;
     $args = func_get_args();
     $name = array_shift($args);
-    $ret_array = array();
+    $ret_array = [];
     if(array_key_exists($name,$sys_data->available_hooks))
         foreach($sys_data->available_hooks[$name] as $fn)
         {
@@ -1190,7 +1190,7 @@ function hook_core_before_start()
 /** @ignore system defined hook */
 function hook_core_defineroute()
 {
-    $r = array();
+    $r = [];
     $r[] = [
             "path" => "not_configured_startpage",
             "callback" => "core_notconfigured_startpage",
@@ -1284,9 +1284,9 @@ function sys_init_hook_table()
 
     global $sys_modules;
     $user_defined_functions = get_defined_functions()["user"];
-    $sys_data->available_hooks = array();
+    $sys_data->available_hooks = [];
     $module_names = array_keys($sys_modules);
-    $module_hookhelper=array();
+    $module_hookhelper=[];
     foreach($module_names as $mname)
         $module_hookhelper["hook_".$mname."_"] = strlen("hook_".$mname."_");
     foreach($user_defined_functions as $funcname)
@@ -1317,15 +1317,15 @@ function sys_reset_content()
     global $sys_data;
     $sys_data->content->html_start = '';
     $sys_data->content->html_end = '';
-    $sys_data->content->head = array();
+    $sys_data->content->head = [];
     $sys_data->content->style = '';
     $sys_data->content->title = '';
     $sys_data->content->icon = '';
     $sys_data->content->generated = '';
     $sys_data->content->body = '';
-    $sys_data->content->commands = array();
-    $sys_data->content->par = array();
-    $sys_data->content->pageparts = array();
+    $sys_data->content->commands = [];
+    $sys_data->content->par = [];
+    $sys_data->content->pageparts = [];
 }
 
 /** @ignore This function does the required preprocessing of collected routes before the real routing. */
@@ -1346,8 +1346,8 @@ function sys_preprocess_routes()
         {
              if(strpos($route['path'],'}') !== false)
              {
-                 $matches = array();
-                 $url_par_names = array();
+                 $matches = [];
+                 $url_par_names = [];
                  if(preg_match_all('/\{([a-zA-Z0-9\-\_]+)\}/',$route['path'],$matches,PREG_SET_ORDER))
                  {
                      $i = 0;
@@ -1374,7 +1374,7 @@ function sys_preprocess_routes()
 
 /** @ignore The rounting function.
  *  Selects and execute the necessary route's callbacks/file. */
-function sys_route($location,array $args = array())
+function sys_route($location,array $args = [])
 {
     global $site_config;
     global $sys_data;
@@ -1392,10 +1392,10 @@ function sys_route($location,array $args = array())
             $match = true;
         if($route["mtype"] == 2)
         {
-            $matches = array();
+            $matches = [];
             if(preg_match($route["rex"],$loc->executed,$matches))
             {
-                $url_parameters = array();
+                $url_parameters = [];
                 for($i = 1;$i<count($matches);++$i)
                     $route['url_par_values'][$i-1] = $matches[$i];
                 $match = true;
@@ -1821,7 +1821,7 @@ function generate_menu_structure($pad='')
 /** @ignore */
 function hook_core_theme()
 {
-    $items = array();
+    $items = [];
     $items['base_page'] = [
                 "pageparts" => [],
                 "generators" => [

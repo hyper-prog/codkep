@@ -37,7 +37,7 @@ function hook_flex_boot()
 
 function hook_flex_theme()
 {
-    $items = array();
+    $items = [];
     $items['flex'] = [
                 "pageparts" => [
                     "header",

@@ -33,12 +33,12 @@ class HtmlTable
     public function __construct($n = '')
     {
         $this->name = $n;
-        $this->h = array();
-        $this->b = array();
-        $this->o = array();
+        $this->h = [];
+        $this->b = [];
+        $this->o = [];
         $this->tr_open = false;
         $this->ena_f = false;
-        $this->callbacks = array();
+        $this->callbacks = [];
     }
 
     public function setCallback($name,callable $callback)
@@ -67,7 +67,7 @@ class HtmlTable
         return $this;
     }
 
-    public function nrow(array $opts=array())
+    public function nrow(array $opts=[])
     {
         if(isset($opts['type']) && $opts['type'] == 'uni')
             $opts = table_options_translator($opts,[],true);
@@ -82,7 +82,7 @@ class HtmlTable
         return $this;
     }
 
-    public function head($h,array $opts=array())
+    public function head($h,array $opts=[])
     {
         if(isset($opts['type']) && $opts['type'] == 'uni')
             $opts = table_options_translator($opts);
@@ -96,14 +96,14 @@ class HtmlTable
         return $this;
     }
 
-    public function heads($hs,array $opts=array())
+    public function heads($hs,array $opts=[])
     {
         foreach($hs as $h)
             $this->head($h,$opts);
         return $this;
     }
 
-    public function cell($c,array $opts=array())
+    public function cell($c,array $opts=[])
     {
         if(!$this->tr_open)
             $this->nrow();
@@ -119,7 +119,7 @@ class HtmlTable
         return $this;
     }
 
-    public function cells($cs,array $opts=array())
+    public function cells($cs,array $opts=[])
     {
         if(is_array($cs))
             foreach($cs as $c)
@@ -127,7 +127,7 @@ class HtmlTable
         return $this;
     }
 
-    public function cellss($cs,array $opts=array())
+    public function cellss($cs,array $opts=[])
     {
         if(is_array($cs))
             foreach($cs as $c)
@@ -165,8 +165,8 @@ class HtmlTable
         print implode($this->b);
         print '</tbody>';
         print "</table>\n";
-        $this->h = array();
-        $this->b = array();
+        $this->h = [];
+        $this->b = [];
         $this->tr_open = false;
         return ob_get_clean();
     }
@@ -220,8 +220,8 @@ class HtmlTable
 class ExcelXmlDocument
 {
     protected $n;
-    protected $style = array();
-    protected $b = array();
+    protected $style = [];
+    protected $b = [];
     protected $colcount;
     protected $rowcount;
     protected $r_open;
@@ -291,7 +291,7 @@ class ExcelXmlDocument
         return $this;
     }
 
-    public function nrow(array $opts=array())
+    public function nrow(array $opts=[])
     {
         if($this->r_open)
             $this->endRow();
@@ -299,7 +299,7 @@ class ExcelXmlDocument
         return $this;
     }
 
-    public function nrows($count = 1,array $opts=array())
+    public function nrows($count = 1,array $opts=[])
     {
         if($count <= 0)
             return $this;
@@ -308,7 +308,7 @@ class ExcelXmlDocument
         return $this;
     }
 
-    protected function beginRow(array $opts=array())
+    protected function beginRow(array $opts=[])
     {
         if($this->r_open)
             return;
@@ -346,7 +346,7 @@ class ExcelXmlDocument
         $this->in_header_row = false;
     }
 
-    public function cell($c = '',array $opts=array())
+    public function cell($c = '',array $opts=[])
     {
         if(!$this->r_open)
             $this->beginRow();
@@ -425,7 +425,7 @@ class ExcelXmlDocument
         return $this;
     }
 
-    public function cells($cs,array $opts=array())
+    public function cells($cs,array $opts=[])
     {
         if(is_array($cs))
             foreach($cs as $c)
@@ -433,7 +433,7 @@ class ExcelXmlDocument
         return $this;
     }
 
-    public function cellss($cs,array $opts=array())
+    public function cellss($cs,array $opts=[])
     {
         if(is_array($cs))
             foreach($cs as $c)
@@ -445,14 +445,14 @@ class ExcelXmlDocument
         return $this;
     }
 
-    public function head($hs,array $opts=array())
+    public function head($hs,array $opts=[])
     {
         $this->hc_cc=1;
         $opts['ashead'] = true;
         return $this->cell($hs,$opts);
     }
 
-    public function heads($hs,array $opts=array())
+    public function heads($hs,array $opts=[])
     {
         $this->hc_cc=1;
         $opts['ashead'] = true;
@@ -657,9 +657,9 @@ class ExcelXmlDocument
 
 /** Transforms ExcelXmlDocument cell options to HtmlTable cell options
  *  @package forms */
-function table_options_translator(array $opts,array $additional = array(),$style_and_class_only_mode = false)
+function table_options_translator(array $opts,array $additional = [],$style_and_class_only_mode = false)
 {
-    $o = array();
+    $o = [];
     $style = '';
     if(isset($opts['style']))
         $style = $opts['style'];
@@ -782,8 +782,8 @@ class HtmlForm
     public function __construct($n = '',$formatter = NULL)
     {
         $this->name = $n;
-        $this->d = array();
-        $this->o = array();
+        $this->d = [];
+        $this->o = [];
         $this->url = '';
         $this->mode = 'POST';
         $this->formatter = $formatter == NULL ? new HtmlFormFormatter() : $formatter ;
@@ -818,7 +818,7 @@ class HtmlForm
         $this->formatter = $formatter;
     }
 
-    public function action_get($rawurl,array $query = array(),array $urlopts = array())
+    public function action_get($rawurl,array $query = [],array $urlopts = [])
     {
         $this->url = url($rawurl,[],$urlopts);
         $this->mode = 'GET';
@@ -827,20 +827,20 @@ class HtmlForm
             $this->hidden($n,$v);
         return $this;
     }
-    public function action_post($rawurl,array $query = array(),array $urlopts = array())
+    public function action_post($rawurl,array $query = [],array $urlopts = [])
     {
         $this->url = url($rawurl,$query,$urlopts);
         $this->mode = 'POST';
         return $this;
     }
-    public function action_ajax($rawurl,array $query = array(),array $urlopts = array())
+    public function action_ajax($rawurl,array $query = [],array $urlopts = [])
     {
         $this->url = url($rawurl,$query,$urlopts);
         $this->mode = 'AJAX';
         return $this;
     }
 
-    public function input($type,$n,$v,array $opts=array())
+    public function input($type,$n,$v,array $opts=[])
     {
         array_push($this->d,
             ['type' => $type,
@@ -862,7 +862,7 @@ class HtmlForm
         return $this;
     }
 
-    public function upload($n,$v,array $opts=array())
+    public function upload($n,$v,array $opts=[])
     {
         array_push($this->d,
             ['type' => 'upload',
@@ -883,7 +883,7 @@ class HtmlForm
         return $this;
     }
 
-    public function datefield($type,$n,$v,array $opts=array())
+    public function datefield($type,$n,$v,array $opts=[])
     {
         array_push($this->d,
             ['type' => $type,
@@ -899,7 +899,7 @@ class HtmlForm
         return $this;
     }
 
-    public function select($type,$n,$v,array $values=array(),array $opts=array())
+    public function select($type,$n,$v,array $values=[],array $opts=[])
     {
         array_push($this->d,
             ['type' => $type,
@@ -923,7 +923,7 @@ class HtmlForm
         return $this;
     }
 
-    public function textarea($n,$v,$row,$col,array $opts=array())
+    public function textarea($n,$v,$row,$col,array $opts=[])
     {
         array_push($this->d,
             ['type' => 'textarea',
@@ -945,7 +945,7 @@ class HtmlForm
         return $this;
     }
 
-    public function text($name,$t,array $opts=array())
+    public function text($name,$t,array $opts=[])
     {
         array_push($this->d,
             ['type' => 'raw',
@@ -964,7 +964,7 @@ class HtmlForm
         return $this;
     }
 
-    public function custom($name,$value,callable $callback,array $opts=array())
+    public function custom($name,$value,callable $callback,array $opts=[])
     {
         array_push($this->d,
             ['type' => 'custom',
@@ -986,19 +986,19 @@ class HtmlForm
         return $this;
     }
 
-    public function hidden($n,$v,array $opts=array())
+    public function hidden($n,$v,array $opts=[])
     {
         $this->input('hidden',$n,$v,$opts);
         return $this;
     }
 
-    public function hidden_array(array $keyvalue,array $opts=array())
+    public function hidden_array(array $keyvalue,array $opts=[])
     {
         foreach($keyvalue as $key => $value)
             $this->input('hidden',$key,$value,$opts);
     }
 
-    public function input_p($type,$n,$v,array $opts=array())
+    public function input_p($type,$n,$v,array $opts=[])
     {
         if(!isset($opts['no_par_def']) || !$opts['no_par_def'])
             par_def($n,isset($opts['par_sec']) ? $opts['par_sec'] : 'text4');
@@ -1009,7 +1009,7 @@ class HtmlForm
         return $this;
     }
 
-    public function select_p($type,$n,$v,array $values=array(),array $opts=array())
+    public function select_p($type,$n,$v,array $values=[],array $opts=[])
     {
         if(!isset($opts['no_par_def']) || !$opts['no_par_def'])
             par_def($n,isset($opts['par_sec']) ? $opts['par_sec'] : 'text4');
@@ -1020,7 +1020,7 @@ class HtmlForm
         return $this;
     }
 
-    public function textarea_p($n,$v,$row,$col,array $opts=array())
+    public function textarea_p($n,$v,$row,$col,array $opts=[])
     {
         if(!isset($opts['no_par_def']) || !$opts['no_par_def'])
             par_def($n,isset($opts['par_sec']) ? $opts['par_sec'] : 'text4');
@@ -1031,7 +1031,7 @@ class HtmlForm
         return $this;
     }
 
-    public function datefield_p($type,$n,$v,array $opts=array())
+    public function datefield_p($type,$n,$v,array $opts=[])
     {
         if(!isset($opts['no_par_def']) || !$opts['no_par_def'])
         {
@@ -1291,7 +1291,7 @@ class HtmlForm
             $custom_id = 'f_date_'.$dta['name'] . '_'. rand(10000,99999);
 
             $unknown = false;
-            $parts = array();
+            $parts = [];
             if(!preg_match('/(\d+)-(\d+)-(\d+)/',$dta['value'],$parts))
             {
                 if($dta['type'] == 'dateu')
@@ -1414,7 +1414,7 @@ class HtmlForm
         {
             $dispv = '';
             $unknown = false;
-            $parts = array();
+            $parts = [];
             if(!preg_match('/(\d+)-(\d+)-(\d+)/',$dta['value'],$parts))
             {
                 if($dta['type'] == 'dateu')
@@ -1447,7 +1447,7 @@ class HtmlForm
         ob_start();
         foreach($this->d as $dta)
             print $this->get_item($dta,$readonly);
-        $this->d = array();
+        $this->d = [];
         return ob_get_clean();
     }
 
@@ -2199,7 +2199,7 @@ function sfh_sqlchoose_form($field_def,$form,$value,$opts)
     if(isset($field_def['optional']) && $field_def['optional'] == "yes")
         $type = "optselect";
 
-    $values = array();
+    $values = [];
     $keyname    = $field_def['keyname'];
     $showpart   = $field_def['showpart'];
     $ctable     = $field_def['connected_table'];
@@ -2408,9 +2408,9 @@ class SpeedForm
 
         $this->def = $definition;
 
-        $this->highlighted = array();
+        $this->highlighted = [];
         $this->validate_errortext = '';
-        $this->values = array();
+        $this->values = [];
         $this->load_parameters_done = false;
         $this->load_parameters_deferred_done = false;
 
@@ -2634,7 +2634,7 @@ class SpeedForm
         if($this->load_parameters_deferred_done)
             return;
 
-        $files_marked_to_delete = array();
+        $files_marked_to_delete = [];
         global $speedform_handlers;
         foreach($this->def['fields'] as $idx => $f)
         {
@@ -2768,7 +2768,7 @@ class SpeedForm
     {
         global $speedform_handlers;
         $uf = '';
-        $pa = array();
+        $pa = [];
         $this->load_parameters_deferred();
         foreach($this->def['fields'] as $idx => $f)
         {
@@ -2838,7 +2838,7 @@ class SpeedForm
         global $speedform_handlers;
         $npart = '';
         $vpart = '';
-        $pa = array();
+        $pa = [];
         $this->load_parameters_deferred();
         foreach($this->def['fields'] as $idx => $f)
         {
@@ -2980,10 +2980,10 @@ class SpeedForm
     {
         global $speedform_handlers;
         ob_start();
-        $r = array();
+        $r = [];
         $r['tablename'] = $this->def['table'];
 
-        $cols = array();
+        $cols = [];
         foreach($this->def['fields'] as $i => $f)
         {
             if(!isset($f['table']) || $f['table'] == '' || $r['tablename'] == $f['table'])
@@ -3055,7 +3055,7 @@ class SpeedForm
             throw new Exception("The SpeedForm::do_validate() method's mode parameter contains bad value!\n".
                                 " Accepted values: ".implode(','.SpeedForm::$valid_validate_modes));
         $i = 1;
-        $this->highlighted = array();
+        $this->highlighted = [];
         $this->validate_errortext = '';
 
         $pass = new stdClass();
@@ -3249,7 +3249,7 @@ class Table_SpeedFormFormFormmater extends HtmlFormFormatter
     public $name;
     public $def;
     public $highl;
-    public function __construct($definition,$highlighted = array())
+    public function __construct($definition,$highlighted = [])
     {
         $this->name = 'table_speedform_formatter';
         $this->def = $definition;
@@ -3271,7 +3271,7 @@ class Table_SpeedFormFormFormmater extends HtmlFormFormatter
                     return $f;
             }
         }
-        return array();
+        return [];
     }
 
     public function begin_form($txt)
@@ -3379,7 +3379,7 @@ class Div_SpeedFormFormFormmater extends HtmlFormFormatter
     public $name;
     public $def;
     public $highl;
-    public function __construct($definition,$highlighted = array())
+    public function __construct($definition,$highlighted = [])
     {
         $this->name = 'div_speedform_formatter';
         $this->def = $definition;
@@ -3401,7 +3401,7 @@ class Div_SpeedFormFormFormmater extends HtmlFormFormatter
                     return $f;
             }
         }
-        return array();
+        return [];
     }
 
     public function begin_form($txt)
@@ -3552,7 +3552,7 @@ function speedform_get_field_display_value($definition,$sqlname,$value)
  * @return string Returns the modified sort string
  * @see to_table
  * @package forms */
-function to_sqlsort($sp,array $options=array())
+function to_sqlsort($sp,array $options=[])
 {
     if(isset($options[$sp]['sqlsort']))
         return $options[$sp]['sqlsort'];
@@ -3602,7 +3602,7 @@ function to_sqlsort($sp,array $options=array())
  * @param array $results An optional array to get some data back from generation
  * @return string The generated html table code
  * @package forms */
-function to_table($dataobj,array $options=array(),array &$results = null)
+function to_table($dataobj,array $options=[],array &$results = null)
 {
     $is_array = false;
     $is_pdo = false;
@@ -3660,17 +3660,17 @@ function to_table($dataobj,array $options=array(),array &$results = null)
     $first = true;
     $end = false;
 
-    $columns = array(); //columns to show
-    $rcv_columns = array(); //columns in received data
+    $columns = []; //columns to show
+    $rcv_columns = []; //columns in received data
     if(isset($options["#fields"]))
         $columns = $options["#fields"];
 
-    $r_prefixes = array();
-    $r_suffixes = array();
-    $r_cellopts = array();
-    $r_valuecallback = array();
-    $r_sqlname = array();
-    $r_show = array();
+    $r_prefixes = [];
+    $r_suffixes = [];
+    $r_cellopts = [];
+    $r_valuecallback = [];
+    $r_sqlname = [];
+    $r_show = [];
 
     while(true)
     {
@@ -3716,7 +3716,7 @@ function to_table($dataobj,array $options=array(),array &$results = null)
 
             foreach($columns as $hitem)
             {
-                $iopt = array();
+                $iopt = [];
                 if(substr($hitem,0,1) == '#')
                     $iopt = get_field_repository_definition(substr($hitem,1));
                 else
@@ -3777,7 +3777,7 @@ function to_table($dataobj,array $options=array(),array &$results = null)
 
         //This $r_mapped array is built for callback called below
         //It contains the specified sqlname indexes instead of field repository or other fictive name indexes
-        $r_mapped = array();
+        $r_mapped = [];
         $r_mapped['__rownumber__'] = $rowcount + 1;
         if(isset($options['#callback_array_external']))
             $r_mapped['__external__'] = $options['#callback_array_external'];
@@ -4312,7 +4312,7 @@ class DynTable
 function hook_forms_required_sql_schema()
 {
     global $datadef_repository;
-    $t = array();
+    $t = [];
     foreach($datadef_repository as $ddname => $ddef)
     {
         $datastruct = call_user_func($ddef);

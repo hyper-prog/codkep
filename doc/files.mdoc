@@ -99,7 +99,7 @@ Every File object has same built-in properties which are available in any kind o
  - The url of the file to put a link to the html code. In case this file is an image file with an available size class
  \ according to the ***register_image_sizeclass*** function and ***HOOK_file_image_sizeclass*** hook this url will
  \ automatically referenced a scaled version of the image. See the [size class chapter|url:#sizeclasses] for details.
-- @@@addFromTemp($name, $from, $subdir = '', array $context = array())@@@
+- @@@addFromTemp($name, $from, $subdir = '', array $context = [])@@@
  - This function can create a new (managed) File object from an uploaded or a temporary file.
   - The parameter ***$name*** tells the original filename. This can differs from the filesystem filename.
   \ A secure typed file will be available through file url with this name.
@@ -138,7 +138,7 @@ This function is create an empty File object and call ***load($ufi,$disable_show
 then call the ***remove()*** on it.
 
 .
-@@@file_create_upload($name,$opts = array())@@@
+@@@file_create_upload($name,$opts = [])@@@
 <br/>
 Manages after the form submitted part of a file upload procedure.
 The ***$name*** parameter is the form item name of the ***input type="file"*** tag.

@@ -2,7 +2,7 @@
 
 function hook_example_node_defineroute()
 {
-    $i = array();
+    $i = [];
     $i[] = ['path' => 'testnode',
             'title' => 'Node example',
             'callback' => 'testnode',
@@ -34,7 +34,7 @@ function hook_example_node_node_access_person($node,$op,$account)
 
 function hook_example_node_nodetype()
 {
-    $r = array();
+    $r = [];
     $r['person'] =
     [
       "name" => "person",

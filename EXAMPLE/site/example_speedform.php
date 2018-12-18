@@ -3,7 +3,7 @@
 
 function hook_example_speedform_defineroute()
 {
-    $r = array();
+    $r = [];
     $r[] = ['path' => 'example/speedform',
             'callback' => 'page_speedform',
     ];

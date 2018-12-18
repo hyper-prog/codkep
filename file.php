@@ -89,7 +89,7 @@ function hook_file_check_module_requirements()
 
 function hook_file_defineroute()
 {
-    $i = array();
+    $i = [];
     $i[] = [
         'path' => 'file/secure/{ufi}/{filename}',
         'callback' => 'file_get_secure',
@@ -172,7 +172,7 @@ class File
         return $this->basePath(true) . '/' . $sc . '/' . $this->fsname;
     }
 
-    public function addFromTemp($name,$from,$subdir='',array $context = array())
+    public function addFromTemp($name,$from,$subdir='',array $context = [])
     {
         global $db;
         global $user;
@@ -501,7 +501,7 @@ function file_get_secure()
 }
 
 /** Manages after the form submitted part of a file upload procedure */
-function file_create_upload($name,array $opts = array())
+function file_create_upload($name,array $opts = [])
 {
     if($_FILES[$name]['error'] == UPLOAD_ERR_OK)
     {
@@ -547,7 +547,7 @@ function file_disabled_content()
 
 function hook_file_required_sql_schema()
 {
-    $t = array();
+    $t = [];
 
     $t['file_module_file_table'] =
     [

@@ -3,7 +3,7 @@
 
 function hook_example_ajax_defineroute()
 {
-    $r = array();
+    $r = [];
     $r[] = ['path' => 'example/ajax',
             'callback' => 'page_ajaxexample',
             '#menu' => 'Ajax',

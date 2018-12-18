@@ -51,7 +51,7 @@ __Methods of HtmlTable class:__
    - ***"formatter"=true*** enable some additional functionality of cell's string formatting.
    - Every [*cell modifier option*|url:#exmlstyleopts] can be used here jointly with the ***"type" => "uni"*** option.
    \ <br/>(Most option set there is automatically coverted to ***"style"*** and merged with the original ***"style"*** value.)
- - @@@nrow(array $opts = array())@@@
+ - @@@nrow(array $opts = [])@@@
   - Start a new row in table. Every time when this function called a new row will generated in table.
   \ If this function called two times an empty row is generated.
   \ The function can receive an associative array where the values can be:
@@ -137,22 +137,22 @@ __Methods of ExcelXmlDocument class:__
  - Give the name of the spreadsheet. This name will be the name of the spreadsheet visible in the bottom tabs of excel.
 - @@@setTitle($title)@@@
  - Same as ***name($name)***
-- @@@nrow(array $opts = array())@@@
+- @@@nrow(array $opts = [])@@@
  - Start a new row in table. Every time when this function called will
  \ generate a new row in table.
  \ The ***$opts*** array passed here will be the default options of cells located in the following row.
-- @@@nrows($count = 1,array $opts = array())@@@
+- @@@nrows($count = 1,array $opts = [])@@@
  - Start ***$count*** new row in table. Every time when this function called will
  \ generate ***$count*** new row in table.
-- @@@cell($c = '', array $opts = array())@@@
+- @@@cell($c = '', array $opts = [])@@@
  - Sets the next cell of the table. The ***$opts*** detailed later.
-- @@@cells(array $cs, array $opts = array())@@@
+- @@@cells(array $cs, array $opts = [])@@@
  - Sets one row of the table with array (of cells).
-- @@@cellss(array $cs, array $opts = array())@@@
+- @@@cellss(array $cs, array $opts = [])@@@
  - Sets more row of the table with a two dimensional array.
-- @@@head($hs, array $opts = array())@@@
+- @@@head($hs, array $opts = [])@@@
  - Sets the next cell name. The ***$opts*** detailed later.
-- @@@heads(array $hs, array $opts = array())@@@
+- @@@heads(array $hs, array $opts = [])@@@
  - Sets all header cell with one array.
 - @@@setOrientationPortrait()@@@
  - Set the default printable format of the spreadsheet to portrait.
@@ -322,7 +322,7 @@ You can use the ***table_options_translator()*** function to translate the cell 
 to options works with cells of ***HtmlTable***.
 Most option are translated to CSS style to the html table looks similar as spreadsheet.
 .
-@@@table_options_translator(array $opts,array $additional = array(),$sac_omode = false)@@@
+@@@table_options_translator(array $opts,array $additional = [],$sac_omode = false)@@@
 <br/>
 The parameters of the function:
 - The ***$opts*** array will be translated into ***HtmlTable*** options.

@@ -3,7 +3,7 @@
 
 function hook_mytheme_theme()
 {
-    $items = array();
+    $items = [];
     $items['mytheme'] = [
                 'pageparts' => [
                     'header',

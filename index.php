@@ -4,9 +4,9 @@
  *  Written by Peter Deak (C) hyper80@gmail.com , License GPLv2
  */
 
-define('VERSION', '1.137');
+define('VERSION', '1.138');
 
-define('CODKEP_MINIMUM_PHP', '5.4.0');
+define('CODKEP_MINIMUM_PHP', '5.6.0');
 
 define('STATUS_BOOT_START'          ,0);
 define('STATUS_MODULES_LOADED'      ,10);
@@ -46,7 +46,7 @@ foreach($core_modules as $name => $loc)
 
 //load site modules
 global $site_modules;
-$site_modules = array();
+$site_modules = [];
 if(file_exists('site/_modules.php'))
     include 'site/_modules.php';
 foreach($site_modules as $name => $loc)

@@ -753,7 +753,7 @@ Creation of the 'task' node type:
 ~~~php
 function hook_mymodule_nodetype()
 {
-    $r = array();
+    $r = [];
     $r['task'] =
         [
             "name" => "task",
@@ -880,7 +880,7 @@ In the other hands by using of custom class you can achieve many customisations 
 //Defining task node type (part)
 function hook_mymodule_nodetype()
 {
-    $r = array();
+    $r = [];
     $r['task'] = [
             "name" => "task",
             "table" => "task",

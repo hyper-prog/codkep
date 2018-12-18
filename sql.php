@@ -54,7 +54,7 @@ function hook_sql_boot()
 
 function hook_sql_defineroute()
 {
-    $items = array();
+    $items = [];
     $items[] = [
                 "path" => "sqlschema",
                 "callback" => "sql_schema_page",
@@ -144,7 +144,7 @@ function sql_disconnect()
 /** Executes an sql command and do error handlings.
  *  It returns an executed pdo object
  *  @package sql  */
-function sql_exec($sql,array $parameters = array(),$errormsg='')
+function sql_exec($sql,array $parameters = [],$errormsg='')
 {
     global $db;
     if(!$db->open)
@@ -180,7 +180,7 @@ function sql_exec($sql,array $parameters = array(),$errormsg='')
 /** Executes an sql command and does not do error handling.
  *  It returns an executed pdo object
  *  @package sql  */
-function sql_exec_noredirect($sql,array $parameters = array())
+function sql_exec_noredirect($sql,array $parameters = [])
 {
     global $db;
     if(!$db->open)
@@ -206,9 +206,9 @@ function sql_exec_noredirect($sql,array $parameters = array())
 /** Executes and fetch an sql command and do error handlings.
  *  It returns an executed and fetched array
  *  @package sql  */
-function sql_exec_fetch($sql,array $parameters = array(),$errormsg='')
+function sql_exec_fetch($sql,array $parameters = [],$errormsg='')
 {
-    $r = array();
+    $r = [];
     $do = sql_exec($sql,$parameters,$errormsg);
     if($do != NULL)
         $r = $do->fetch();
@@ -221,7 +221,7 @@ function sql_exec_fetch($sql,array $parameters = array(),$errormsg='')
         $db->error = true;
         if($db->auto_error_page)
             load_loc($db->error_locations['generic_error']);
-        return array();
+        return [];
     }
     return $r;
 }
@@ -229,9 +229,9 @@ function sql_exec_fetch($sql,array $parameters = array(),$errormsg='')
 /** Executes and fetch an sql command and do error handlings.
  *  It returns an executed and fetched array 
  *  Allows empty result */
-function sql_exec_fetchN($sql,array $parameters = array(),$errormsg='')
+function sql_exec_fetchN($sql,array $parameters = [],$errormsg='')
 {
-    $r = array();
+    $r = [];
     $do = sql_exec($sql,$parameters,$errormsg);
     if($do != NULL)
         $r = $do->fetch();
@@ -240,7 +240,7 @@ function sql_exec_fetchN($sql,array $parameters = array(),$errormsg='')
 
 /** Executes and fetch an sql command and do error handlings.
  *  It returns a single value. The first field of first row */
-function sql_exec_single($sql,array $parameters = array(),$errormsg='')
+function sql_exec_single($sql,array $parameters = [],$errormsg='')
 {
     $r = sql_exec_fetch($sql,$parameters,$errormsg);
     if(!isset($r[0]))
@@ -259,9 +259,9 @@ function sql_exec_single($sql,array $parameters = array(),$errormsg='')
 
 /** Executes and fetchAll an sql command and do error handlings.
  *  It returns an executed and fetchAll() fetched array of arrays */
-function sql_exec_fetchAll($sql,array $parameters = array(),$errormsg='',$fetch_names_only = false)
+function sql_exec_fetchAll($sql,array $parameters = [],$errormsg='',$fetch_names_only = false)
 {
-    $r = array();
+    $r = [];
     $do = sql_exec($sql,$parameters,$errormsg);
     if($do != NULL)
     {
@@ -279,7 +279,7 @@ function sql_exec_fetchAll($sql,array $parameters = array(),$errormsg='',$fetch_
         $db->error = true;
         if($db->auto_error_page)
             load_loc($db->error_locations['generic_error']);
-        return array();
+        return [];
     }
     return $r;
 }
@@ -301,7 +301,7 @@ function sql_transaction()
     $db->errormsg = "";
     $db->error = false;
     $db->lastsql = " transaction : begin ";
-    run_hook("execute_sql","transaction : begin",array());
+    run_hook("execute_sql","transaction : begin",[]);
     if(!$db->sql->beginTransaction())
     {
         $db->errormsg = ($db->errormsg == '' ? '' : $db->errormsg . '<br/>');
@@ -331,7 +331,7 @@ function sql_commit()
     $db->errormsg = "";
     $db->error = false;
     $db->lastsql = " transaction : commit ";
-    run_hook("execute_sql","transaction : commit",array());
+    run_hook("execute_sql","transaction : commit",[]);
     if(!$db->sql->commit())
     {
         $db->errormsg = ($db->errormsg == '' ? '' : $db->errormsg . '<br/>');
@@ -361,7 +361,7 @@ function sql_rollback()
     $db->errormsg = "";
     $db->error = false;
     $db->lastsql = " transaction : rollback ";
-    run_hook("execute_sql","transaction : rollback",array());
+    run_hook("execute_sql","transaction : rollback",[]);
     if(!$db->sql->rollback())
     {
         $db->errormsg = ($db->errormsg == '' ? '' : $db->errormsg . '<br/>');

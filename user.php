@@ -98,7 +98,7 @@ function hook_user_after_deliver()
 
 function hook_user_defineroute()
 {
-    $items = array();
+    $items = [];
     $items[] = [
         "path" => "user/login",
         "callback" => "user_login_page",
@@ -871,7 +871,7 @@ function hook_user_nodetype()
     if($user_module_settings->password_complexity_checkerfnc != NULL)
         $pcc = $user_module_settings->password_complexity_checkerfnc;
 
-    $def = array();
+    $def = [];
     if($user_module_settings->define_user_nodetype)
     {
         $def['user'] = [
@@ -1089,7 +1089,7 @@ function hook_user_nodetype()
 
 function hook_user_required_sql_schema()
 {
-    $t = array();
+    $t = [];
     $t['user_module_authsess_table'] =
         [
             "tablename" => 'authsess',

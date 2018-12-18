@@ -16,7 +16,7 @@ function hook_page_boot()
 function hook_page_defineroute()
 {
     global $db;
-    $paths = array();
+    $paths = [];
     $r = sql_exec_noredirect("SELECT pid,path,tag1n,tag1v,tag2n,tag2v FROM page WHERE published");
     if($db->error || $r == NULL)
        return $paths;
@@ -113,7 +113,7 @@ function hook_page_node_inserted($obj)
 
 function hook_page_nodetype()
 {
-    $n = array();
+    $n = [];
     $n['page'] = [
         "name" => "page",
         "table" => "page",

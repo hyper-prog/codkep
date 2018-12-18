@@ -113,7 +113,7 @@ These functions here are "low level" sql functions they almost directly pass the
 to the underlying driver interface.
 .
 
-@@@sql_exec($sql, array $parameters = array(), $errormsg = '')@@@
+@@@sql_exec($sql,array $parameters = [],$errormsg = '')@@@
 .
  - ***$sql*** parameter
   - The prepared sql statement to run. It can accept named placeholders.
@@ -145,13 +145,13 @@ Usually does not need to do error handling because the function do automatically
 See [error handling section|url:#errorhandling] to learn how to handle errors.
 
 ----------------------------------------------------------------------------
-@@@sql_exec_noredirect($sql,array $parameters = array())@@@
+@@@sql_exec_noredirect($sql,array $parameters = [])@@@
 .
 Same function as ***sql_exec*** but newer do any redirection in case of error.
 Useful when sql used in some special hooks where the redirection is not possible or would create a loop.
 
 ----------------------------------------------------------------------------
-@@@sql_exec_fetch($sql,array $parameters = array(), $errormsg = '')@@@
+@@@sql_exec_fetch($sql,array $parameters = [],$errormsg = '')@@@
 .
 Executes and fetch an sql command.
 The parameters and the error handle works similar way as [sql_exec|url:#sqlexec] the only difference
@@ -169,7 +169,7 @@ in users table the function will fail) If you would like to allow the empty resu
 See [error handling section|url:#errorhandling] to learn how to handle errors.
 
 ----------------------------------------------------------------------------
-@@@sql_exec_fetchN($sql, array $parameters = array(), $errormsg = '')@@@
+@@@sql_exec_fetchN($sql,array $parameters = [],$errormsg = '')@@@
 .
 Executes and fetch an sql command.
 The parameters and the error handle works similar way as [sql_exec|url:#sqlexec] the only
@@ -186,7 +186,7 @@ print "Name:". (empty($arr) ? "Unknown" : $arr['name']);
 See [error handling section|url:#errorhandling] to learn how to handle errors.
 
 ----------------------------------------------------------------------------
-@@@sql_exec_single($sql, array $parameters = array(), $errormsg = '')@@@
+@@@sql_exec_single($sql,array $parameters = [],$errormsg = '')@@@
 .
 Executes and fetch an sql command and returns the first field of the first received record.
 It returns a single value. This function is useful if a single value is queried from the database.
@@ -200,7 +200,7 @@ See [error handling section|url:#errorhandling] to learn how to handle errors.
 
 
 ----------------------------------------------------------------------------
-@@@sql_exec_fetchAll($sql, array $parameters = array(), $errormsg = '', $fetch_names_only = false)@@@
+@@@sql_exec_fetchAll($sql,array $parameters = [],$errormsg = '',$fetch_names_only = false)@@@
 .
 Executes an sql command and call ***fetchAll()*** on it.
 It means that this function returns an array containing all of the result set rows.
@@ -350,7 +350,7 @@ features of the desired database operation.
  - The ***$fieldspec*** parameter specify the field according to [FIELDSPEC specification|url:#fieldspec].
  - The ***$options*** parameter is an optional associative array of the field options according
  \ to [OPTIONS specification|url:#fieldopts].
-- @@@set_fv_a($field_value_array)@@@
+- @@@set_fv_a(array $field_value_array)@@@
  - **Set** a **F**ield-**V**alue **A**rray.
  - Sets an array of field's value according to the parameter passed associative array where the indexes are the field
  \ names and the values are the desired values to set.
@@ -802,7 +802,7 @@ It looks like this way in a real example:
 //Implemented "required_sql_schema" of meetroom module.
 function hook_meetroom_required_sql_schema()
 {
-    $t = array();
+    $t = [];
     $t['meetroom_module_meetings_table'] =
         [
             "tablename" => 'meetings',

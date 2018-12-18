@@ -3,7 +3,7 @@
 
 function hook_example_base_defineroute()
 {
-    $r = array();
+    $r = [];
     $r[] = ['path' => 'start',
             'callback' => 'page_start',
             '#menu' => 'Start', ];
@@ -29,7 +29,7 @@ function hook_example_base_defineroute()
 
 function hook_example_base_sitearea_header()
 {
-    $r = array();
+    $r = [];
     $r[] = ['name' => 'site/bravo.php',
             'index' => 1,
             'callback' => 'headerfnc',

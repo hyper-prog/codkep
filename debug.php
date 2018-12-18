@@ -30,13 +30,13 @@ function hook_debug_boot()
     $site_config->enable_route_table_info = false;
     $site_config->enable_route_table_info_for_admin = false;
     $site_config->show_sql_commands_executed = false;
-    $sys_data->debug_executed_sql = array();
+    $sys_data->debug_executed_sql = [];
 }
 
 /** @ignore The route definitions of debug module */
 function hook_debug_defineroute()
 {
-    $i = array();
+    $i = [];
     $i[] = [
             "title" => "System hook call table",
             "path" => "hookcalls",
@@ -139,7 +139,7 @@ function info_hooks()
     if(!$site_config->enable_hook_table_info)
         return '';
 
-    $hooks = array();
+    $hooks = [];
     $user_defined_functions = get_defined_functions()["user"];
     foreach($user_defined_functions as $funcname)
     {

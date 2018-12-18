@@ -23,8 +23,8 @@ function hook_node_boot()
     $site_config->node_rest_api_enabled = true;
 
     global $sys_data;
-    $sys_data->node_types = array();
-    $sys_data->node_otypes = array();
+    $sys_data->node_types = [];
+    $sys_data->node_otypes = [];
 }
 
 function hook_node_init()
@@ -65,7 +65,7 @@ function hook_node_defineroute()
 {
     global $site_config;
 
-    $i = array();
+    $i = [];
     $i[] = ['path' => 'node/{nid}',
             'callback' => 'sys_node_callback_nid',
             'parameters' => [
@@ -397,7 +397,7 @@ class Node
     public function definedFields()
     {
         if($this->dataspeedform === NULL)
-            return array();
+            return [];
         return array_keys($this->dataspeedform->values);
     }
 
@@ -1005,7 +1005,7 @@ function sql_table_of_nodetype($type)
 function hook_node_required_sql_schema()
 {
     global $sys_data;
-    $t = array();
+    $t = [];
 
     $t['node_module_node_table'] =
     [
@@ -1157,13 +1157,13 @@ function sys_node_get_rest_decoded_json_from_input()
     return $decoded;
 }
 
-function sys_node_check_rest_node_is_loaded(Node $node)
+function sys_node_check_rest_node_is_loaded($node)
 {
     if($node === null || !$node->node_loaded)
         load_loc('restapi/error',['message' => 'Node not found','code' => '404'],404);
 }
 
-function sys_node_check_rest_action_is_enabled(Node $node,$listaction = false)
+function sys_node_check_rest_action_is_enabled($node,$listaction = false)
 {
     if($_SERVER['REQUEST_METHOD'] == 'POST' &&
             !$node->get_rest_action_enabled('c'))
@@ -1194,7 +1194,7 @@ function sys_node_check_rest_action_is_enabled(Node $node,$listaction = false)
     run_hook('node_rest_action_before',$node,$_SERVER['REQUEST_METHOD']);
 }
 
-function sys_node_check_rest_node_access_is_allowed(Node $node,$op)
+function sys_node_check_rest_node_access_is_allowed($node,$op)
 {
     global $user;
     if(NODE_ACCESS_ALLOW != node_access($node, $op, $user))
