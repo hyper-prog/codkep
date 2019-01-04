@@ -183,7 +183,7 @@ function user_init_local()
     $rows=$r->fetchAll();
     foreach($rows as $row)
     {
-        if($row['ip'] !=  $_SERVER['REMOTE_ADDR'])
+        if($row['ip'] != get_remote_address())
             return;
 
         //Check login and session timeouts
@@ -357,7 +357,7 @@ function getFormSalt($force_unauth_salt = false)
 
     if(!$force_unauth_salt && $user->auth && $formsalt != '')
         return $formsalt;
-    $string = $_SERVER['REMOTE_ADDR'].date('Y-z');
+    $string = get_remote_address().date('Y-z');
     return encOneway62(hash('sha256',$string.$user_module_settings->form_salt,true),32);
 }
 
@@ -433,7 +433,7 @@ function user_login_local($login,$password)
             $authsess_value =
                 substr(
                     generateRandomString(8) .
-                    encOneway62(hash('sha256',generateRandomString(128).'_'.$login.'_'.$_SERVER['REMOTE_ADDR'],true),36)
+                    encOneway62(hash('sha256',generateRandomString(128).'_'.$login.'_'.get_remote_address(),true),36)
                      . base_convert(strval(time()),10,36) . generateRandomString(24)
                 ,0,64);
 
@@ -453,7 +453,7 @@ function user_login_local($login,$password)
                       ':changed' => $sys_data->request_time,
                       ':timec' => $sys_data->request_time,
                       ':timea' => $sys_data->request_time,
-                      ':ip' => $_SERVER['REMOTE_ADDR'],
+                      ':ip' => get_remote_address(),
                       ':formsalt' => $fsalt,
                       ':cksess' => '',
                      ]
@@ -632,7 +632,7 @@ function userblocking_check()
         return false;
 
     $r = sql_exec_noredirect('SELECT failhit,created,access FROM blocking WHERE ip = :ipaddr;',
-        [ ':ipaddr' => $_SERVER['REMOTE_ADDR'] ]
+        [ ':ipaddr' => get_remote_address() ]
     );
 
     $row = $r->fetch();
@@ -659,7 +659,7 @@ function userblocking_set($event)
         return;
 
     $r = sql_exec_noredirect('SELECT failhit,created,access FROM blocking WHERE ip = :ipaddr;',
-        [ ':ipaddr' => $_SERVER['REMOTE_ADDR'] ]
+        [ ':ipaddr' => get_remote_address() ]
     );
 
     $row = $r->fetch();
@@ -669,7 +669,7 @@ function userblocking_set($event)
         sql_exec_noredirect("UPDATE blocking SET failhit=:failhit,access=:access,event=:event WHERE ip = :ipaddr;",
             [':failhit' => $row['failhit'] + 1,
              ':access'  => $sys_data->request_time,
-             ':ipaddr'  => $_SERVER['REMOTE_ADDR'],
+             ':ipaddr'  => get_remote_address(),
              ':event'   => substr($event,0,62),
             ]);
         return;
@@ -679,7 +679,7 @@ function userblocking_set($event)
         [':failhit' => 1,
          ':created' => $sys_data->request_time,
          ':access'  => $sys_data->request_time,
-         ':ipaddr'  => $_SERVER['REMOTE_ADDR'],
+         ':ipaddr'  => get_remote_address(),
          ':event'   => substr($event,0,62),
         ]);
 }
@@ -691,7 +691,7 @@ function userblocking_clear()
         return;
 
     sql_exec_noredirect("DELETE FROM blocking WHERE ip = :ipaddr;",
-        [':ipaddr' => $_SERVER['REMOTE_ADDR']]);
+        [':ipaddr' => get_remote_address()]);
 }
 
 function user_login_page()

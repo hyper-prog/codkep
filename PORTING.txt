@@ -1,6 +1,11 @@
 This file describes the non fully compatible
 changes between the released versions
 
+1.139 -> 1.140
+ - The valid_http_host($string) function was renamed to ck_valid_http_host($string)
+ - Do not use the $_SERVER['REMOTE_ADDR'] in your codes anymore, 
+   use get_remote_address() function instead.
+
 1.137 -> 1.138
  - Changed the php minimum version from 5.4.0 to 5.6.0.
    There is no any code parts (yet) which requires the higher version, simply

@@ -4,7 +4,7 @@
  *  Written by Peter Deak (C) hyper80@gmail.com , License GPLv2
  */
 
-define('VERSION', '1.139');
+define('VERSION', '1.140');
 
 define('CODKEP_MINIMUM_PHP', '5.6.0');
 
@@ -35,6 +35,8 @@ if(version_compare(phpversion(),CODKEP_MINIMUM_PHP) < 0)
     exit(0);
 }
 
+$sys_data->sys_remote_address = NULL;
+$sys_data->sys_requested_host = NULL;
 $sys_data->sys_status = STATUS_BOOT_START;
 
 if(!file_exists('sys/modules.php'))
@@ -84,6 +86,7 @@ if(file_exists('site/_settings.php'))
     include 'site/_settings.php';
 $sys_data->sys_status = STATUS_SETTINGS_LOADED;
 
+sys_determine_request_data();
 generate_authcookie_name();
 $sys_data->sys_status = STATUS_NAMES_GENERATED;
 

@@ -29,6 +29,7 @@ function hook_core_boot()
     $site_config->default_theme_name    = 'flex';
     $site_config->site_icon             = '/sys/images/cklogo.ico';
     $site_config->notfound_location     = 'notfound';
+    $site_config->srv_remoteaddr_spec   = NULL;
     $site_config->lang                  = 'en';
     $site_config->show_generation_time  = true;
     $site_config->hide_module_intros    = false;
@@ -1663,7 +1664,7 @@ function hook_core_introducer()
 
 /** Returns true if the $host seems valid host name
  *  @package core */
-function valid_http_host($host)
+function ck_valid_http_host($host)
 {
     // Limit the length of the host name to 1000 bytes to prevent DoS attacks with
     // long host names.
@@ -1673,6 +1674,15 @@ function valid_http_host($host)
             && substr_count($host, '.') <= 100
             && substr_count($host, ':') <= 100
             && preg_match('/^\[?(?:[a-zA-Z0-9-:\]_]+\.?)+$/', $host);
+}
+
+function ck_valid_ip_address($addr)
+{
+    if($addr == NULL || $addr == '' || strlen($addr) > 45)
+        return false;
+    if(preg_match('/^[\:\.0-9]+$/',$addr) !== 1)
+        return false;
+    return true;
 }
 
 /** @ignore */
@@ -1693,13 +1703,6 @@ function generate_authcookie_name()
     global $sys_data;
     global $site_config;
 
-    if(!valid_http_host($_SERVER['HTTP_HOST']) ||
-       preg_match('/^[\:\.0-9]+$/',$_SERVER['REMOTE_ADDR']) !== 1 )
-    {
-        http_response_code(400);
-        header($_SERVER['SERVER_PROTOCOL'] . ' 400 Bad Request');
-        exit;
-    }
     $is_https = isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) == 'on';
     $http_protocol = $is_https ? 'https' : 'http';
     $base_root = $http_protocol . '://' . $_SERVER['HTTP_HOST'];
@@ -1709,8 +1712,54 @@ function generate_authcookie_name()
         $cookie_domain = $sys_data->base_url;
     $prefix = $is_https ? 'CACS' : 'CAC';
     $sys_data->authcookie_name =
-        $prefix . encOneway62(hash('sha256',$site_config->authcookie_name_salt.$cookie_domain.$_SERVER['REMOTE_ADDR'],true),32);
+        $prefix . encOneway62(hash('sha256',$site_config->authcookie_name_salt.$cookie_domain.get_remote_address(),true),32);
     $sys_data->request_time = $_SERVER['REQUEST_TIME'];
+}
+/** Returns the remote (client) ip address. (Validated) */
+function get_remote_address()
+{
+    global $sys_data;
+    return $sys_data->sys_remote_address;
+}
+
+/** Returns the requested host name */
+function get_requested_host()
+{
+    global $sys_data;
+    return $sys_data->sys_requested_host;
+}
+
+/*  @ignore */
+function sys_determine_request_data()
+{
+    global $sys_data;
+    global $site_config;
+
+    if(!ck_valid_http_host($_SERVER['HTTP_HOST']))
+    {
+        http_response_code(400);
+        header($_SERVER['SERVER_PROTOCOL'] . ' 400 Bad Request');
+        exit;
+    }
+    $sys_data->sys_requested_host = $_SERVER['HTTP_HOST'];
+
+    if($site_config->srv_remoteaddr_spec != NULL &&
+       isset($_SERVER[$site_config->srv_remoteaddr_spec]) &&
+       ck_valid_ip_address($_SERVER[$site_config->srv_remoteaddr_spec]) )
+    {
+        $sys_data->sys_remote_address = $_SERVER[$site_config->srv_remoteaddr_spec];
+        return;
+    }
+
+    if(ck_valid_ip_address($_SERVER['REMOTE_ADDR']))
+    {
+        $sys_data->sys_remote_address = $_SERVER['REMOTE_ADDR'];
+        return;
+    }
+
+    http_response_code(400);
+    header($_SERVER['SERVER_PROTOCOL'] . ' 400 Bad Request');
+    exit;
 }
 
 /*  @ignore */
