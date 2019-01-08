@@ -8,14 +8,15 @@
 FROM alpine
 LABEL maintainer="hyper80@gmail.com" Description="Codkep web framework on Apline linux with apache webserver"
 
-RUN apk update
-RUN apk add php7-apache2 php7-pdo_mysql php7-pdo_pgsql php7-apcu php7-json php7-gd
-RUN mkdir /run/apache2
-RUN cp /etc/apache2/httpd.conf /etc/apache2/httpd.conf_orig
-RUN cat /etc/apache2/httpd.conf_orig | sed 's/#LoadModule rewrite_module modules\/mod_rewrite.so/LoadModule rewrite_module modules\/mod_rewrite.so/' > /etc/apache2/httpd.conf
+RUN apk update && apk add php7-apache2 php7-pdo_mysql php7-pdo_pgsql php7-apcu php7-json php7-gd
+RUN mkdir /run/apache2 \
+    && cp /etc/apache2/httpd.conf /etc/apache2/httpd.conf_orig \
+    && cat /etc/apache2/httpd.conf_orig | sed 's/#LoadModule rewrite_module modules\/mod_rewrite.so/LoadModule rewrite_module modules\/mod_rewrite.so/' > /etc/apache2/httpd.conf \
+    && ln -sf /proc/self/fd/1 /var/log/apache2/access.log \
+    && ln -sf /proc/self/fd/1 /var/log/apache2/error.log \
+    && rm -rf /var/www/localhost/htdocs/* \
+    && mkdir /var/www/localhost/htdocs/sys
 COPY ./EXAMPLE/hub.docker.com/myalpine.conf /etc/apache2/conf.d/my.conf
-RUN ln -sf /proc/self/fd/1 /var/log/apache2/access.log && ln -sf /proc/self/fd/1 /var/log/apache2/error.log
-RUN rm -rf /var/www/localhost/htdocs/* && mkdir /var/www/localhost/htdocs/sys
 COPY . /var/www/localhost/htdocs/sys/
 RUN cd /var/www/localhost/htdocs/sys \
     && rm -rf EXAMPLE \
