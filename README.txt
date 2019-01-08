@@ -31,6 +31,14 @@ In case the php is enabled you shoud see the CodKep's open page in your browser.
 The documentation is also available there.
 
 
+Docker image
+===================================================================
+Available with Apline linux and apache webserver on:
+ Docker hub: https://hub.docker.com/r/hyperprog/codkepalpine
+
+ Image name:  hyperprog/codkepalpine
+
+
 Note for webserver config with cleanurl support:
 ===================================================================
 NGINX config
