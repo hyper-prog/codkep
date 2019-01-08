@@ -1,6 +1,6 @@
 FROM debian
 
-LABEL maintainer="developer@example.com" Description="This image of apache and CodKep"
+LABEL maintainer="hyper80@gmail.com" Description="This image of apache and CodKep"
 
 RUN apt-get update && apt-get install -y apache2 libapache2-mod-php7.0 php-gd php-mysql php-apcu git
 RUN a2enmod rewrite
