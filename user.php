@@ -402,7 +402,10 @@ function user_login_local($login,$password)
     global $formsalt;
 
     if(userblocking_check())
+    {
+        run_hook('blocked_client_rejected',"Login-Failed, disabled remote client");
         return 0;
+    }
 
     if(strlen($login) > 128 ||
        strlen($password) > 128 ||
@@ -1178,12 +1181,17 @@ function user_mypasswordchange()
                                   " FROM " . $user_module_settings->sql_tablename .
                                   " WHERE uid=:uid",[':uid' => $user->uid]);
         $cs = substr($old_is,0,8);
+        if(userblocking_check())
+        {
+            run_hook('blocked_client_rejected',$user->login,"Password change failed, the remote client is blocked!");
+            load_loc('error',t('The client is blocked due to previous errors!'),t('Warning!'));
+        }
         $old_get = scatter_string_local($sf->values['oldpwd'],$cs);
-        if(userblocking_check() ||
-            !isset($old_is) && $old_is == NULL ||
+        if( !isset($old_is) && $old_is == NULL ||
             !isset($old_get) && $old_get == NULL ||
             $old_get != $old_is )
         {
+            run_hook('passwordchange_failed',$user->login,"Password change failed, the given old password is wrong!");
             userblocking_set('Pwd-Change: wrong old pwd');
             load_loc('error',t('The given old password is wrong!'),t('Warning!'));
         }

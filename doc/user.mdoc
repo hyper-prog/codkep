@@ -117,11 +117,15 @@ No matter what kind of login or logout is used there is some common features:
   \ It receives the failed login name, and a description text.
   - ***HOOK_user_logout*** invoked before the user logged out.
   - ***HOOK_user_identified*** invoked every time when the $user object is loaded (or reloaded).
+  - ***HOOK_blocked_client_rejected*** invoked when a client login or password change action
+  \ is rejected because the client is blacklisted.
+  - ***HOOK_passwordchange_failed*** invoked when a user try to change the password and the operation is failed.
+
 
 This sample code below logs every user authentication event to a file:
 ~~~php
 global $logfile;
-$logfile = '/var/log/codkeplog.log';
+$logfile = '/var/log/codkep_auth.log';
 .
 function hook_mymodule_user_failed_login($login,$descr)
 {
@@ -141,6 +145,18 @@ function hook_mymodule_user_logged_in()
     global $logfile;
     global $user;
     file_put_contents($logfile,date("Y-m-d_H.i.s").": ".$user->login.": Successful logged in.\n",FILE_APPEND);
+}
+.
+function hook_mymodule_blocked_client_rejected($msg)
+{
+    global $logfile;
+    file_put_contents($logfile,date("Y-m-d_H.i.s").": ".$msg."\n",FILE_APPEND);
+}
+.
+function hook_mymodule_passwordchange_failed($login,$msg)
+{
+    global $logfile;
+    file_put_contents($logfile,date("Y-m-d_H.i.s").": ".$login.": ".$msg."\n",FILE_APPEND);
 }
 ~~~
 
@@ -284,7 +300,7 @@ The user module have some settings which can set [in site settings|url:doc/codke
 |<small> ***$user_module_settings->password_complexity_check***  </small>|<small> false     </small>| If this variable is true the user module will do complexity check on new passwords. |
 |<small> ***$user_module_settings->password_complexity_minlength***  </small>|<small> 20    </small>| If the new password complexity check is enabled the minimum password length will be this value. |
 |<small> ***$user_module_settings->password_complexity_minlower***   </small>|<small> 2     </small>| If the new password complexity check is enabled the password have to contains minimum lowercase letters set here. |
-|<small> ***$user_module_settings->password_complexity_minupper***   </small>|<small> 2     </small>| If the new password complexity check is enabled the password have to contains minimum upperrcase letters set here. |
+|<small> ***$user_module_settings->password_complexity_minupper***   </small>|<small> 2     </small>| If the new password complexity check is enabled the password have to contains minimum uppercase letters set here. |
 |<small> ***$user_module_settings->password_complexity_minnumber***  </small>|<small> 2     </small>| If the new password complexity check is enabled the password have to contains minimum numeric letters set here. |
 |<small> ***$user_module_settings->password_complexity_cplx***       </small>|<small> true  </small>| If the new password complexity check is enabled the password have to pass a complexity check. (Based on gzip) |
 |<small> ***$user_module_settings->password_complexity_checkerfnc*** </small>|<small> NULL  </small>| You can completely replace the password complexity check function by your callback set here.  |
@@ -307,9 +323,11 @@ This is not a full list, the module contains some more settings for deeper custo
 The following [hooks|url:doc/codkep/hooks] can be implement to interact with user module.
 | Hook                       | Description |
 | ---                        | ---         |
-| HOOK_user_identified()                  | Invoked every time when the $user object is loaded (or reloaded) |
-| HOOK_user_logged_in()                   | Invoked immediately after the user is logged in |
-| HOOK_user_logout()                      | Invoked before the user logged out |
-| HOOK_user_failed_login($login,$descr)   | Invoked after unsuccessful login |
-| HOOK_user_ajax_logged_in()              | Invoked in ajax handler when the user is logged in |
-| HOOK_user_ajax_logout()                 | Invoked in ajax handler when the user is logged out |
+| HOOK_user_identified()                     | Invoked every time when the $user object is loaded (or reloaded) |
+| HOOK_user_logged_in()                      | Invoked immediately after the user is logged in |
+| HOOK_user_logout()                         | Invoked before the user logged out |
+| HOOK_user_failed_login($login,$descr)      | Invoked after unsuccessful login |
+| HOOK_user_ajax_logged_in()                 | Invoked in ajax handler when the user is logged in |
+| HOOK_user_ajax_logout()                    | Invoked in ajax handler when the user is logged out |
+| HOOK_blocked_client_rejected($msg)         | Invoked when a client login or password change action is rejected because the client is blacklisted. |
+| HOOK_passwordchange_failed($login,$msg)    | Invoked when a user try to change the password and the operation is failed. |
