@@ -290,6 +290,16 @@ function unregister_poll($pollname)
     run_hook('poll_unregistered',$pollname);
 }
 
+function get_poll_list($container = '')
+{
+    $q = db_query('poll_parameters')
+        ->get_a(['name','container','titletext','defidx']);
+    if($container != '')
+        $q->cond_fv('container',$container,'=');
+    $r = $q->execute_to_arrays();
+    return $r;
+}
+
 function get_poll_parameters_by_pollname($pollname)
 {
     $rp = db_query('poll_parameters')
