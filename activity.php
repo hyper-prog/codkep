@@ -239,7 +239,7 @@ function codkep_render_commentblock($cont,$cid,$name,$created,$text,$deletelink)
 
 // Poll codes -----------------------------------------------------------
 
-function register_poll($pollname,$container,$title,$choices,$default = '')
+function register_poll($pollname,$container,$title,$choices,$default = '',$date_start = '',$date_end = '')
 {
     $cnt = db_query('poll_parameters')
         ->counting()
@@ -248,15 +248,28 @@ function register_poll($pollname,$container,$title,$choices,$default = '')
     if($cnt > 0)
         return false;
 
+    $ii = db_insert('poll_parameters')
+            ->set_fv_a([
+                'name' => $pollname,
+                'container' => $container,
+                'titletext' => $title,
+                'defidx' => $default
+            ]);
+    if($date_start != '')
+    {
+        if(!check_str($date_start,'isodate'))
+            throw new Exception("The date_start parameter of register_poll() has wrong format. Only isodate accepted");
+        $ii->set_fv('dstart',$date_start);
+    }
+    if($date_end != '')
+    {
+        if(!check_str($date_end,'isodate'))
+            throw new Exception("The date_end parameter of register_poll() has wrong format. Only isodate accepted");
+        $ii->set_fv('dend',$date_end);
+    }
+
     sql_transaction();
-    db_insert('poll_parameters')
-        ->set_fv_a([
-            'name' => $pollname,
-            'container' => $container,
-            'titletext' => $title,
-            'defidx' => $default
-        ])
-        ->execute();
+    $ii->execute();
     foreach($choices as $i => $v)
     {
         if(strlen($i) > 5)
@@ -290,12 +303,17 @@ function unregister_poll($pollname)
     run_hook('poll_unregistered',$pollname);
 }
 
-function get_poll_list($container = '')
+function get_poll_list($container = '',$now_active = false)
 {
     $q = db_query('poll_parameters')
-        ->get_a(['name','container','titletext','defidx']);
+        ->get_a(['name','container','titletext','defidx','dstart','dend']);
     if($container != '')
         $q->cond_fv('container',$container,'=');
+    if($now_active)
+    {
+        $q->cond(cond('or')->fnull('dstart')->fe('dstart',sql_t('current_timestamp'),'<=',['efunction' => 'date']));
+        $q->cond(cond('or')->fnull('dend')  ->fe('dend'  ,sql_t('current_timestamp'),'>=',['efunction' => 'date']));
+    }
     $r = $q->execute_to_arrays();
     return $r;
 }
@@ -303,7 +321,7 @@ function get_poll_list($container = '')
 function get_poll_parameters_by_pollname($pollname)
 {
     $rp = db_query('poll_parameters')
-        ->get_a(['container','titletext','defidx'])
+        ->get_a(['container','titletext','defidx','dstart','dend'])
         ->cond_fv('name',$pollname,'=')
         ->execute_and_fetch();
     if(!isset($rp['container']))
@@ -343,6 +361,16 @@ function poll_is_user_voted($pollname,$container,$id,$uid)
     if($cnt > 0)
         return true;
     return false;
+}
+
+function poll_is_valid_by_date($date_start,$date_end)
+{
+    $currentdate = date('Y-m-d');
+    if($date_start != '' && $currentdate < $date_start)
+        return false;
+    if($date_end   != '' && $currentdate > $date_end  )
+        return false;
+    return true;
 }
 
 function get_poll_results($container,$pollname,$id)
@@ -398,7 +426,7 @@ function get_poll_block($pollname,$id,$maincssclass = '')
     print "<div class=\"$mcssclass\">";
     print '<div class="ckpoll_title">'.$rp['titletext'].'</div>';
     print '<div class="ckpoll_body_' . $pollname . '_' . $id . ' ckpoll_mbody">';
-    print get_poll_block_inner($rp['container'],$pollname,$id);
+    print get_poll_block_inner($rp['container'],$pollname,$id,$rp['dstart'],$rp['dend']);
     print '</div>'; // .ckpoll_body
     print '</div>'; // .$mcssclass
     return ob_get_clean();
@@ -418,7 +446,7 @@ function get_poll_resultblock($results)
     return '<div class="ckpoll_result">' . $t->get() . '</div>';
 }
 
-function get_poll_block_inner($container,$pollname,$id)
+function get_poll_block_inner($container,$pollname,$id,$date_start = '',$date_end = '')
 {
     global $user;
 
@@ -426,6 +454,15 @@ function get_poll_block_inner($container,$pollname,$id)
     {
         if(poll_access($pollname,$id,'view',$user) != ACTIVITY_ACCESS_ALLOW)
             return '<div class="ckpoll_msg">' . t("You've already cast your vote.") . '</div>';
+
+        $results = get_poll_results($container,$pollname,$id);
+        return get_poll_resultblock($results);
+    }
+
+    if(!poll_is_valid_by_date($date_start,$date_end))
+    {
+        if(poll_access($pollname,$id,'view',$user) != ACTIVITY_ACCESS_ALLOW)
+            return '<div class="ckpoll_msg">' . t("The vote is not active.") . '</div>';
 
         $results = get_poll_results($container,$pollname,$id);
         return get_poll_resultblock($results);
@@ -470,12 +507,26 @@ function aj_addvote_poll()
     if(poll_access($pollname,par('pollid'),'add',$user) != ACTIVITY_ACCESS_ALLOW)
         return;
 
-    $container = $default = get_poll_parametervalue_by_pollname($pollname,'container');
+    $parameters = get_poll_parameters_by_pollname($pollname);
+    if($parameters == null)
+        return; //Cannot fetch the vote prameters
+    $container = $parameters['container'];
+    $currentdate = date('Y-m-d');
+    if($parameters['dstart'] != '' && $currentdate < $parameters['dstart'])
+    {
+        ajax_add_alert(t('You can not vote, because the vote is not started yet!'));
+        return;
+    }
+    if($parameters['dend'] != '' && $currentdate > $parameters['dend'])
+    {
+        ajax_add_alert(t('You can not vote, because the vote is already expired!'));
+        return;
+    }
     if(poll_is_user_voted($pollname,$container,par('pollid'),$user->uid))
     {
         run_hook('poll_already_vote');
         ajax_add_html('.ckpoll_body_' . $pollname . '_' . par('pollid'),
-            get_poll_block_inner($container,$pollname,par('pollid')));
+            get_poll_block_inner($container,$pollname,par('pollid')),$parameters['dstart'],$parameters['dend']);
         return; //Aready vote.
     }
 
@@ -492,7 +543,7 @@ function aj_addvote_poll()
         ->execute();
     run_hook('poll_vote',$pollname,par('pollid'),par($pollvarname));
     ajax_add_html('.ckpoll_body_' . $pollname . '_' . par('pollid'),
-        get_poll_block_inner($container,$pollname,par('pollid')));
+        get_poll_block_inner($container,$pollname,par('pollid')),$parameters['dstart'],$parameters['dend']);
 }
 
 function poll_access($pollname,$refid,$op,$account)
@@ -591,6 +642,8 @@ function hook_activity_required_sql_schema()
                     'container' => 'VARCHAR(128)',
                     'titletext' => sql_t('longtext_type'),
                     'defidx'    => 'VARCHAR(5)',
+                    'dstart'    => 'DATE DEFAULT NULL',
+                    'dend'      => 'DATE DEFAULT NULL',
                 ],
             ];
         $t["activity_module_pollchoices_table"] =

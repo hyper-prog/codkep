@@ -79,6 +79,9 @@ function hook_hu_init()
         'Node types' => 'Node típusok',
         "You've already cast your vote." => "Már leadtad a szavazatod.",
         "The client is blocked due to previous errors!" => "Az ügyfél korábbi hibák miatt blokkolva van!",
+        "The vote is not active." => "A szavazás nem aktív.",
+        "You can not vote, because the vote is not started yet!" => "Nem szavazhatsz, mert a szavazás még nem kezdődött el!",
+        "You can not vote, because the vote is already expired!" => "Nem szavazhatsz, mert a szavazás már lejárt!",
     ]);
 
     add_t_array('hu',[

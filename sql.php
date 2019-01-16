@@ -711,6 +711,7 @@ function sql_schema_page()
     else
         print "$num definitions listed / $num_nok needs some actions to do.";
 
+    print "<br/>" . l("Go to current startpage...",get_startpage());
     return ob_get_clean();
 }
 
