@@ -21,6 +21,7 @@ function hook_activity_boot()
     $site_config->acitvity_comment_block_css_class = 'commentblk_default_style';
     $site_config->acitvity_comment_renderer_callback = 'codkep_render_commentblock';
     $site_config->activity_poll_main_css_class = 'ckpoll_default_style';
+    $site_config->activity_poll_show_horizontal = false;
 }
 
 function hook_activity_before_start()
@@ -303,7 +304,7 @@ function unregister_poll($pollname)
     run_hook('poll_unregistered',$pollname);
 }
 
-function get_poll_list($container = '',$now_active = false)
+function get_poll_list($container = '',$now_active = false,$fromdate = '',$todate = '')
 {
     $q = db_query('poll_parameters')
         ->get_a(['name','container','titletext','defidx','dstart','dend']);
@@ -314,6 +315,10 @@ function get_poll_list($container = '',$now_active = false)
         $q->cond(cond('or')->fnull('dstart')->fe('dstart',sql_t('current_timestamp'),'<=',['efunction' => 'date']));
         $q->cond(cond('or')->fnull('dend')  ->fe('dend'  ,sql_t('current_timestamp'),'>=',['efunction' => 'date']));
     }
+    if($fromdate != '' && check_str($fromdate,'isodate'))
+        $q->cond(cond('or')->fnull('dstart')->fv('dstart',$fromdate,'>=',['vfunction' => 'date']));
+    if($todate != '' && check_str($todate,'isodate'))
+        $q->cond(cond('or')->fnull('dend')  ->fv('dend',$todate,'<=',['vfunction' => 'date']));
     $r = $q->execute_to_arrays();
     return $r;
 }
@@ -434,15 +439,33 @@ function get_poll_block($pollname,$id,$maincssclass = '')
 
 function get_poll_resultblock($results)
 {
+    global $site_config;
     $t = new HtmlTable('poll_result_table');
-    foreach($results as $text => $values)
+    if($site_config->activity_poll_show_horizontal)
     {
-        $t->cell($text);
-        $t->cell('<div class="ckpoll_innerbar" style="width: '.$values['percent'].'%;"></div>',
-            ['class' => 'ckpoll_outbar']);
-        $t->cell($values['percent'] . '% <small>(' . $values['count'] . ')</small>');
+        foreach($results as $text => $values)
+            $t->cell($text,['type' => 'uni',"horizontal" => "center"]);
         $t->nrow();
+        foreach($results as $text => $values)
+            $t->cell('<div class="ckpoll_innerbar" style="height: '.$values['percent'].'%;"></div>',
+                ['class' => 'ckpoll_outbar']);
+        $t->nrow();
+        foreach($results as $text => $values)
+            $t->cell($values['percent'] . '%<br/> <small>(' . $values['count'] . ')</small>',
+                ['type' => 'uni',"horizontal" => "center"]);
     }
+    else
+    {
+        foreach($results as $text => $values)
+        {
+            $t->cell($text);
+            $t->cell('<div class="ckpoll_innerbar" style="width: ' . $values['percent'] . '%;"></div>',
+                ['class' => 'ckpoll_outbar']);
+            $t->cell($values['percent'] . '% <small>(' . $values['count'] . ')</small>');
+            $t->nrow();
+        }
+    }
+
     return '<div class="ckpoll_result">' . $t->get() . '</div>';
 }
 
@@ -480,7 +503,8 @@ function get_poll_block_inner($container,$pollname,$id,$date_start = '',$date_en
     $f->select('radio',$name,$default,$choices,
         ['id' => $name .'_'. rand(100,999),
          'itemprefix' => '<div class="ckpoll_vitem">',
-         'itemsuffix' => '</div>'
+         'itemsuffix' => '</div>',
+         'after' => '<div style="clear: both;"></div>',
         ]);
 
     $f->hidden('pollname',$pollname);

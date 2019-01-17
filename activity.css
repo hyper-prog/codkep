@@ -104,27 +104,36 @@
     cursor: pointer;
 }
 
-.ckpoll_default_style .ckpoll_title {
+/* Polls */
+.ckpoll_default_style .ckpoll_title,
+.ckpoll_horizontal_style .ckpoll_title {
     font-weight: bold;
     font-size: 110%;
     margin: 2px 0px 6px 0px;
 }
-
-.ckpoll_default_style .ckpoll_mbody {
+.ckpoll_default_style .ckpoll_mbody,
+.ckpoll_horizontal_style .ckpoll_mbody {
     margin: 4px 5px 4px 10px;
 }
 .ckpoll_default_style .ckpoll_vitem {
     margin: 2px;
 }
-
+.ckpoll_horizontal_style .ckpoll_vitem {
+    margin: 2px;
+    float: left;
+    margin-right: 1.4em;
+}
 .ckpoll_default_style [type="radio"]:checked,
-.ckpoll_default_style [type="radio"]:not(:checked) {
+.ckpoll_horizontal_style [type="radio"]:checked,
+.ckpoll_default_style [type="radio"]:not(:checked),
+.ckpoll_horizontal_style [type="radio"]:not(:checked) {
     position: absolute;
     left: -9999px;
 }
 .ckpoll_default_style [type="radio"]:checked + label,
-.ckpoll_default_style [type="radio"]:not(:checked) + label
-{
+.ckpoll_horizontal_style [type="radio"]:checked + label,
+.ckpoll_default_style [type="radio"]:not(:checked) + label,
+.ckpoll_horizontal_style [type="radio"]:not(:checked) + label {
     position: relative;
     padding-left: 28px;
     cursor: pointer;
@@ -133,7 +142,9 @@
     color: #333333;
 }
 .ckpoll_default_style [type="radio"]:checked + label:before,
-.ckpoll_default_style [type="radio"]:not(:checked) + label:before {
+.ckpoll_horizontal_style [type="radio"]:checked + label:before,
+.ckpoll_default_style [type="radio"]:not(:checked) + label:before,
+.ckpoll_horizontal_style [type="radio"]:not(:checked) + label:before {
     content: '';
     position: absolute;
     left: 0;
@@ -145,7 +156,9 @@
     background: #ffffff;
 }
 .ckpoll_default_style [type="radio"]:checked + label:after,
-.ckpoll_default_style [type="radio"]:not(:checked) + label:after {
+.ckpoll_horizontal_style [type="radio"]:checked + label:after,
+.ckpoll_default_style [type="radio"]:not(:checked) + label:after,
+.ckpoll_horizontal_style [type="radio"]:not(:checked) + label:after {
     content: '';
     width: 12px;
     height: 12px;
@@ -157,18 +170,20 @@
     -webkit-transition: all 0.2s ease;
     transition: all 0.2s ease;
 }
-.ckpoll_default_style [type="radio"]:not(:checked) + label:after {
+.ckpoll_default_style [type="radio"]:not(:checked) + label:after,
+.ckpoll_horizontal_style [type="radio"]:not(:checked) + label:after {
     opacity: 0;
     -webkit-transform: scale(0);
     transform: scale(0);
 }
-.ckpoll_default_style [type="radio"]:checked + label:after {
+.ckpoll_default_style [type="radio"]:checked + label:after,
+.ckpoll_horizontal_style [type="radio"]:checked + label:after {
     opacity: 1;
     -webkit-transform: scale(1);
     transform: scale(1);
 }
-
-.ckpoll_default_style input[type="submit"] {
+.ckpoll_default_style input[type="submit"],
+.ckpoll_horizontal_style input[type="submit"] {
     margin: 5px 2px 5px 0px;
     padding: 2px 25px 2px 25px;
     background-color: #a7a7a7;
@@ -179,15 +194,21 @@
     cursor: pointer;
     box-shadow: 0px 4px 2px #656565;
 }
-.ckpoll_default_style input[type="submit"]:hover {
+.ckpoll_default_style input[type="submit"]:hover,
+.ckpoll_horizontal_style input[type="submit"]:hover {
     background-color: #a7a7b7;
     color: #f0f0ff;
     box-shadow: 0px 6px 4px #656565;
 }
-
 .ckpoll_default_style .ckpoll_innerbar {
     background-color: #565676;
     height: 1em;
+    padding: 0;
+    margin: 0;
+}
+.ckpoll_horizontal_style .ckpoll_innerbar {
+    background-color: #565676;
+    width: 100%;
     padding: 0;
     margin: 0;
 }
@@ -196,4 +217,12 @@
     padding: 1px;
     margin: 0;
 }
+.ckpoll_horizontal_style .ckpoll_outbar {
+    border: 1px solid #565656;
+    height: 100px;
+    min-width: 3em;
+    padding: 1px;
+    margin: 0;
+}
+
 /* end css */

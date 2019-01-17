@@ -748,6 +748,12 @@ function db_delete($container,array $options = [])
     return db_action('delete',$container,'',$options);
 }
 
+/** General database delete starter function */
+function db_x($container)
+{
+    return new SimpleDatabaseQuery($container);
+}
+
 /** Creates a database condition object */
 function cond($l)
 {
@@ -1048,6 +1054,96 @@ class DatabaseQuery
     public function execute_to_arrays(array $eopts = [])
     {
         return [];
+    }
+}
+
+class SimpleDatabaseQuery
+{
+    protected $container;
+
+    public function __construct($container)
+    {
+        $this->container = $container;
+    }
+
+    protected function createDatabaseQueryInstance($action)
+    {
+        global $db;
+        return new $db->qinterface_default_db_handler_class($action,$this->container,'',[]);
+    }
+
+    protected function applyFilters($dbinterface,array $filters)
+    {
+        foreach($filters as $f => $v)
+        {
+            if($v == '##NULL##')
+                $dbinterface->cond_fnull($f);
+            elseif($v == '##NOTNULL##')
+                $dbinterface->cond_fnull($f,['opposite' => true]);
+            elseif($v == '##TRUE##')
+                $dbinterface->cond_fb($f);
+            elseif($v == '##FALSE##')
+                $dbinterface->cond_fb($f,['opposite' => true]);
+            else
+                $dbinterface->cond_fv($f, $v, '=');
+        }
+    }
+
+    public function add(array $field_value_array)
+    {
+        return $this->createDatabaseQueryInstance('insert')
+                        ->set_fv_a($field_value_array)
+                        ->execute();
+    }
+    public function del(array $field_value_filters)
+    {
+        $dbq = $this->createDatabaseQueryInstance('delete');
+        $this->applyFilters($dbq,$field_value_filters);
+        return $dbq->execute();
+    }
+
+    public function get($showfield,array $field_value_filters = [])
+    {
+        $dbq = $this->createDatabaseQueryInstance('query');
+        if(is_array($showfield))
+        {
+            foreach($showfield as $f)
+                $dbq->get($f);
+        }
+        else
+            $dbq->get($showfield);
+
+        $this->applyFilters($dbq,$field_value_filters);
+        if(is_array($showfield))
+            return $dbq->execute_and_fetch();
+        return $dbq->execute_to_single();
+    }
+
+    public function lst(array $showfields,array $field_value_filters = [],array $sort = [])
+    {
+        $dbq = $this->createDatabaseQueryInstance('query');
+        foreach($showfields as $f)
+            $dbq->get($f);
+        $this->applyFilters($dbq,$field_value_filters);
+        if(count($sort) == 0 && count($showfields) > 0)
+            $dbq->sort($showfields[0]);
+        if(count($sort) > 0)
+            foreach($sort as $f)
+            {
+                if(isset($f[0]) && $f[0] == '-')
+                    $dbq->sort(substr($f,1),['direction' => 'REVERSE']);
+                else
+                    $dbq->sort($f);
+            }
+        return $dbq->execute_to_arrays();
+    }
+
+    public function update(array $fields_to_set,array $field_value_filters = [])
+    {
+        $dbq = $this->createDatabaseQueryInstance('update');
+        $dbq->set_fv_a($fields_to_set);
+        $this->applyFilters($dbq,$field_value_filters);
+        return $dbq->execute();
     }
 }
 

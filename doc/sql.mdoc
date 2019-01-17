@@ -649,6 +649,110 @@ $r = db_query('people')
 print to_table($r);
 ~~~
 
+== Simple and easy database operations ==
+
+There is a simplified database access interface for simple database manipulations based on DatabaseQuery
+(The Database CRUD interface described above)
+This operations is usable for simple insert/delete/update/list elements from a single sql table.
+.
+You can use the following helper function to use this simplified interface:
+.
+@@@db_x($tablename)@@@
+.
+This function above (means **db** e**X**ecute) created a SimpleDatabaseQuery instance which has the following methods:
+
+- @@@add(array $field_value_array)@@@
+ - Inserts a new record to the ***$tablename*** table according to $field_value_array, and execute the statement.
+ - It's equivalent to call:<br/>
+ \ ***db_query($tablename)***<br/>
+ \ ***  ->set_fv_a($field_value_array)***<br/>
+ \ ***  ->execute();***
+- @@@update(array $fields_to_set,array $field_value_filters = [])@@@
+ - Update records according to the filter array in the ***$tablename*** table to ***$field_value_array***,
+ \ and execute the statement. Every key value pairs in the ***$field_value_filters*** array is added as a separate condition,
+ \ which resulting that all field index have to match with all values to update the record.
+ - It's equivalent to call:<br/>
+ \ ***db_update($tablename)***<br/>
+ \ ***  ->set_fv_a($field_value_array)***<br/>
+ \ ***  ->cond_fv(...first key-value pair of $field_value_filters...)***<br/>
+ \ ***  ->cond_fv(...second key-value pair of $field_value_filters...)***<br/>
+ \ ***  ...***<br/>
+ \ ***  ->execute();***
+- @@@del(array $field_value_filters)@@@
+ - Deletes all record from the ***$tablename*** table according to ***$field_value_filters***, and execute the statement.
+ \ Every key value pairs in the ***$field_value_filters*** array is added as a separate condition,
+ \ which resulting that all field index have to match with all values to delete a record.
+ - It's equivalent to call:<br/>
+ \ ***db_delete($tablename)***<br/>
+ \ ***  ->cond_fv(...first key-value pair of $field_value_filters...)***<br/>
+ \ ***  ->cond_fv(...second key-value pair of $field_value_filters...)***<br/>
+ \ ***  ...***<br/>
+ \ ***  ->execute();***
+- @@@get($showfield,array $field_value_filters = [])@@@
+ - Returns an array of the first record matched to the filters of ***$field_value_filters***. The returned field list
+ \ consists of the columns specified by ***$showfield***. If the ***$showfield*** parameter is an array of field names
+ \ the return value will be an array. Otherwise the ***$showfield*** is a simple string a simple value will be retuened.
+ \ Every key value pairs in the ***$field_value_filters*** array is
+ \ added as a separate condition, which resulting that all field index have to match with all values to delete a record.
+ - It's equivalent to call: (When ***is_array($showfield) == true***)<br/>
+ \ ***db_query($tablename)***<br/>
+ \ ***  ->get_a($showfield)***<br/>
+ \ ***  ->cond_fv(...first key-value pair of $field_value_filters...)***<br/>
+ \ ***  ->cond_fv(...second key-value pair of $field_value_filters...)***<br/>
+ \ ***  ...***<br/>
+ \ ***  ->execute_and_fetch();***
+ - It's equivalent to call: (When ***is_array($showfield) == false***)<br/>
+ \ ***db_query($tablename)***<br/>
+ \ ***  ->get($showfield)***<br/>
+ \ ***  ->cond_fv(...first key-value pair of $field_value_filters...)***<br/>
+ \ ***  ->cond_fv(...second key-value pair of $field_value_filters...)***<br/>
+ \ ***  ...***<br/>
+ \ ***  ->execute_to_single();***
+- @@@lst(array $showfields,array $field_value_filters = [],array $sort = [])@@@
+ - Returns an array of arrays of all records matched to the filters of ***$field_value_filters***. The returned field lists
+ \ consists of the columns specified by ***$showfields***. Every key value pairs in the ***$field_value_filters*** array is
+ \ added as a separate condition, which resulting that all field index have to match with all values to delete a record.
+ \ If you specify an array to the sort parameter, the result is sorted according to that fields, otherwise the result is
+ \ sorted by the first value of ***$showfields*** array. If a column name in ***$sort*** is started with ***-*** sign,
+ \ the sorting by that field is reversed.
+ - It's equivalent to call:<br/>
+ \ ***db_query($tablename)***<br/>
+ \ ***  ->get_a($showfields)***<br/>
+ \ ***  ->cond_fv(...first key-value pair of $field_value_filters...)***<br/>
+ \ ***  ->cond_fv(...second key-value pair of $field_value_filters...)***<br/>
+ \ ***  ...***<br/>
+ \ ***  ->sort(...first value of $sort...)***<br/>
+ \ ***  ->sort(...second value of $sort...)***<br/>
+ \ ***  ->execute_to_arrays();***
+.
+In the functions above the ***$field_value_filters*** array values can be the following "magic strings":
+- ***#NULL#*** - the field is match when NULL
+- ***#NOTNULL#*** - the field is match when not NULL
+- ***#TRUE#*** - the field is match when TRUE
+- ***#FALSE#*** - the field is match when FALSE
+
+Examples using of this simple database manipulation interface
+~~~php
+//Inserts a new record to the "mysqltable" table
+//with the describe:'Lorem ipsum' and height:150 values
+db_x('mysqltable')->add(['describe' => 'Lorem ipsum','height' => 150]);
+.
+//Delete the id:123 record from the "mysqltable" table
+db_x('mysqltable')->del(['id' => 123]);
+.
+//Change the name field value to "Dave" on "names" table id:112 record.
+db_x('names')->update(['name' => 'Dave'],['id' => 112]);
+.
+//Get the following field values of the id:112 record from "names" table.
+$a = db_x('names')->get(['name','id','age'],['id' => 112]);
+.
+//List all employe from "names" sorted by name and descending to age with the specified fields.
+$a = db_x('names')->lst(['name','id','age'],['employee' => '##TRUE##'],['name','-age']);
+.
+//Simply get the name of the id:88 from "names" table.
+$n = db_x('names')->get('name',['id' => 88]);
+
+~~~
 
 #transactions#
 == Sql transactions ==
