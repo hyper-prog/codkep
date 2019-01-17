@@ -130,33 +130,33 @@ $logfile = '/var/log/codkep_auth.log';
 function hook_mymodule_user_failed_login($login,$descr)
 {
     global $logfile;
-    file_put_contents($logfile,date("Y-m-d_H.i.s").": $login: $descr\n",FILE_APPEND);
+    file_put_contents($logfile,date("Y-m-d_H:i:s").": $login: $descr\n",FILE_APPEND);
 }
 .
 function hook_mymodule_user_logout()
 {
     global $logfile;
     global $user;
-    file_put_contents($logfile,date("Y-m-d_H.i.s").": ".$user->login.": Logout.\n",FILE_APPEND);
+    file_put_contents($logfile,date("Y-m-d_H:i:s").": ".$user->login.": Logout.\n",FILE_APPEND);
 }
 .
 function hook_mymodule_user_logged_in()
 {
     global $logfile;
     global $user;
-    file_put_contents($logfile,date("Y-m-d_H.i.s").": ".$user->login.": Successful logged in.\n",FILE_APPEND);
+    file_put_contents($logfile,date("Y-m-d_H:i:s").": ".$user->login.": Successful logged in.\n",FILE_APPEND);
 }
 .
 function hook_mymodule_blocked_client_rejected($msg)
 {
     global $logfile;
-    file_put_contents($logfile,date("Y-m-d_H.i.s").": ".$msg."\n",FILE_APPEND);
+    file_put_contents($logfile,date("Y-m-d_H:i:s").": ".$msg."\n",FILE_APPEND);
 }
 .
 function hook_mymodule_passwordchange_failed($login,$msg)
 {
     global $logfile;
-    file_put_contents($logfile,date("Y-m-d_H.i.s").": ".$login.": ".$msg."\n",FILE_APPEND);
+    file_put_contents($logfile,date("Y-m-d_H:i:s").": ".$login.": ".$msg."\n",FILE_APPEND);
 }
 ~~~
 
