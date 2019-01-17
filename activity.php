@@ -304,21 +304,62 @@ function unregister_poll($pollname)
     run_hook('poll_unregistered',$pollname);
 }
 
-function get_poll_list($container = '',$now_active = false,$fromdate = '',$todate = '')
+function get_poll_list($container = '',array $search_options = [])
 {
+    /* $search_options = [
+                'activeonly' => true | false
+                'fromdate' => '2019-01-20'
+                'todate' => '2019-02-22'
+
+                'filled_bysb_order' => 'front','back' //only works when container not empty
+                'filled_by_uid' => UID   // need for filled_bysb_order
+                'filled_to_ref' => REFID // need for filled_bysb_order
+
+                'sort' => 'titletext'  '-name'
+            ]
+    */
+
     $q = db_query('poll_parameters')
         ->get_a(['name','container','titletext','defidx','dstart','dend']);
     if($container != '')
         $q->cond_fv('container',$container,'=');
-    if($now_active)
+    if(isset($search_options['activeonly']) && $search_options['activeonly'])
     {
         $q->cond(cond('or')->fnull('dstart')->fe('dstart',sql_t('current_timestamp'),'<=',['efunction' => 'date']));
         $q->cond(cond('or')->fnull('dend')  ->fe('dend'  ,sql_t('current_timestamp'),'>=',['efunction' => 'date']));
     }
-    if($fromdate != '' && check_str($fromdate,'isodate'))
-        $q->cond(cond('or')->fnull('dstart')->fv('dstart',$fromdate,'>=',['vfunction' => 'date']));
-    if($todate != '' && check_str($todate,'isodate'))
-        $q->cond(cond('or')->fnull('dend')  ->fv('dend',$todate,'<=',['vfunction' => 'date']));
+
+    if(isset($search_options['fromdate']) && $search_options['fromdate'] != '' && check_str($search_options['fromdate'],'isodate'))
+        $q->cond(cond('or')->fnull('dstart')->fv('dstart',$search_options['fromdate'],'>=',['vfunction' => 'date']));
+    if(isset($search_options['todate']) && $search_options['todate'] != '' && check_str($search_options['todate'],'isodate'))
+        $q->cond(cond('or')->fnull('dend')  ->fv('dend',$search_options['todate'],'<=',['vfunction' => 'date']));
+
+    if(isset($search_options['filled_bysb_order']) &&
+       ($search_options['filled_bysb_order'] == 'front' || $search_options['filled_bysb_order'] == 'back') &&
+        check_str($search_options['filled_by_uid'],'number0') &&
+        check_str($search_options['filled_to_ref'],'number0') &&
+        check_str($container,'text0nsne'))
+    {
+        $uid = $search_options['filled_by_uid'];
+        $ref = $search_options['filled_to_ref'];
+        $q->get("(SELECT COUNT(ref)
+                  FROM pollcont_$container AS pc
+                  WHERE pc.name=poll_parameters.name AND
+                        uid=$uid AND ref=$ref)",'votecount');
+        if($search_options['filled_bysb_order'] == 'back')
+            $q->sort('votecount');
+        if($search_options['filled_bysb_order'] == 'front')
+            $q->sort('votecount',['direction' => 'REVERSE']);
+    }
+
+    if(isset($search_options['sort']) && $search_options['sort'] != '')
+    {
+        if(strlen($search_options['sort']) > 1 && $search_options['sort'][0] == '-')
+            $q->sort(substr($search_options['sort'],1),['direction' => 'REVERSE']);
+        else
+            $q->sort($search_options['sort']);
+    }
+
     $r = $q->execute_to_arrays();
     return $r;
 }
