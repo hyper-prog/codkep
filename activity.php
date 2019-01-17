@@ -310,12 +310,11 @@ function get_poll_list($container = '',array $search_options = [])
                 'activeonly' => true | false
                 'fromdate' => '2019-01-20'
                 'todate' => '2019-02-22'
-
-                'filled_bysb_order' => 'front','back' //only works when container not empty
+                'add_voteactive' => true
+                'add_votecount' => true //only works when container not empty
                 'filled_by_uid' => UID   // need for filled_bysb_order
                 'filled_to_ref' => REFID // need for filled_bysb_order
-
-                'sort' => 'titletext'  '-name'
+                'sort' => 'titletext'  '-name' or ['-voteactive','votecount','titletext']
             ]
     */
 
@@ -334,8 +333,14 @@ function get_poll_list($container = '',array $search_options = [])
     if(isset($search_options['todate']) && $search_options['todate'] != '' && check_str($search_options['todate'],'isodate'))
         $q->cond(cond('or')->fnull('dend')  ->fv('dend',$search_options['todate'],'<=',['vfunction' => 'date']));
 
-    if(isset($search_options['filled_bysb_order']) &&
-       ($search_options['filled_bysb_order'] == 'front' || $search_options['filled_bysb_order'] == 'back') &&
+    if(isset($search_options['add_voteactive']) && $search_options['add_voteactive'])
+    {
+        $ct = sql_t('current_timestamp');
+        $q->get("(SELECT (dstart IS NULL OR dstart <= date($ct)) AND
+                         (dend IS NULL OR dend >= date($ct)))",'voteactive');
+    }
+
+    if(isset($search_options['add_votecount']) && $search_options['add_votecount'] &&
         check_str($search_options['filled_by_uid'],'number0') &&
         check_str($search_options['filled_to_ref'],'number0') &&
         check_str($container,'text0nsne'))
@@ -346,18 +351,30 @@ function get_poll_list($container = '',array $search_options = [])
                   FROM pollcont_$container AS pc
                   WHERE pc.name=poll_parameters.name AND
                         uid=$uid AND ref=$ref)",'votecount');
-        if($search_options['filled_bysb_order'] == 'back')
-            $q->sort('votecount');
-        if($search_options['filled_bysb_order'] == 'front')
-            $q->sort('votecount',['direction' => 'REVERSE']);
     }
 
-    if(isset($search_options['sort']) && $search_options['sort'] != '')
+    if(isset($search_options['sort']))
     {
-        if(strlen($search_options['sort']) > 1 && $search_options['sort'][0] == '-')
-            $q->sort(substr($search_options['sort'],1),['direction' => 'REVERSE']);
+        if(is_array($search_options['sort']) && count($search_options['sort']) > 0)
+        {
+            foreach($search_options['sort'] as $srt)
+            {
+                if(strlen($srt) > 1 && $srt[0] == '-')
+                    $q->sort(substr($srt, 1), ['direction' => 'REVERSE']);
+                else
+                    $q->sort($srt);
+            }
+        }
         else
-            $q->sort($search_options['sort']);
+        {
+            if($search_options['sort'] != '')
+            {
+                if(strlen($search_options['sort']) > 1 && $search_options['sort'][0] == '-')
+                    $q->sort(substr($search_options['sort'], 1), ['direction' => 'REVERSE']);
+                else
+                    $q->sort($search_options['sort']);
+            }
+        }
     }
 
     $r = $q->execute_to_arrays();
