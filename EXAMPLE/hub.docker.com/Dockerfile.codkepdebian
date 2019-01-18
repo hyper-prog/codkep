@@ -8,7 +8,7 @@
 FROM debian
 LABEL maintainer="hyper80@gmail.com" Description="Codkep web framework on Debian linux with apache webserver"
 
-RUN apt-get update && apt-get install -y apache2 libapache2-mod-php7.0 php-gd php-mysql php-apcu
+RUN apt-get update && apt-get install -y apache2 libapache2-mod-php php-gd php-mysql php-pgsql php-apcu
 COPY ./EXAMPLE/hub.docker.com/defaultdebian.conf /etc/apache2/sites-available/000-default.conf
 RUN a2enmod rewrite \
     && rm -rf /var/www/html/* \

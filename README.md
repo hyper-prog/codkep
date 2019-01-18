@@ -1,52 +1,68 @@
+CodKep - Lightweight web framework
+==================================
 
- CodKep - Lightweight web framework
+CodKep is a lightweight web framework written in [PHP](https://php.net/). 
+It has a modular design and use hook system for easy extend the core functions. 
+Although the working of base api is inspired by the Drupal CMS (version 7),
+the CodKep does not contains or use any codes from Drupal, it's built on own codebase.
+(Written from scratch)
+It's designed to build very database active sites,
+so it has a rich set of form generation tools.
 
- Written by Peter Deak (C) hyper80@gmail.com , License GPLv2
-
- Webpage:        http://hyperprog.com/codkep
- Documentation:  http://hyperprog.com/codkep/doc
+- Written by Peter Deak (C) hyper80@gmail.com , License GPLv2
+- Webpage:        http://hyperprog.com/codkep
+- Documentation:  http://hyperprog.com/codkep/doc
 
                  The documentation on hyperprog.com can be very outdated.
                  After installing use the local "doc/codkep" url to reach
                  the newest available documentation.
 
-Install:
-===================================================================
-Note: The github repository contains the "sys" directory.
+Install on bare machine
+------------------------
+*Note: The github repository contains the "sys" directory.*
 
-Step-1:
-    The CodKep needs a php enabled webserver to run.
+#### Steps to install
 
-Step-2:
-    Create a CodKep installation in webserver root's sys:
-
+    #Step 1: The CodKep needs a php enabled webserver to run.
+    
+    $ sudo apt-get install -y apache2 libapache2-mod-php php-gd php-mysql php-pgsql php-apcu
+    $ sudo a2enmod rewrite 
+    $ cd /var/www/html
+    
+    #Step 2: Copy the CodKep files in the webserver root's "sys" directory:
+    
     /var/www/html$ git clone https://github.com/hyper-prog/codkep.git sys
-
-Step-3:
-    Make a symlink to sys/index.php
-
+    
+    #Step 3: Make a symlink to sys/index.php
+    
     /var/www/html$ ln -s sys/index.php index.php
 
 In case the php is enabled you shoud see the CodKep's open page in your browser.
 The documentation is also available there.
 
-
 Docker images
-===================================================================
+-------------
 Available with Debian and Apline linux with apache webserver on:
  Docker hub:
-   https://hub.docker.com/r/hyperprog/codkepdebian (Debian base)
-   https://hub.docker.com/r/hyperprog/codkepalpine (Alpine base)
 
- Image names:
-   hyperprog/codkepdebian
-   hyperprog/codkepalpine
+- https://hub.docker.com/r/hyperprog/codkepdebian (Debian base)
+- https://hub.docker.com/r/hyperprog/codkepalpine (Alpine base)
 
+ Downloadable (pullable) image names:
+ 
+    hyperprog/codkepdebian
+    hyperprog/codkepalpine
 
-Note for webserver config with cleanurl support:
-===================================================================
-NGINX config
+To run a pure CodKep container and expose to port 80 
+(For example to read the newest documentation)
 
+    $ docker run -t -p 80:80 hyperprog/codkepalpine
+
+Settings for webservers
+-----------------------
+### NGINX config sample with cleanurl support:
+
+```
 server {
     listen 80;
     listen [::]:80;
@@ -72,10 +88,11 @@ server {
         fastcgi_pass unix:/var/run/php/php7.0-fpm.sock;
     }
 }
+```
 
-===================================================================
-APACHE2.X config
+### Apache 2.X config with cleanurl
 
+```
 <VirtualHost *:80>
     ServerAdmin webmaster@localhost
     ServerName sandbox.example.com
@@ -98,10 +115,11 @@ APACHE2.X config
         RewriteRule ^(.*)$ index.php [L]
     </Directory>
 </VirtualHost>
+```
 
-===================================================================
-If you use apache you can put the rewrite rules into .htaccess file:
+#### If you use apache you can put the rewrite rules into .htaccess file:
 
+```
 DirectoryIndex index.php
 Options -Indexes
 
@@ -110,4 +128,4 @@ RewriteBase /
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.php [L]
-
+```  
