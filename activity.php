@@ -21,7 +21,7 @@ function hook_activity_boot()
     $site_config->acitvity_comment_block_css_class = 'commentblk_default_style';
     $site_config->acitvity_comment_renderer_callback = 'codkep_render_commentblock';
     $site_config->activity_poll_main_css_class = 'ckpoll_default_style';
-    $site_config->activity_poll_show_horizontal = false;
+    $site_config->activity_poll_showpoll_callback = 'pollresult_generator_default';
 }
 
 function hook_activity_before_start()
@@ -498,33 +498,39 @@ function get_poll_block($pollname,$id,$maincssclass = '')
 function get_poll_resultblock($results)
 {
     global $site_config;
-    $t = new HtmlTable('poll_result_table');
-    if($site_config->activity_poll_show_horizontal)
-    {
-        foreach($results as $text => $values)
-            $t->cell($text,['type' => 'uni',"horizontal" => "center"]);
-        $t->nrow();
-        foreach($results as $text => $values)
-            $t->cell('<div class="ckpoll_innerbar" style="height: '.$values['percent'].'%;"></div>',
-                ['class' => 'ckpoll_outbar']);
-        $t->nrow();
-        foreach($results as $text => $values)
-            $t->cell($values['percent'] . '%<br/> <small>(' . $values['count'] . ')</small>',
-                ['type' => 'uni',"horizontal" => "center"]);
-    }
-    else
-    {
-        foreach($results as $text => $values)
-        {
-            $t->cell($text);
-            $t->cell('<div class="ckpoll_innerbar" style="width: ' . $values['percent'] . '%;"></div>',
-                ['class' => 'ckpoll_outbar']);
-            $t->cell($values['percent'] . '% <small>(' . $values['count'] . ')</small>');
-            $t->nrow();
-        }
-    }
+    return '<div class="ckpoll_result">' .
+            call_user_func($site_config->activity_poll_showpoll_callback,$results) .
+           '</div>';
+}
 
-    return '<div class="ckpoll_result">' . $t->get() . '</div>';
+function pollresult_generator_default($results)
+{
+    $t = new HtmlTable('poll_result_table');
+    foreach($results as $text => $values)
+    {
+        $t->cell($text);
+        $t->cell('<div class="ckpoll_innerbar" style="width: ' . $values['percent'] . '%;"></div>',
+                ['class' => 'ckpoll_outbar']);
+        $t->cell($values['percent'] . '% <small>(' . $values['count'] . ')</small>');
+        $t->nrow();
+    }
+    return $t->get();
+}
+
+function pollresult_generator_horizontal($results)
+{
+    $t = new HtmlTable('poll_result_table');
+    foreach($results as $text => $values)
+        $t->cell($text,['type' => 'uni',"horizontal" => "center"]);
+    $t->nrow();
+    foreach($results as $text => $values)
+        $t->cell('<div class="ckpoll_innerbar" style="height: '.$values['percent'].'%;"></div>',
+            ['class' => 'ckpoll_outbar']);
+    $t->nrow();
+    foreach($results as $text => $values)
+        $t->cell($values['percent'] . '%<br/> <small>(' . $values['count'] . ')</small>',
+            ['type' => 'uni',"horizontal" => "center"]);
+    return $t->get();
 }
 
 function get_poll_block_inner($container,$pollname,$id,$date_start = '',$date_end = '')
@@ -705,7 +711,7 @@ function hook_activity_required_sql_schema()
                 "tablename" => "pollcont_$cnt",
                 "columns" => [
                     'pid'     => 'SERIAL',
-                    'name'    => 'VARCHAR(16)',
+                    'name'    => 'VARCHAR(20)',
                     'ref'     => 'BIGINT',
                     'uid'     => 'BIGINT',
                     'created' => 'TIMESTAMP',
@@ -720,7 +726,7 @@ function hook_activity_required_sql_schema()
             [
                 "tablename" => "poll_parameters",
                 "columns" => [
-                    'name'      => 'VARCHAR(16) UNIQUE',
+                    'name'      => 'VARCHAR(20) UNIQUE',
                     'container' => 'VARCHAR(128)',
                     'titletext' => sql_t('longtext_type'),
                     'defidx'    => 'VARCHAR(5)',
@@ -732,7 +738,7 @@ function hook_activity_required_sql_schema()
             [
                 "tablename" => "poll_choices",
                 "columns" => [
-                    'name'        => 'VARCHAR(16)',
+                    'name'        => 'VARCHAR(20)',
                     'choice_idx'  => 'VARCHAR(5)',
                     'choice_text' => sql_t('longtext_type'),
                 ],
