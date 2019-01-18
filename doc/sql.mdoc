@@ -659,18 +659,19 @@ You can use the following helper function to use this simplified interface:
 .
 @@@db_x($tablename)@@@
 .
-This function above (means **db** e**X**ecute) created a SimpleDatabaseQuery instance which has the following methods:
+This function above (means **db** e**X**ecute) creates a SimpleDatabaseQuery instance which has the following methods:
 
 - @@@add(array $field_value_array)@@@
- - Inserts a new record to the ***$tablename*** table according to $field_value_array, and execute the statement.
+ - Inserts a new record to the ***$tablename*** table according to ***$field_value_array***, and executes the statement.
  - It's equivalent to call:<br/>
  \ ***db_query($tablename)***<br/>
  \ ***  ->set_fv_a($field_value_array)***<br/>
  \ ***  ->execute();***
 - @@@update(array $fields_to_set,array $field_value_filters = [])@@@
  - Update records according to the filter array in the ***$tablename*** table to ***$field_value_array***,
- \ and execute the statement. Every key value pairs in the ***$field_value_filters*** array is added as a separate condition,
- \ which resulting that all field index have to match with all values to update the record.
+ \ and executes the statement. Every key value pairs in the ***$field_value_filters*** array
+ \ is added as a separate condition, which resulting that all field index have to match
+ \ with all values to update the record.
  - It's equivalent to call:<br/>
  \ ***db_update($tablename)***<br/>
  \ ***  ->set_fv_a($field_value_array)***<br/>
@@ -679,7 +680,7 @@ This function above (means **db** e**X**ecute) created a SimpleDatabaseQuery ins
  \ ***  ...***<br/>
  \ ***  ->execute();***
 - @@@del(array $field_value_filters)@@@
- - Deletes all record from the ***$tablename*** table according to ***$field_value_filters***, and execute the statement.
+ - Deletes all record from the ***$tablename*** table according to ***$field_value_filters***, and executes the statement.
  \ Every key value pairs in the ***$field_value_filters*** array is added as a separate condition,
  \ which resulting that all field index have to match with all values to delete a record.
  - It's equivalent to call:<br/>
@@ -745,12 +746,15 @@ db_x('names')->update(['name' => 'Dave'],['id' => 112]);
 .
 //Get the following field values of the id:112 record from "names" table.
 $a = db_x('names')->get(['name','id','age'],['id' => 112]);
+print implode(', ',$a);
 .
 //List all employe from "names" sorted by name and descending to age with the specified fields.
 $a = db_x('names')->lst(['name','id','age'],['employee' => '##TRUE##'],['name','-age']);
+print to_table($a);
 .
 //Simply get the name of the id:88 from "names" table.
 $n = db_x('names')->get('name',['id' => 88]);
+print "The name is $n";
 
 ~~~
 

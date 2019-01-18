@@ -1,9 +1,11 @@
+![CodKep Logo](https://raw.githubusercontent.com/hyper-prog/codkep/master/images/cklogo_big.png)
+
 CodKep - Lightweight web framework
 ==================================
 
 CodKep is a lightweight web framework written in [PHP](https://php.net/). 
 It has a modular design and use hook system for easy extend the core functions. 
-Although the working of base api is inspired by the Drupal CMS (version 7),
+Although the working of base api was inspired by the Drupal CMS (version 7),
 the CodKep does not contains or use any codes from Drupal, it's built on own codebase.
 (Written from scratch)
 It's designed to build very database active sites,
