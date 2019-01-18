@@ -1,4 +1,4 @@
-![CodKep Logo](https://raw.githubusercontent.com/hyper-prog/codkep/master/images/cklogo_big.png)
+![CodKep Logo](https://raw.githubusercontent.com/hyper-prog/codkep/master/images/cklogo_mid.png)
 
 CodKep - Lightweight web framework
 ==================================
