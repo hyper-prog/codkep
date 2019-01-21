@@ -82,6 +82,7 @@ function hook_hu_init()
         "The vote is not active." => "A szavazás nem aktív.",
         "You can not vote, because the vote is not started yet!" => "Nem szavazhatsz, mert a szavazás még nem kezdődött el!",
         "You can not vote, because the vote is already expired!" => "Nem szavazhatsz, mert a szavazás már lejárt!",
+        "You don't have the necessary permission to view this vote." => "Nincs elegendő jogosultságod a szavazás megtekintéséhez.",
     ]);
 
     add_t_array('hu',[

@@ -556,7 +556,13 @@ function get_poll_block_inner($container,$pollname,$id,$date_start = '',$date_en
     }
 
     if(poll_access($pollname,$id,'add',$user) != ACTIVITY_ACCESS_ALLOW)
-        return '';
+    {
+        if(poll_access($pollname,$id,'view',$user) != ACTIVITY_ACCESS_ALLOW)
+            return '<div class="ckpoll_msg">' . t("You don't have the necessary permission to view this vote.") . '</div>';
+
+        $results = get_poll_results($container,$pollname,$id);
+        return get_poll_resultblock($results);
+    }
 
     $f = new HtmlForm('form_poll_' . $pollname . '_' . $id);
     $f->action_ajax('votepollajax');
