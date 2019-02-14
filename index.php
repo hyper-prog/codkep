@@ -4,7 +4,7 @@
  *  Written by Peter Deak (C) hyper80@gmail.com , License GPLv2
  */
 
-define('VERSION', '1.161');
+define('VERSION', '1.162');
 
 define('CODKEP_MINIMUM_PHP', '5.6.0');
 
@@ -94,8 +94,10 @@ if(function_exists('sql_connect'))
     sql_connect();
 $sys_data->sys_status = STATUS_DATABASE_CONNECTED;
 
+run_hook("preinit");
 run_hook("init");
 $sys_data->sys_status = STATUS_INIT_CALLED;
+run_hook("postinit");
 
 $sys_data->content = new stdClass();
 $sys_data->content->type = 'html';

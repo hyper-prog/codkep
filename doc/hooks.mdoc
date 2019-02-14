@@ -73,9 +73,15 @@ In order to list them let's see the operation sequence of the CodKep:
   - Can used to define global settings defaults which are modifiable by ***_settings.php***.
 # Site settings are read from ***../site/_settings.php***
 # Database connection is done (if exists)
+ - ***HOOK_preinit***
  - ***HOOK_init***
   - Can change early things which are depended from the settings.
   - The site settings are loaded here. The themes and routes are not loaded!
+  - Most modules do their initialisations here. For example the node types are collected here, the form definition
+  \ repositories and field repositories are also collected here, and so on...
+  - Because many module use this hook with undefined order, there are a "preinit" and a "postinit" hooks which runs
+  \ immediately before and after the "init" hook.
+ - ***HOOK_postinit***
 # Initialize the output buffer.
  - Operations which modifies the outputs are ineffective before this point.
  \ (For example: ***add_style()***, ***add_css_file()***, ***add_js_file()***)
