@@ -26,17 +26,17 @@ Install on bare machine
 #### Steps to install
 
     #Step 1: The CodKep needs a php enabled webserver to run.
-    
+
     $ sudo apt-get install -y apache2 libapache2-mod-php php-gd php-mysql php-pgsql php-apcu
     $ sudo a2enmod rewrite 
     $ cd /var/www/html
-    
+
     #Step 2: Copy the CodKep files in the webserver root's "sys" directory:
-    
+
     /var/www/html$ git clone https://github.com/hyper-prog/codkep.git sys
-    
+
     #Step 3: Make a symlink to sys/index.php
-    
+
     /var/www/html$ ln -s sys/index.php index.php
 
 In case the php is enabled you shoud see the CodKep's open page in your browser.
@@ -51,7 +51,7 @@ Available with Debian and Apline linux with apache webserver on:
 - https://hub.docker.com/r/hyperprog/codkepalpine (Alpine base)
 
  Downloadable (pullable) image names:
- 
+
     hyperprog/codkepdebian
     hyperprog/codkepalpine
 
@@ -130,4 +130,4 @@ RewriteBase /
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.php [L]
-```  
+```

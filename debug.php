@@ -181,7 +181,7 @@ function info_routes()
 {
     global $site_config;
     global $sys_data;
-    
+
     if(!$site_config->enable_route_table_info)
     {
         global $user;
@@ -216,7 +216,7 @@ function info_routes()
             $t->cell(isset($r['theme']) ? $r['theme'] : '<i>'.$site_config->default_theme_name.'</i>',['style' => 'background-color: #ddffdd;']);
         else
             $t->cell('');
-        
+
         $t->cell(isset($r['callback']) ? $r['callback'] : '-',['style' => 'background-color: #ddddff;']);
         $fr = new ReflectionFunction($r['callback']);
         $t->cell('<small>'.$fr->getFileName() . ':' . $fr->getStartLine().'</small>',['style' => 'background-color: #cccccc;']);
@@ -334,6 +334,5 @@ function hook_debug_documentation($section)
     }
     return $docs;
 }
-
 
 //end.

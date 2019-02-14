@@ -7,7 +7,7 @@
  * Page module
  *  Required modules: core,sql,user,forms,node
  */
-       
+
 function hook_page_boot()
 {
 
@@ -28,12 +28,12 @@ function hook_page_defineroute()
             'path' => $ritem['path'],
             'callback' => 'page_page_callback',
         ];
-        
+
         if(strlen($ritem['tag1n']) > 0 && strlen($ritem['tag1v']) > 0)
             $pobj['#'.$ritem['tag1n']] = $ritem['tag1v'];
         if(strlen($ritem['tag2n']) > 0 && strlen($ritem['tag2v']) > 0)
-            $pobj['#'.$ritem['tag2n']] = $ritem['tag2v'];        
-            
+            $pobj['#'.$ritem['tag2n']] = $ritem['tag2v'];
+
         $paths[] = $pobj;
     }
     $pass = new stdClass();
@@ -190,7 +190,7 @@ function hook_page_nodetype()
                 "par_sec" => "text3",
                 "formatters" => "after",
             ],
-            
+
             110 => [
                 "sql" => "created",
                 "type" => "timestamp_create",
@@ -231,7 +231,7 @@ function hook_page_nodetype()
             ],
         ],
     ];
-    
+
     return $n;
 }
 

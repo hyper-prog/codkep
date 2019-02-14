@@ -1820,7 +1820,7 @@ function menu_expand(array $m,$pad='')
             $classes .= "expanded ";
         else
             $classes .= "leaf ";
-            
+
         $vv = $v;
         while(is_array($vv))
           $vv = array_values($vv)[0];

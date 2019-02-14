@@ -26,7 +26,7 @@ function hook_flex_boot()
     $flex->size_of_left_sidebar_mobile = 4;
     $flex->size_of_centerarea_mobile = 11;
     $flex->size_of_right_sidebar_mobile = 20;
-    
+
     $flex->mainmenu_structure_prefix = '';
     $flex->mainmenu_structure_suffix = '';
 
