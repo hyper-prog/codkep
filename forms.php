@@ -839,6 +839,16 @@ class HtmlForm
         $this->mode = 'AJAX';
         return $this;
     }
+    public function action_ajaxcallback($target,array $query = [],array $urlopts = [])
+    {
+        $this->action_ajax(sysEncodeConnectorTarget('connect',$target),$query,$urlopts);
+        return $this;
+    }
+    public function action_postcallback($target,array $query = [],array $urlopts = [])
+    {
+        $this->action_post(sysEncodeConnectorTarget('route',$target),$query,$urlopts);
+        return $this;
+    }
 
     public function input($type,$n,$v,array $opts=[])
     {

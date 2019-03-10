@@ -215,7 +215,10 @@ The CodKep have a html anchor tag generator function, which uses the ***url()***
 to generate a formatted html link.
 .
 @@@l($text, $loc, array $options = [], array $query = [], $fragment = NULL)@@@
-
+<br/>
+Generates a classic html link.
+The function returns a printable link/anchor tag which can directly used in browsers.
+You can customize the link with the following parameter options:
 - ***$text*** parameter
  - The link text for the anchor tag. Accept html tags too.
 - ***$loc*** parameter
@@ -247,8 +250,6 @@ to generate a formatted html link.
 - ***$fragment*** parameter
  - The html anchor to reference.
 
-The function returns a printable link/anchor tag which can directly used in browsers.
-
 ~~~php
 print l("Login","user/login");
 print l("The site of the author","http://hyperprog.com",["class" => "extlink"]);
@@ -260,6 +261,38 @@ The code above will generate the following html content (It may be different acc
 <a href="http://hyperprog.com" class="extlink">The site of the author</a>
 <a href="index.php?q=edit/34&foo=full">Edit content: second</a>
 ~~~
+
+.
+#lxfunc#
+@@@lx($text, $loc, array $options = [], array $query = [])@@@
+<br/>
+Generates a html link client side handled by [Codkep ajax framework|url:doc/codkep/ajax].
+The ***$options*** and ***$query*** parameters works same as [***l()***|url:#lfunc] function.
+Technically this function calls ***l()*** inside so this is a simple link with an additional "use-ajax" CSS
+class which tells the codkep javascript API to handle link as ajax call.
+
+~~~php
+//This two lines are generates same code:
+print l('Click me','dosomething/withajax',['class' => 'use-ajax mylinktype']);
+print lx('Click me','dosomething/withajax',['class' => 'mylinktype']);
+.
+//This two lines are generates same code:
+print l('Click me2','dotwo/withajax',['class' => 'use-ajax']);
+print lx('Click me2','dotwo/withajax');
+~~~
+
+#lxcfunc#
+@@@lxc($text, $callbackfunction, array $options = [], array $query = [])@@@
+<br/>
+Generates a codkep ajax link which automatically routed to a [user defined ajax|url:doc/codkep/ajax] callback function
+passed in ***$callbackfunction*** parameter.
+The ***$options*** and ***$query*** parameters works same as [***l()***|url:#lfunc] function.
+(It means that you do not need to add this callback as route line in your ***HOOK_defineroute***,
+the codkep system calls your callback through a special system defined route)
+.
+**The callback function have to start with ***"extcallable_"*** prefix by security considerations.**
+**[See sample and further documentation here|url:doc/codkep/ajax#arahsecrest]**.
+
 
 #redirections#
 == Redirections ==

@@ -97,6 +97,21 @@ __Definition methods of HtmlForm class:__
   \ The response will processed by the CodKep's [ajax framework|url:doc/codkep/ajax].
   \ The other parameters are passed to the ***url()*** function.
   \ See the [documentation of ***url()***|url:doc/codkep/routes#urlfunc]
+ - @@@action_ajaxcallback($target,array $query = [],array $urlopts = [])@@@
+  - Sets the form action to AJAX and the target will be an autorouted user defined
+  \ ajax callback function specified by ***$target*** parameter.
+  \ The ajax handler callback function name has to start with "extcallable_" prefix becouse security considerations,
+  \ [see here|url:doc/codkep/ajax#arahsecrest].
+  \ The response will processed by the CodKep's [ajax framework|url:doc/codkep/ajax].
+  \ The other parameters are passed to the ***url()*** function.
+  \ See the [documentation of ***url()***|url:doc/codkep/routes#urlfunc]
+ - @@@action_postcallback($target,array $query = [],array $urlopts = [])@@@
+  - Sets the form action to "POST" and the target will be an autorouted user defined
+  \ callback function specified by ***$target*** parameter.
+  \ The callback function name has to start with "extcallable_" prefix becouse security considerations,
+  \ [see here|url:doc/codkep/ajax#arahsecrest].
+  \ The other parameters are passed to the ***url()*** function.
+  \ See the [documentation of ***url()***|url:doc/codkep/routes#urlfunc]
  - @@@input($type, $n, $v, array $opts = [])@@@
   - Adds an input tag to the form with type received in ***$type*** parameter.
    - The ***$type*** parameter can receive the following values:

@@ -1,6 +1,12 @@
 This file describes the non fully compatible
 changes between the released versions
 
+1.163 -> 1.164
+ - The following paths/routes will be reserved by the system, so do not use it:
+    connector/connect/...
+    connector/fill/...
+    connector/route/...
+
 1.139 -> 1.140
  - The valid_http_host($string) function was renamed to ck_valid_http_host($string)
  - Do not use the $_SERVER['REMOTE_ADDR'] in your codes anymore, 

@@ -1192,42 +1192,159 @@ function hook_core_before_start()
 function hook_core_defineroute()
 {
     $r = [];
-    $r[] = [
-            "path" => "not_configured_startpage",
-            "callback" => "core_notconfigured_startpage",
-           ];
+    $r[] = ["path" => "not_configured_startpage", "callback" => "core_notconfigured_startpage"   ];
+    $r[] = ["path" => "emptycache",               "callback" => "pc_core_emptycache"             ];
 
-    $r[] = [
-            "path" => "emptycache",
-            "callback" => "pc_core_emptycache",
+    $r[] = ["path" => "notfound",                 "callback" => "core_notfound_page",             "theme" => "base_page"];
+    $r[] = ["path" => "param_security_error",     "callback" => "core_paramsecurityerr_page",     "theme" => "base_page"];
+    $r[] = ["path" => "param_undefined_error",    "callback" => "core_paramundefinederror_page",  "theme" => "base_page"];
+    $r[] = ["path" => "error",                    "callback" => "core_customerror_page",          "theme" => "base_page"];
+    $r[] = ["path" => "missing_parameter_error",  "callback" => "core_missingparametererror_page","theme" => "base_page"];
+
+    $r[] = ["path" => "connector/connect/{target}", "callback" => "core_connector", "type" => "ajax"];
+    $r[] = ["path" => "connector/fill/{target}"   , "callback" => "core_connector", "type" => "ajax"];
+    $r[] = ["path" => "connector/route/{target}"  , "callback" => "core_connector" ];
+    return $r;
+}
+
+/** @ignore Handles "connector/..." routes (autorouted callbacks) */
+function core_connector()
+{
+    par_def('target','text0nsne');
+    $encoded = par('target');
+    if(strlen($encoded) > 128)
+        return '';
+    $target = crockford32_decode($encoded);
+    if($target == null || $target == '')
+        return '';
+    if(substr($target, 0, 12) != 'extcallable_' || !function_exists($target))
+        return '';
+
+    if(substr(current_loc(),0,16) == 'connector/route/')
+        return call_user_func($target);
+    if(substr(current_loc(),0,18) == 'connector/connect/')
+        call_user_func($target);
+    if(substr(current_loc(),0,15) == 'connector/fill/')
+    {
+        par_def('changeid','text1ns');
+        $changeid = par('changeid');
+        ajax_add_html('#'.$changeid,call_user_func($target));
+    }
+    return '';
+}
+
+function sysEncodeConnectorTarget($fnc,$target)
+{
+    if(substr($target,0,12) != 'extcallable_')
+        throw new Exception('The external callable function have to prefixed by "extcallable_" !');
+    if(strlen($target) > 64)
+        throw new Exception('The external callable function name have to be shorter than 64 character!');
+
+    if($fnc == 'connect')
+        return 'connector/connect/' . crockford32_encode($target);
+    if($fnc == 'fill')
+        return 'connector/fill/' . crockford32_encode($target);
+    if($fnc == 'route')
+        return 'connector/route/' . crockford32_encode($target);
+}
+
+/** Creates an ajax processed link */
+function lx($text,$loc,array $options = [],array $query = [])
+{
+    if(!isset($options['class']))
+        $options['class'] = 'use-ajax';
+    if(strpos($options['class'], 'use-ajax') === false)
+        $options['class'] .= ' use-ajax';
+    return l($text,$loc,$options,$query);
+}
+
+/** Creates an autorouted ajax processed callback link */
+function lxc($text,$targetcallback,array $options = [],array $query = [])
+{
+    return lx($text,sysEncodeConnectorTarget('connect',$targetcallback),$options,$query);
+}
+
+/** Creates a html code parts which filled by the specified ajax callback function. */
+function fill_through_ajax($target,$queryparams = [],$bypass = false)
+{
+    if($bypass)
+    {
+        if(substr($target, 0, 13) != 'fillcallback_' || function_exists($target))
+            return '<div>' . call_user_func($target) . '</div>';
+        return '';
+    }
+    $htmlid = 'autofill_'.substr(hash('md5',$target,FALSE),0,16).'_'.substr(time(),6).'_'.rand(1000,9999);
+    $queryparams['changeid'] = $htmlid;
+    $aurl = url(sysEncodeConnectorTarget('fill',$target),$queryparams);
+    return "<div id=\"$htmlid\">".
+             "<script>jQuery(document).ready(function(){ executeCodkepAjaxCall('$aurl'); });</script>".
+           "</div>";
+}
+
+function crockford32_encode($data)
+{
+    $chars = '0123456789abcdefghjkmnpqrstvwxyz';
+    $mask = 0b11111;
+    $dataSize = strlen($data);
+    $res = '';
+    $remainder = 0;
+    $remainderSize = 0;
+    for($i = 0; $i < $dataSize; $i++)
+    {
+        $b = ord($data[$i]);
+        $remainder = ($remainder << 8) | $b;
+        $remainderSize += 8;
+        while($remainderSize > 4)
+        {
+            $remainderSize -= 5;
+            $c = $remainder & ($mask << $remainderSize);
+            $c >>= $remainderSize;
+            $res .= $chars[$c];
+        }
+    }
+    if($remainderSize > 0)
+    {
+        $remainder <<= (5 - $remainderSize);
+        $c = $remainder & $mask;
+        $res .= $chars[$c];
+    }
+    return $res;
+}
+
+function crockford32_decode($data)
+{
+    $map = [
+        '0' => 0 ,'1' => 1 ,'2' => 2 ,'3' => 3 ,'4' => 4 ,
+        '5' => 5 ,'6' => 6 ,'7' => 7 ,'8' => 8 ,'9' => 9 ,
+        'A' => 10,'a' => 10,'b' => 11,'c' => 12,'d' => 13,
+        'e' => 14,'f' => 15,'g' => 16,'h' => 17,'j' => 18,
+        'k' => 19,'m' => 20,'n' => 21,'p' => 22,'q' => 23,
+        'r' => 24,'s' => 25,'t' => 26,'v' => 27,'w' => 28,
+        'x' => 29,'y' => 30,'z' => 31,
     ];
 
-    $r[] = [
-            "path" => "notfound",
-            "callback" => "core_notfound_page",
-            "theme" => "base_page"
-           ];
-    $r[] = [
-            "path" => "param_security_error",
-            "callback" => "core_paramsecurityerr_page",
-            "theme" => "base_page"
-           ];
-    $r[] = [
-            "path" => "param_undefined_error",
-            "callback" => "core_paramundefinederror_page",
-            "theme" => "base_page"
-           ];
-    $r[] = [
-            "path" => "error",
-            "callback" => "core_customerror_page",
-            "theme" => "base_page"
-           ];
-    $r[] = [
-            "path" => "missing_parameter_error",
-            "callback" => "core_missingparametererror_page",
-            "theme" => "base_page"
-           ];
-    return $r;
+    $data = strtolower($data);
+    $dataSize = strlen($data);
+    $buf = 0;
+    $bufSize = 0;
+    $res = '';
+    for($i = 0; $i < $dataSize; $i++)
+    {
+        $c = $data[$i];
+        if(!isset($map[$c]))
+            return null;
+
+        $b = $map[$c];
+        $buf = ($buf << 5) | $b;
+        $bufSize += 5;
+        if($bufSize > 7)
+        {
+            $bufSize -= 8;
+            $b = ($buf & (0xff << $bufSize)) >> $bufSize;
+            $res .= chr($b);
+        }
+    }
+    return $res;
 }
 
 function pc_core_emptycache()
@@ -1820,7 +1937,7 @@ function menu_expand(array $m,$pad='')
             $classes .= "expanded ";
         else
             $classes .= "leaf ";
-
+            
         $vv = $v;
         while(is_array($vv))
           $vv = array_values($vv)[0];

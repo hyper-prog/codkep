@@ -313,7 +313,6 @@ function close_ckdialog()
     modalin.style.display = "none";
 }
 
-
 function b64EncodeUnicodeString(str) {
     return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
         return String.fromCharCode(parseInt(p1, 16))
@@ -391,6 +390,22 @@ function save_and_close_dyntable_dialog(id)
         },
         success: function(data) {
             close_ckdialog();
+            processAjaxResponse(data);
+            initializeAjaxLinks();
+        }
+    });
+}
+
+function executeCodkepAjaxCall(tourl)
+{
+    jQuery.ajax({
+        cache: false,
+        url: tourl,
+        context: document.body,
+        error: function() {
+            console.log('The ajax request failed: '+tourl);
+        },
+        success: function(data) {
             processAjaxResponse(data);
             initializeAjaxLinks();
         }
