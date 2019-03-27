@@ -96,14 +96,14 @@ Static methods:
 Methods:
 - @@@save($skip_transaction = false)@@@
  - Save the node to the database.
- - If the ***$skip_transaction*** parameter is true the method does not start and commits a new sql transaction.
+ - If the ***$skip_transaction*** parameter is true the method does not start and commits a new sql transaction.<sup>1</sup>
 - @@@insert($skip_transaction = false)@@@
  - Insert this node to the database.
  - Returns the NID of the created node.
- - If the ***$skip_transaction*** parameter is true the method does not start and commits a new sql transaction.
+ - If the ***$skip_transaction*** parameter is true the method does not start and commits a new sql transaction.<sup>1</sup>
 - @@@remove($skip_transaction = false)@@@
  - Remove the node from the database.
- - If the ***$skip_transaction*** parameter is true the method does not start and commits a new sql transaction.
+ - If the ***$skip_transaction*** parameter is true the method does not start and commits a new sql transaction.<sup>1</sup>
 - @@@getform($mode = 'all')@@@
  - Generate a HtmlFrom object
  - The ***$mode*** parameter is directly passed to [SpeedForm|url:doc/codkep/forms#speedform]'s ***generate_form()***
@@ -129,6 +129,12 @@ Methods:
 - @@@&get_definition_field($sqlname)@@@
  - Returns a reference to the data definition array's appropriate field definition.
 
+*Note 1: By default the save, insert and remove methods do their sql works in a separate sql transaction. *
+*They starts a transaction inside and commits after the work.*
+*In case you would like to call this methods in an already started transaction (to enclose*
+*the whole of your work included this opertaion in a large transaction) *
+*you have to set the $skip_transaction parameter to true.*
+.
 #mmethods#
 Methods which does nothing (or do a minimal basic operations) in Node class.
 They can redefined in subclasses to achieve some special functions.
