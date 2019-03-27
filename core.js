@@ -73,6 +73,8 @@ function processAjaxResponse(data)
             jQuery(obj[i][1]).remove();
         if(obj[i][0] == "val")
             jQuery(obj[i][1]).val(obj[i][2]);
+        if(obj[i][0] == "prop")
+            jQuery(obj[i][1]).prop(obj[i][2],obj[i][3]);
         if(obj[i][0] == "appendval") {
             var x,v;
             x = jQuery(obj[i][1]);

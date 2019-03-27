@@ -691,6 +691,17 @@ function ajax_add_val($selector,$value)
     global $sys_data;
     $sys_data->content->commands[] = ['val',$selector,$value];
 }
+
+/** Creates an ajax (jQuery) 'prop' command and adds to the output queue.
+ *
+ *  Only use in ajax handler. ( _defineroute 'type'=>'ajax' )
+ *  @package core */
+function ajax_add_prop($selector,$propname,$value)
+{
+    global $sys_data;
+    $sys_data->content->commands[] = ['prop',$selector,$propname,$value];
+}
+
 /** Creates an ajax (jQuery) 'val' commands to append a text to the output queue.
  *
  *  Only use in ajax handler. ( _defineroute 'type'=>'ajax' )
