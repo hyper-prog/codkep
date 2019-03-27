@@ -94,13 +94,16 @@ Static methods:
  - Static method, returns an appropriate Node or Node descendant if success.
 
 Methods:
-- @@@save()@@@
+- @@@save($skip_transaction = false)@@@
  - Save the node to the database.
-- @@@insert()@@@
+ - If the ***$skip_transaction*** parameter is true the method does not start and commits a new sql transaction.
+- @@@insert($skip_transaction = false)@@@
  - Insert this node to the database.
  - Returns the NID of the created node.
-- @@@remove()@@@
+ - If the ***$skip_transaction*** parameter is true the method does not start and commits a new sql transaction.
+- @@@remove($skip_transaction = false)@@@
  - Remove the node from the database.
+ - If the ***$skip_transaction*** parameter is true the method does not start and commits a new sql transaction.
 - @@@getform($mode = 'all')@@@
  - Generate a HtmlFrom object
  - The ***$mode*** parameter is directly passed to [SpeedForm|url:doc/codkep/forms#speedform]'s ***generate_form()***

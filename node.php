@@ -401,7 +401,7 @@ class Node
         return array_keys($this->dataspeedform->values);
     }
 
-    public function insert()
+    public function insert($skip_transaction = false)
     {
         if($this->dataspeedform === NULL || $this->type == NULL)
         {
@@ -417,7 +417,8 @@ class Node
 
         $this->m_before_insert();
 
-        sql_transaction();
+        if(!$skip_transaction)
+            sql_transaction();
         $this->join_id = $this->insert_data();
         $ptempl = $this->preferred_theme === NULL ? 'NULL' : "'$this->preferred_theme'";
         sql_exec("INSERT INTO node(type,join_id,ptempl,creator,created)
@@ -429,7 +430,8 @@ class Node
         $this->nid = sql_exec_single("SELECT nid FROM node WHERE type=:ttype AND join_id=:tjoin_id",
                             [':ttype' => $this->type,
                              ':tjoin_id' => $this->join_id]);
-        sql_commit();
+        if(!$skip_transaction)
+            sql_commit();
 
         $this->m_after_insert();
 
@@ -558,7 +560,7 @@ class Node
         return new $classname($type);
     }
 
-    public function save()
+    public function save($skip_transaction = false)
     {
         if($this->dataspeedform === NULL)
         {
@@ -573,9 +575,11 @@ class Node
         run_hook('node_before_save',$p1);
 
         $this->m_before_save();
-        sql_transaction();
+        if(!$skip_transaction)
+            sql_transaction();
         $this->save_data();
-        sql_commit();
+        if(!$skip_transaction)
+            sql_commit();
         $this->m_after_save();
 
         $p2 = new stdClass();
@@ -589,15 +593,17 @@ class Node
         $this->dataspeedform->do_update();
     }
 
-    public function remove()
+    public function remove($skip_transaction = false)
     {
         if($this->nid != NULL && $this->dataspeedform != NULL)
         {
             $this->m_before_delete();
-            sql_transaction();
+            if(!$skip_transaction)
+                sql_transaction();
             sql_exec("DELETE FROM node WHERE nid=:nid",[':nid' => $this->nid]);
             $this->remove_data();
-            sql_commit();
+            if(!$skip_transaction)
+                sql_commit();
 
             run_hook("node_deleted",$this->nid,$this->type,$this->join_id);
         }
