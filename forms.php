@@ -2350,7 +2350,7 @@ function sfh_dispval_check($field_def,$value)
 
 function sfh_dispval_date($field_def,$value)
 {
-    if($value == NULL)
+    if($value == NULL || $value == 'u')
         return t('Unknown');
     return $value;
 }
