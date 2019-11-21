@@ -382,6 +382,14 @@ function hook_mymodule_nodetype_alter_user($p)
 *the [sql schema check page|url:sqlschema] to meet the new sql requirements. *
 
 
+#showdefinednt#
+=== Show the defined node types ===
+You can get a compact table about the defined static and dynamic node types by accessing
+***[codkep_definednodes|url:codkep_definednodes]*** path.
+The table shows the node names, class types, external sql table names,
+primary keys and the define file in case of dynamic node.
+By default this page is only accessible for site admins.
+See the node settings below to expand or narrow this accessibility.
 
 #databaseappear#
 == Database appearance of nodes ==
@@ -930,6 +938,8 @@ The node settings which can set [in site settings|url:doc/codkep/modules#site_se
 |---                                                       |--                                   | ---                              |---          |
 |<small> ***$site_config->node_unauth_triggers_login*** </small>      |<small> false  </small>   | In case of this option is ***true*** and an unauthenticated user try to access a node which needs authenticated user to access the CodKep automatically redirects to the login page. |
 |<small> ***$site_config->node_rest_api_enabled*** </small>           |<small> true  </small>    | If this value is false it completely disable the REST resources related to nodes. |
+|<small> ***$site_config->node_definednodes_available*** </small>     |<small> true  </small>    | If this value is true the node module defines the "codkep_definednodes" route, which shows the defined node types in the current system. |
+|<small> ***$site_config->node_definednodes_available_for*** </small> |<small> admin </small>    | Restricts availability of the "codkep_definednodes" route, which shows the defined node types in the current system. Possible values are "admin","editor","auth","all" and "none" which means the group who can access the page. |
 
 **Many node settings can change in node definition structure to make possible to set different features for each node type.**
 **You can view this settings in forms module documentation [here|url:doc/codkep/forms#ddeftoplevel].** (Purple block)

@@ -21,6 +21,8 @@ function hook_node_boot()
     global $site_config;
     $site_config->node_unauth_triggers_login = false;
     $site_config->node_rest_api_enabled = true;
+    $site_config->node_definednodes_available = true;
+    $site_config->node_definednodes_available_for = 'admin';
 
     global $sys_data;
     $sys_data->node_types = [];
@@ -132,6 +134,14 @@ function hook_node_defineroute()
           'joinid'  =>  ['security'=>'text1ns','source'=>'url','acceptempty'=>false,'default'=>NULL,'required'=>true],
         ],
     ];
+
+    if($site_config->node_definednodes_available)
+    {
+        $i[] = [
+            'path' => 'codkep_definednodes',
+            'callback' => 'sys_node_codkep_definednodes',
+        ];
+    }
 
     if($site_config->node_rest_api_enabled)
     {
@@ -1060,6 +1070,129 @@ function hook_node_check_module_requirements()
     print '<td class="normal">Php ReflectionClass</td>';
     print '<td class="'.($reflection ? 'green':'red').'">'.($reflection ? 'Available' : 'Not available').'</td>';
     print '</tr>';
+    return ob_get_clean();
+}
+
+function sys_node_codkep_definednodes()
+{
+    global $user;
+    global $sys_data;
+    global $site_config;
+
+    if(!in_array($site_config->node_definednodes_available_for,['admin','editor','auth','all']))
+        return '';
+    if($site_config->node_definednodes_available_for == 'admin' && $user->role != ROLE_ADMIN)
+        return '';
+    if($site_config->node_definednodes_available_for == 'editor' && $user->role != ROLE_ADMIN && $user->role != ROLE_EDITOR)
+        return '';
+    if($site_config->node_definednodes_available_for != 'auth' && !$user->auth)
+        return '';
+
+    $coll = [];
+    foreach($sys_data->node_types as $node_name => $def_body)
+    {
+        $coll[$node_name] = [];
+        $coll[$node_name]['type'] = 'static';
+        $coll[$node_name]['classname'] = isset($def_body['classname']) ? $def_body['classname'] : "Node";
+        $coll[$node_name]['sqltable']  = $def_body['table'];
+        $coll[$node_name]['showmode']  = $def_body['show'];
+        $coll[$node_name]['rest']      = isset($def_body['rest_enabled']) ? $def_body['rest_enabled'] : '';
+
+        $cnt = 0;
+        $kidx = 0;
+        $kname = '';
+        foreach($def_body['fields'] as $idx => $fbody)
+        {
+            if($fbody['type'] == 'keyn' || $fbody['type'] == 'keys')
+            {
+                $kidx = $idx;
+                $kname = $fbody['sql'];
+            }
+            ++$cnt;
+        }
+
+        $coll[$node_name]['cnt']      = $cnt;
+        $coll[$node_name]['keyidx']   = $kidx;
+        $coll[$node_name]['keyname']  = $kname;
+        $coll[$node_name]['file']     = '';
+    }
+
+    foreach($sys_data->node_otypes as $node_name => $def_body)
+    {
+        $classname = $def_body['defineclass'];
+        $temp_obj = node_create($node_name);
+        $temp_sf=$temp_obj->get_speedform_object();
+        $loaded_def_body = $temp_sf->def;
+
+        $coll[$node_name] = [];
+        $coll[$node_name]['type'] = 'dynamic';
+        $coll[$node_name]['classname'] = $classname;
+        $coll[$node_name]['file']      = $def_body['file'];
+        $coll[$node_name]['sqltable']  = $loaded_def_body['table'];
+        $coll[$node_name]['showmode']  = $loaded_def_body['show'];
+        $coll[$node_name]['rest']      = isset($loaded_def_body['rest_enabled']) ? $loaded_def_body['rest_enabled'] : '';
+
+        $cnt = 0;
+        $kidx = 0;
+        $kname = '';
+        foreach($loaded_def_body['fields'] as $idx => $fbody)
+        {
+            if($fbody['type'] == 'keyn' || $fbody['type'] == 'keys')
+            {
+                $kidx = $idx;
+                $kname = $fbody['sql'];
+            }
+            ++$cnt;
+        }
+
+        $coll[$node_name]['cnt']      = $cnt;
+        $coll[$node_name]['keyidx']   = $kidx;
+        $coll[$node_name]['keyname']  = $kname;
+    }
+
+    ksort($coll);
+
+    ob_start();
+    set_title("Defined node types");
+    print "<h2>Defined node types</h2>";
+
+    print '<table>
+           <tr>
+               <td><div style=" display: block; width: 50px; height: 1em; background-color: #88ff88"></div></td>
+               <td style="padding: 2px 15px 2px 2px;">Static types</td>
+               <td><div style="display: block; width: 50px; height: 1em; background-color: #ffcc88;"></div></td>
+               <td style="padding: 2px 15px 2px 2px;">Dynamic types</td>
+           </tr>
+           </table>';
+
+    $ncnt = 0;
+    $t = new HtmlTable();
+    $t->opts(['border' => '1','style' => 'border-collapsed: collapse;']);
+    $t->heads(['name',
+               'class type',
+               'external sql<br/>table name',
+               'external key field',
+               'number<br/> of fileds',
+               'REST',
+               'file'],
+               ['style' => 'background-color: #383838; color: #e0e0e0;']);
+    foreach($coll as $node_name => $c)
+    {
+        $t->cell('<code><strong>'.$node_name.'</strong></code>',
+                ['type' => 'uni','background-color' => ($c['type'] == 'static' ? '#88ff88' : '#ffcc88')]);
+        $t->cell($c['classname'],['type' => 'uni','background-color' => '#f2f2f2']);
+        $t->cell('<code>' . $c['sqltable'] . '</code>',['type' => 'uni','background-color' => '#f2e2e2']);
+        $t->cell('#'.$c['keyidx'].' : <code>'.$c['keyname'] . '</code>',['type' => 'uni','background-color' => '#f2d2d2']);
+
+        $t->cell($c['cnt'],['type' => 'uni','background-color' => '#f2f2f2']);
+        $t->cell($c['rest'],['type' => 'uni','background-color' => '#f2f2f2']);
+        $t->cell('<small>'.$c['file'].'</small>',['type' => 'uni','background-color' => '#c2c2c2']);
+
+        $t->nrow();
+        ++$ncnt;
+    }
+    print $t->get();
+    print "<small>$ncnt node type in the system.</small>";
     return ob_get_clean();
 }
 
