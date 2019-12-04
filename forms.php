@@ -3797,29 +3797,35 @@ function to_table($dataobj,array $options=[],array &$results = null)
             $r_mapped[$keyname] = $r[$rname];
         }
 
-        $tr_opts = [];
-        if(isset($options['#lineoptions_callback']))
-            $tr_opts = call_user_func($options['#lineoptions_callback'],$r_mapped);
-        $table->nrow($tr_opts);
+        $lineskip = false;
+        if(isset($options['#lineskip_callback']))
+            $lineskip = call_user_func($options['#lineskip_callback'],$r_mapped);
 
-        foreach($columns as $k)
-            if($r_show[$k])
-            {
-                if($r_valuecallback[$k] !== NULL)
-                {
-                    $value = call_user_func($r_valuecallback[$k],$r_mapped,$k);
-                    $table->cell($r_prefixes[$k] . $value . $r_suffixes[$k], $r_cellopts[$k]);
-                }
-                else
-                {
-                    $keyname = $k;
-                    if(!isset($r[$k]))
-                        $keyname = $r_sqlname[$k];
-                    $table->cell(isset($r[$keyname]) ? ($r_prefixes[$k] . $r[$keyname] . $r_suffixes[$k]) : '', $r_cellopts[$k]);
-                }
-            }
+        if(!$lineskip)
+        {
+            $tr_opts = [];
+            if(isset($options['#lineoptions_callback']))
+                $tr_opts = call_user_func($options['#lineoptions_callback'], $r_mapped);
+            $table->nrow($tr_opts);
 
-        ++$rowcount;
+            foreach($columns as $k)
+                if($r_show[$k])
+                {
+                    if($r_valuecallback[$k] !== NULL)
+                    {
+                        $value = call_user_func($r_valuecallback[$k], $r_mapped, $k);
+                        $table->cell($r_prefixes[$k] . $value . $r_suffixes[$k], $r_cellopts[$k]);
+                    } else
+                    {
+                        $keyname = $k;
+                        if(!isset($r[$k]))
+                            $keyname = $r_sqlname[$k];
+                        $table->cell(isset($r[$keyname]) ? ($r_prefixes[$k] . $r[$keyname] . $r_suffixes[$k]) : '', $r_cellopts[$k]);
+                    }
+                }
+
+            ++$rowcount;
+        }
     }
 }
 

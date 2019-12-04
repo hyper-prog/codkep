@@ -84,6 +84,10 @@ __Options affects the whole table tag:__
  - ***border*** - Set the border of the table
  - ***style*** - CSS style for table tag
  - ***class*** - CSS class of the table tag
+- ***#lineskip_callback*** - Callback function to make possible to completely skip some lines of the table.
+\ In case of this callback is present the to_table() calls before every row drawing. If the function return ***true***
+\ the line is not drawn. The function receive the array of the fields of the subjected row.
+\ (All fields and other fields like ***&#95;&#95;rownumber&#95;&#95;*** or ***&#95;&#95;external&#95;&#95;***)
 - ***#lineoptions_callback*** - Callback function which can feed the
 \ [HtmlTable's nrow()|url:doc/codkep/tablegen#html_table_methods] function.
  - This callback function will called on every row creation in table and the returned array will pass to the HtmlTable's
