@@ -252,5 +252,66 @@ It means that writing own modules named "xyz" is starting with the following ste
  # Add ***"xyz" => "xyz.php"*** line to the ***$site_modules*** array in ***_modules.php*** file.
  # Write functions to xyz.php with special names to implement some hooks
 
+=== Modules located in more subdirectory ===
+
+You can place your own or third party modules in more subdirectory under ***/site***.
+If you do so put the filename with relative path to the ***$site_modules*** array.
+You can always get one module path by calling ***codkep_get_path*** function.
+.
+@@@codkep_get_path($modulename,$pathtype="web")@@@<br/>
+Gives the path of the specified module where the ***$modulename*** is the module name which path is required,
+the ***$pathtype*** can be ***"web"*** or ***"server"*** which means the type of path to return.
+
+.
+Let's see a small example! You have three custom module:
+- The "***fancymods***" module located under ***/site*** directory.
+- The "***mypages***" module located under ***/site/worksofdave/mypages*** directory.
+- The "***commonpages***" module located under ***/site/worksofdave/common*** directory.
+
+Each modules have a separate css file located next to the php file, so the files looks like this way:
+
+~~~code
+./site/fancymods.php
+./site/fancymods.css
+./site/worksofdave/mypages/mypages.php
+./site/worksofdave/mypages/mypages.css
+./site/worksofdave/common/commonpages.php
+./site/worksofdave/common/commonpages.css
+~~~
+
+The related ***_modules.php*** looks like this way:
+
+~~~php
+<?php
+global $site_modules;
+$site_modules =
+ [
+    "fancymods"   => "fancymods.php",
+    "mypages"     => "worksofdave/mypages/mypages.php",
+    "commonpages" => "worksofdave/common/commonpages.php",
+ ];
+~~~
+
+The css files can be loaded in these modules the following way:
+~~~php
+// In "fancymods" modules
+ ...
+ add_css_file(codkep_get_path('mymodule','web').'/fancymods.css');
+~~~
+~~~php
+// In "mypages" modules
+ ...
+ add_css_file(codkep_get_path('mypages','web').'/mypages.css');
+~~~
+~~~php
+// In "commonpages" modules
+ ...
+ add_css_file(codkep_get_path('commonpages','web').'/commonpages.css');
+~~~
+
+*Note: The javascript, images and other resources of the modules are also loadable similar way.*
+
+=== After you create your own module ===
+.
 _The CodKep core's functionality can changed by [hooks|url:doc/codkep/hooks] within the modules._
 

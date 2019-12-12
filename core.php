@@ -444,6 +444,40 @@ function l($text,$loc,array $options = [],array $query = [],$fragment = NULL)
     return ob_get_clean();
 }
 
+/** Returns the "web" or "server" path of the module specified in the first parameter.
+ *  @package core */
+function codkep_get_path($module,$pathtype = "web")
+{
+    global $site_config;
+    global $core_modules;
+    global $site_modules;
+
+    $pre_p = '';
+    $mod_p = '';
+    if(array_key_exists($module,$core_modules))
+    {
+        $pre_p .=  '/sys';
+        $mod_p = $core_modules[$module];
+    }
+    if(array_key_exists($module,$site_modules))
+    {
+        $pre_p .=  '/site';
+        $mod_p = $site_modules[$module];
+    }
+    if($mod_p == '' || $pre_p == '')
+        return NULL;
+
+    $mod_subpath = rtrim(strrev(strstr(strrev($mod_p),'/',FALSE)),'/ ');
+    if($mod_subpath === FALSE)
+        $mod_subpath = '';
+    if($mod_subpath != '')
+        $mod_subpath = '/' . $mod_subpath;
+
+    if($pathtype == 'local' || $pathtype == 'server')
+        return realpath('.').$pre_p.$mod_subpath;
+    return $pre_p.$mod_subpath;
+}
+
 /** Returns the internal url of the current executed page.
  *  The return value can be passed to the url() function to generate valid url.
  *  @package core */
