@@ -38,9 +38,15 @@ add_header('<meta http-equiv=”refresh” content=”10" />');
 <br/>
 Adds a css file reference to the html header. The ***$loc*** parameter contains the location of css file.<br/>
 The ***$loc*** parameter will passed to the [***url()***|url:doc/codkep/routes#urlfunc] inside.
+<br/>
+*Note:You can use the [***codkep_get_path***|url:/doc/codkep/modules#codkepgetpath] *
+*function to get your module relative path.*
 
 ~~~php
 add_css_file('/site/mycss.css');
+// or rather use like this way:
+add_css_file(codkep_get_path('mymodulename','web') . '/mycss.css');
+.
 //It will generate a <link rel="stylesheet" href="/site/mycss.css"> tag to the header.
 ~~~
 .
@@ -50,9 +56,15 @@ add_css_file('/site/mycss.css');
 Adds a javascript file reference to the html header. The ***$loc*** parameter contains
 the location of javascript file.<br/>
 The ***$loc*** parameter will passed to the [***url()***|url:doc/codkep/routes#urlfunc] inside.
+<br/>
+*Note:You can use the [***codkep_get_path***|url:/doc/codkep/modules#codkepgetpath] *
+*function to get your module relative path.*
 
 ~~~php
 add_js_file('/site/myfuncs.js');
+// or rather use like this way:
+add_js_file(codkep_get_path('mymodulename','web') . '/myfuncs.js');
+.
 //It will generate a <script type="text/javascript" src="/site/myfuncs.js"></script> tag to the header.
 ~~~
 .

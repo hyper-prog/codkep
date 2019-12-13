@@ -494,6 +494,13 @@ $site_config->clean_urls = true;
 
 If the ***clean_urls*** variable is set the [***url()***|url:#urlfunc] and [***l()***|url:#lfunc] functions
 are also generate clean urls.
+.
+*Note: If you use clean urls that way the CodKep located in a subdirectory relative to the web server root,*
+* which means the ***$site_config->base_path*** is set to some directory name (for example: ***"/mypage"***) take care of the*
+* rewrite rule to redirect to the index.php file under your subdirectory. *<br/>
+*(In the previous example replace the: "RewriteRule ^(.&midast;)$ index.php [L]" *
+*to "RewriteRule ^(.&midast;)$ /mypage/index.php [L]")*
+
 
 == Hooks related to routes ==
 

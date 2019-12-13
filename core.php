@@ -448,7 +448,6 @@ function l($text,$loc,array $options = [],array $query = [],$fragment = NULL)
  *  @package core */
 function codkep_get_path($module,$pathtype = "web")
 {
-    global $site_config;
     global $core_modules;
     global $site_modules;
 

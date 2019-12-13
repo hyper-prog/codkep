@@ -258,11 +258,15 @@ You can place your own or third party modules in more subdirectory under ***/sit
 If you do so put the filename with relative path to the ***$site_modules*** array.
 You can always get one module path by calling ***codkep_get_path*** function.
 .
+#codkepgetpath#
 @@@codkep_get_path($modulename,$pathtype="web")@@@<br/>
 Gives the path of the specified module where the ***$modulename*** is the module name which path is required,
-the ***$pathtype*** can be ***"web"*** or ***"server"*** which means the type of path to return.
+the ***$pathtype*** can be ***"web"*** or ***"server"*** which means the type of path to return.<br/>
+The function returns NULL if the path cannot be determined.
+(This usually only happen when wrong or inactive module name is passed)
 
 .
+
 Let's see a small example! You have three custom module:
 - The "***fancymods***" module located under ***/site*** directory.
 - The "***mypages***" module located under ***/site/worksofdave/mypages*** directory.
@@ -309,9 +313,9 @@ The css files can be loaded in these modules the following way:
  add_css_file(codkep_get_path('commonpages','web').'/commonpages.css');
 ~~~
 
-*Note: The javascript, images and other resources of the modules are also loadable similar way.*
+*Note: The javascript files, images and other resources of the modules are also loadable similar way.*
 
-=== After you create your own module ===
+=== After you create your own module... ===
 .
 _The CodKep core's functionality can changed by [hooks|url:doc/codkep/hooks] within the modules._
 
