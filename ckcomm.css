@@ -126,4 +126,21 @@
 .dyntable_table_missingcell {
     background-color: #6d6d6d;
 }
+
+/* On-Off switch */
+.onoffsw_tbl_mini_switch:hover a{
+    color: #1e68b4;
+}
+.onoffsw_tbl_mini_switch:hover img{
+    opacity: 0.65;
+    padding-right: 2px;
+}
+a.onoffsw_lnk_mini_switch{
+    text-decoration: none;
+    color: black;
+}
+a.onoffsw_lnk_mini_switch img{
+    padding-right: 4px;
+}
+
 /* end css */

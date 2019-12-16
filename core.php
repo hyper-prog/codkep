@@ -2024,6 +2024,41 @@ function generate_menu_structure($pad='')
     return menu_expand($menu,$pad);
 }
 
+/** Gives the current state of an on off switch according to the parameter name */
+function is_OnOff($parametername)
+{
+    if(par($parametername) == 'on')
+        return true;
+    return false;
+}
+
+/** Returns the html codes of a switchable on - off switch */
+function put_OnOffSwitch($label,$parametername,$baseurl,$excluded_parameters = [])
+{
+    $to = '';
+    if(par($parametername) == 'on')
+    {
+        $imgurl = url('/sys/images/on.png');
+        $to = 'off';
+    }
+    else
+    {
+        $imgurl = url('/sys/images/off.png');
+        $to = 'on';
+    }
+    $url = url($baseurl,parameters([$parametername => $to],[],$excluded_parameters));
+    return "<table border=\"0\" class=\"onoffsw_tbl_mini_switch\"><tr>
+                <td style=\"vertical-align:middle;\">
+                    <a href=\"$url\" class=\"onoffsw_lnk_mini_switch\">
+                        <img src=\"$imgurl\"/>
+                    </a></td>
+                <td style=\"vertical-align:middle;\">
+                    <a href=\"$url\" class=\"onoffsw_lnk_mini_switch\">
+                        $label
+                    </a></td>
+            </tr></table>";
+}
+
 // ==================================================
 // hook_theme - to define the "base_page" theme
 // ==================================================
