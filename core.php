@@ -55,6 +55,10 @@ function hook_core_boot()
         'security'  => 'param_security_error',
     ];
 
+    $site_config->onoffswitch_icons = [
+        'default' => ['/sys/images/on.png','/sys/images/off.png']
+    ];
+
     $translations = [];
     //------------------------------------------------
 
@@ -2033,29 +2037,27 @@ function is_OnOff($parametername)
 }
 
 /** Returns the html codes of a switchable on - off switch */
-function put_OnOffSwitch($label,$parametername,$baseurl,$excluded_parameters = [])
+function put_OnOffSwitch($label,$parametername,$baseurl,$excluded_parameters = [],$theme = 'default')
 {
+    global $site_config;
+
     $to = '';
     if(par($parametername) == 'on')
     {
-        $imgurl = url('/sys/images/on.png');
+        $imgurl = url($site_config->onoffswitch_icons[$theme][0]);
         $to = 'off';
     }
     else
     {
-        $imgurl = url('/sys/images/off.png');
+        $imgurl = url($site_config->onoffswitch_icons[$theme][1]);
         $to = 'on';
     }
     $url = url($baseurl,parameters([$parametername => $to],[],$excluded_parameters));
     return "<table border=\"0\" class=\"onoffsw_tbl_mini_switch\"><tr>
                 <td style=\"vertical-align:middle;\">
-                    <a href=\"$url\" class=\"onoffsw_lnk_mini_switch\">
-                        <img src=\"$imgurl\"/>
-                    </a></td>
+                    <a href=\"$url\" class=\"onoffsw_lnk_mini_switch\"><img src=\"$imgurl\"/></a></td>
                 <td style=\"vertical-align:middle;\">
-                    <a href=\"$url\" class=\"onoffsw_lnk_mini_switch\">
-                        $label
-                    </a></td>
+                    <a href=\"$url\" class=\"onoffsw_lnk_mini_switch\">$label</a></td>
             </tr></table>";
 }
 
