@@ -3,7 +3,6 @@
 global $site_modules;
 $site_modules =
  [
-    "hu"                => "hu.php",
     "mytheme"           => "mytheme.php",
     "example_base"      => "example_base.php",
     "example_ajax"      => "example_ajax.php",

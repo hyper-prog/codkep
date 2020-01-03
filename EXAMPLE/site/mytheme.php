@@ -27,7 +27,7 @@ function myt_runonce($content)
 
 function myt_htmlstart($route)
 {
-    return '<!DOCTYPE html>'."\n" . '<html xmlns="http://www.w3.org/1999/xhtml" lang="hu-HU">'."\n";
+    return '<!DOCTYPE html>'."\n" . '<html xmlns="http://www.w3.org/1999/xhtml" lang="en-EN">'."\n";
 }
 
 function myt_htmlend($route)
@@ -48,7 +48,7 @@ function myt_body($content,$route)
 
     print mymenu();
     print "<div class=\"content\">\n";
-    
+
     print $content->generated;
     print "</div>\n"; // content
 
