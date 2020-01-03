@@ -1,6 +1,9 @@
 This file describes the non fully compatible
 changes between the released versions
 
+1.182 -> 1.183
+ - The selulized tools moved to a separate module under codkepmodules.
+
 1.181 -> 1.182
  - The hungarian translation module removed from EXAMPLES direcotry.
    Now you can find it in a separate reposotpry: https://github.com/hyper-prog/codkepmodules
