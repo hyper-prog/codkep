@@ -1,6 +1,10 @@
 This file describes the non fully compatible
 changes between the released versions
 
+1.183 -> 1.184
+ - The activity module (currently poll and comment) moved to external repo "codkepmodules"
+   The activity module split two separate module activitypoll and activitycomment
+
 1.182 -> 1.183
  - The selulized tools moved to a separate module under codkepmodules.
 

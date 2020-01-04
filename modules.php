@@ -13,7 +13,6 @@ $core_modules =
     "user"      => "user.php",
     "node"      => "node.php",
     "page"      => "page.php",
-    "activity"  => "activity.php",
     "sfbuilder" => "sfbuilder.php",
     "doc"       => "doc.php",
     "debug"     => "debug.php",

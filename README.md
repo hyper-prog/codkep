@@ -12,8 +12,9 @@ It's designed to build very database active sites,
 so it has a rich set of form generation tools.
 
 - Written by Peter Deak (C) hyper80@gmail.com , License GPLv2
-- Webpage:        http://hyperprog.com/codkep
-- Documentation:  http://hyperprog.com/codkep/doc
+- Webpage:            http://hyperprog.com/codkep
+- Documentation:      http://hyperprog.com/codkep/doc
+- Modules for codkep: https://github.com/hyper-prog/codkepmodules
 
                  The documentation on hyperprog.com can be very outdated.
                  After installing use the local "doc/codkep" url to reach
