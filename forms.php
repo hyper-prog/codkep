@@ -3224,7 +3224,12 @@ class SpeedForm
 
         $keyname = $this->get_key_name();
         $k = $this->get_field($keyname);
-        $ikey = $db->sql->lastInsertId(isset($k['sql_sequence_name']) ? $k['sql_sequence_name'] : $keyname);
+        $getfromname = isset($k['sql_sequence_name']) ? $k['sql_sequence_name'] : $keyname;
+        if($db->servertype == "pgsql" && isset($k['pgsql_sql_sequence_name']))
+            $getfromname = $k['pgsql_sql_sequence_name'];
+        if($db->servertype == "mysql" && isset($k['mysql_sql_sequence_name']))
+            $getfromname = $k['mysql_sql_sequence_name'];
+        $ikey = $db->sql->lastInsertId($getfromname);
 
         if($k != NULL && isset($k['keyprefix']))
             $ikey = $k['keyprefix'] . $ikey;

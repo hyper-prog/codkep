@@ -900,6 +900,7 @@ function hook_user_nodetype()
                         "text" => "User identifier",
                         "type" => "keyn",
                         "centered" => true,
+                        "pgsql_sql_sequence_name" => "users_uid_seq",
                     ],
                     30 => [
                         "sql" => "login",
@@ -999,6 +1000,7 @@ function hook_user_nodetype()
                     "type" => "keyn",
                     "readonly" => true,
                     "hide" => true,
+                    "pgsql_sql_sequence_name" => "users_uid_seq",
                 ],
                 30 => [
                     "sql" => $user_module_settings->sql_login_column,
@@ -1050,6 +1052,7 @@ function hook_user_nodetype()
                     "type" => "keyn",
                     "readonly" => true,
                     "hide" => true,
+                    "pgsql_sql_sequence_name" => "users_uid_seq",
                 ],
                 30 => [
                     "sql" => $user_module_settings->sql_login_column,

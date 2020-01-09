@@ -235,6 +235,8 @@ function pc_speedform_builder()
                                                                                         'after insert with PDO::lastInsertId() when the key is generated '.
                                                                                         'by a sequence (Pgsql). That case you have to put the '.
                                                                                         'sequence name here and may use keyprefix,keysuffix options.');
+    p_gral_item(2,'mysql_sql_sequence_name',BTYPE_TEXT,BSEC_FUNC,['types' => ['keys','keyn']],'Same as sql_sequence name, but only works on mysql.');
+    p_gral_item(2,'pgsql_sql_sequence_name',BTYPE_TEXT,BSEC_FUNC,['types' => ['keys','keyn']],'Same as sql_sequence name, but only works on pgsql.');
 
     p_gral_item(2,'userdata'     ,BTYPE_SEL,BSEC_FUNC,['types' => ['modifier_user'],'values' => ['fullname','login']]);
     p_gral_item(2,'keyprefix'    ,BTYPE_TEXT,BSEC_FUNC,['types' => ['keys']],'This text will be automatically prepended to the sql sequence '.

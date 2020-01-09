@@ -126,6 +126,7 @@ function hook_page_nodetype()
                 "type" => "keyn",
                 "text" => "Page identifier",
                 "hide" => true,
+                "pgsql_sql_sequence_name" => "page_pid_seq",
             ],
             20 => [
                 "sql" => "title",
