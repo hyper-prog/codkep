@@ -31,6 +31,7 @@ function hook_file_boot()
 function hook_file_init()
 {
     global $db;
+    global $site_config;
     if($site_config->file_ufi_lastInsertId_name == '')
     {
         if($db->servertype == "pgsql")
