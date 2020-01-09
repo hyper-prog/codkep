@@ -367,7 +367,7 @@ The file settings which can set [in site settings|url:doc/codkep/modules#site_se
 |<small> ***$site_config->public_file_url*** </small>            |<small> "/data"        </small> | The browser URL prefix of public files. (url location) |
 |<small> ***$site_config->secure_file_path*** </small>           |<small> "data/secure"  </small> | The location of secure files in the filesystem on server. (The files can stored in subdirectories here.) |
 |<small> ***$site_config->secure_file_url*** </small>            |<small> "/data/secure" </small> | The browser URL prefix of secure files. This is a callback function by default.  |
-|<small> ***$site_config->file_ufi_lastInsertId_name*** </small> |<small> "ufi"          </small> | Some database system (like posgresql) use sequences to handle autoincrement keys. You have to specify this sequence name here if differs from "ufi" which the name of the file table primary identifier. (Example: "file_ufi_seq" on my postgresql implementation) |
+|<small> ***$site_config->file_ufi_lastInsertId_name*** </small> |<small> mysql:"ufi" pgsql:"file_ufi_seq" </small> | Some database system (like posgresql) use sequences to handle autoincrement keys. You have to specify this sequence name here if differs from "ufi" which the name of the file table primary identifier. (Example: "file_ufi_seq" on my postgresql implementation) |
 
 #filehooks#
 == Hooks ==

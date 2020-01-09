@@ -25,7 +25,19 @@ function hook_file_boot()
 
     $sys_data->image_file_sizeclass_list = [];
 
-    $site_config->file_ufi_lastInsertId_name = 'ufi';
+    $site_config->file_ufi_lastInsertId_name = '';
+}
+
+function hook_file_init()
+{
+    global $db;
+    if($site_config->file_ufi_lastInsertId_name == '')
+    {
+        if($db->servertype == "pgsql")
+            $site_config->file_ufi_lastInsertId_name = 'file_ufi_seq';
+        if($db->servertype == "mysql")
+            $site_config->file_ufi_lastInsertId_name = 'ufi';
+    }
 }
 
 /**
