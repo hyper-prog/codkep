@@ -28,19 +28,6 @@ function hook_file_boot()
     $site_config->file_ufi_lastInsertId_name = '';
 }
 
-function hook_file_init()
-{
-    global $db;
-    global $site_config;
-    if($site_config->file_ufi_lastInsertId_name == '')
-    {
-        if($db->servertype == "pgsql")
-            $site_config->file_ufi_lastInsertId_name = 'file_ufi_seq';
-        if($db->servertype == "mysql")
-            $site_config->file_ufi_lastInsertId_name = 'ufi';
-    }
-}
-
 /**
  * Returns true if a directory exists and writeable
  * @param string $dir The directory path to examine
@@ -262,7 +249,7 @@ class File
                  ':mime' => $mime,
                  ':tuploader' => $this->uploader]);
 
-        $this->ufi = $db->sql->lastInsertId($site_config->file_ufi_lastInsertId_name);
+        $this->ufi = sql_getLastInsertId('file','ufi',$site_config->file_ufi_lastInsertId_name);
 
         $p2 = new stdClass();
         $p2->file_ref = &$this;

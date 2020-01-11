@@ -219,6 +219,16 @@ print "</ul>";
 ~~~
 See [error handling section|url:#errorhandling]
 
+----------------------------------------------------------------------------
+@@@sql_getLastInsertId($tablename,$keyname,$specifiedname = '')@@@
+.
+Try to get the value of the last inserted key. (Through the php lastInsertId() function).
+On different SQL platform the required sequence name differs. Because of this the function requires the
+sql table name in the ***$tablename*** parameter and the name of the key field in the ***$keyname*** parameter.
+You can pass an optional ***$specifiedname*** parameter which overrides the internal logic and (if given) the function
+calls the lastInsertId() with this.
+
+
 #database_query_interface#
 == General database CRUD interface ==
 

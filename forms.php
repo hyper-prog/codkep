@@ -3224,12 +3224,12 @@ class SpeedForm
 
         $keyname = $this->get_key_name();
         $k = $this->get_field($keyname);
-        $getfromname = isset($k['sql_sequence_name']) ? $k['sql_sequence_name'] : $keyname;
+        $id_hint = isset($k['sql_sequence_name']) ? $k['sql_sequence_name'] : $keyname;
         if($db->servertype == "pgsql" && isset($k['pgsql_sql_sequence_name']))
-            $getfromname = $k['pgsql_sql_sequence_name'];
+            $id_hint = $k['pgsql_sql_sequence_name'];
         if($db->servertype == "mysql" && isset($k['mysql_sql_sequence_name']))
-            $getfromname = $k['mysql_sql_sequence_name'];
-        $ikey = $db->sql->lastInsertId($getfromname);
+            $id_hint = $k['mysql_sql_sequence_name'];
+        $ikey = sql_getLastInsertId($this->def['table'],$keyname,$id_hint);
 
         if($k != NULL && isset($k['keyprefix']))
             $ikey = $k['keyprefix'] . $ikey;
@@ -4308,7 +4308,11 @@ class DynTable
         $this->storeToDatabase_preaction($q);
         $q->execute();
         $new_id = (isset($this->def['table_key_prefix']) ? $this->def['table_key_prefix'] : '') .
-            $db->sql->lastInsertId(isset($this->def['table_seq_name']) ? $this->def['table_seq_name'] : $this->def['idfield'] ) .
+            sql_getLastInsertId(
+                        $this->def['sqltable'],
+                        $this->def['idfield'],
+                        isset($this->def['table_seq_name']) ? $this->def['table_seq_name'] : ''
+                    ) .
             (isset($this->def['table_key_suffix']) ? $this->def['table_key_suffix'] : '');
         $this->id = $new_id;
         $this->storeToDatabase_postaction();

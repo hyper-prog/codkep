@@ -372,6 +372,22 @@ function sql_rollback()
     $db->transaction = false;
 }
 
+function guess_lastInsertId_parameter($tablename,$keyname,$specifiedname = '')
+{
+    global $db;
+    if($specifiedname != '')
+        return $specifiedname;
+    if($db->servertype == "pgsql")
+        return $tablename . '_' . $keyname . '_seq';
+    return $keyname;
+}
+
+function sql_getLastInsertId($tablename,$keyname,$specifiedname = '')
+{
+    global $db;
+    return $db->sql->lastInsertId(guess_lastInsertId_parameter($tablename,$keyname,$specifiedname));
+}
+
 /** Call commit on the current transaction if exists. Otherwise do nothing. */
 function sql_commit_if_needed()
 {
