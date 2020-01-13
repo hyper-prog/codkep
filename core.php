@@ -1966,10 +1966,10 @@ function sys_get_sitearea($areaname,$prefix='',$suffix='')
 }
 
 /* Generate html menu structure from menu array */
-function menu_expand(array $m,$pad='')
+function menu_expand(array $m,$pad='',$toplevelclassname = 'menu')
 {
     ob_start();
-    print "$pad<ul class=\"menu\">\n";
+    print "$pad<ul class=\"$toplevelclassname\">\n";
     end($m);
     $l = key($m);
     reset($m);
@@ -2010,7 +2010,7 @@ function menu_expand(array $m,$pad='')
  * @return string html
  * @package core
  */
-function generate_menu_structure($pad='')
+function generate_menu_structure($pad='',$toplevelclassname = 'menu')
 {
     global $site_config;
     $menu = $site_config->mainmenu;
@@ -2025,7 +2025,7 @@ function generate_menu_structure($pad='')
     $pass->menu = &$menu;
     $pass->pad = &$pad;
     run_hook('alter_mainmenu',$pass);
-    return menu_expand($menu,$pad);
+    return menu_expand($menu,$pad,$toplevelclassname);
 }
 
 /** Gives the current state of an on off switch according to the parameter name */
