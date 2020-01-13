@@ -372,12 +372,13 @@ In case a custom theme is used, the theme have to place the main menu to the app
 The CodKep core has a helper function to generate the html structure of the main menu according
 to the settings seen above.
 .
-@@@generate_menu_structure($pad='')@@@
+@@@generate_menu_structure($pad='',$toplevelclassname = 'menu')@@@
 <br/>
 This function generate the html structure of the main menu according to
 the ***$site_config->mainmenu*** variable and the ***#mainmenu*** tags if exists.
 In order to place main menu to your custom theme, you should print the return value of this function
-and add the necessary CSS to show this as menu.
+and add the necessary CSS to show this as menu. The ***$toplevelclassname*** parameter specify the top level
+css class of the menu structure. (The default is ***"menu"*** which match to the flex theme's needs)
 .
 The ***generate_menu_structure*** will generate the following html structure from code above
 in the main menu settings example:
@@ -399,12 +400,13 @@ in the main menu settings example:
 You can use the html structure generator functionality of ***generate_menu_structure*** for different kind of menus,
 like user menu, or drop down menus by the following function:
 .
-@@@menu_expand(array $m,$pad='')@@@
+@@@menu_expand(array $m,$pad='',$toplevelclassname = 'menu')@@@
 <br/>
 This function will generate a html ***ul-li-ul-etc*** structure from a menu array explained at main menu.
 The ***generate_menu_structure*** function also use this function to generate the content.
 - Parameter ***$m*** is the array which describe the menu to generate.
 - Parameter ***$pad*** is a padding string to prefix every line in generated code.
+- Parameter ***$toplevelclassname*** parameter specify the top level css class of the menu structure.
 .
 
 
