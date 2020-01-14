@@ -296,7 +296,7 @@ function flex_show_mainmenu()
     return ob_get_clean();
 }
 
-/** This hook is ivoked by the flex theme every time befor content generation. */
+/** This hook is ivoked by the flex theme every time before the content generation. */
 function _HOOK_flex_runonce() {}
 
 //end.
