@@ -950,6 +950,7 @@ class HtmlForm
              'after' => (isset($opts['after']) ? $opts['after'] : ''),
              'readonly' => (isset($opts['readonly']) ? $opts['readonly'] : false),
              'softreadonly' => (isset($opts['softreadonly']) ? $opts['softreadonly'] : false),
+             'disablercsize' => (isset($opts['disablercsize']) ? $opts['disablercsize'] : false),
              'autofocus' => (isset($opts['autofocus']) ? $opts['autofocus'] : false),
             ]);
         return $this;
@@ -1283,7 +1284,8 @@ class HtmlForm
 
         if($dta['type'] == 'textarea')
         {
-            $t = '<textarea name="'.$dta['name'].'" rows="'.$dta['row'].'" cols="'.$dta['col'].'"'.
+            $t = '<textarea name="'.$dta['name'].'"'.
+                 ($dta['disablercsize'] ? '' : (' rows="'.$dta['row'].'" cols="'.$dta['col'].'"')).
                  ($dta['class']==''?'':' class="'.$dta['class'].'"').
                  ($dta['style']==''?'':' style="'.$dta['style'].'"').
                  ($dta['onclick']==''?'':' onclick="'.$dta['onclick'].'"').
