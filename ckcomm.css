@@ -1,9 +1,10 @@
 /* CodKep css file */
+div.c { clear: both; }
 /* ************ Popup dialog CSS ******************** */
 .ck_modalpane {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */
-    z-index: 1; /* Sit on top */
+    z-index: 90; /* Sit on top */
     left: 0;
     top: 0;
     width: 100%; /* Full width */
@@ -16,12 +17,12 @@
 .ck_dialog_body {
     display: none;
     position: absolute;
-    z-index: 9;
+    z-index: 92;
     text-align: center;
     border: 1px solid #d3d3d3;
     background-color: #fefefe;
     box-shadow: 0 5px 10px 0 rgba(0,0,20,0.6),0 8px 25px 0 rgba(0,0,20,0.5);
-    top: 5%;
+    top: 8%;
     width: 80%;
     left: 10%;
     height: auto;
@@ -55,7 +56,7 @@
     display: block;
     padding: 3px;
     cursor: pointer;
-    z-index: 10;
+    z-index: 95;
     background-color: #2196F3;
     color: #fff;
 }
