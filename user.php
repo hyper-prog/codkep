@@ -1197,7 +1197,12 @@ function user_mypasswordchange()
             run_hook('blocked_client_rejected',$user->login,"Password change failed, the remote client is blocked!");
             load_loc('error',t('The client is blocked due to previous errors!'),t('Warning!'));
         }
-        $old_get = scatter_string_local($sf->values['oldpwd'],$cs);
+
+        if($old_is == '*')
+            $old_get = $old_is;
+        else
+            $old_get = scatter_string_local($sf->values['oldpwd'],$cs);
+
         if( !isset($old_is) && $old_is == NULL ||
             !isset($old_get) && $old_get == NULL ||
             $old_get != $old_is )
