@@ -432,53 +432,7 @@ function user_login_local($login,$password)
         if($row[$user_module_settings->sql_password_column] == scatter_string_local($password,$cs))
         {
             //success
-            $chkname = encOneway62(hash('sha256',generateRandomString(128),true),32);
-            $authsess_value =
-                substr(
-                    generateRandomString(8) .
-                    encOneway62(hash('sha256',generateRandomString(128).'_'.$login.'_'.get_remote_address(),true),36)
-                     . base_convert(strval(time()),10,36) . generateRandomString(24)
-                ,0,64);
-
-            generateRandomString(32);
-            $chkval = generateRandomString(16) .
-                      encOneway62(hash('sha256',generateRandomString(128),true),32) .
-                      generateRandomString(16);
-
-            $fsalt =  encOneway62(hash('sha256',generateRandomString(92).getFormSalt(true),true),32);
-
-            sql_exec('INSERT INTO authsess(uid,authsessval,chkname,chkval,changed,created,access,ip,fsalt,cksess)
-                      VALUES(:uid,:authserssval,:chkname,:chkval,:changed,:timec,:timea,:ip,:formsalt,:cksess);',
-                     [':uid' => $row['uid'],
-                      ':authserssval' => $authsess_value,
-                      ':chkname' => $chkname,
-                      ':chkval' => $chkval,
-                      ':changed' => $sys_data->request_time,
-                      ':timec' => $sys_data->request_time,
-                      ':timea' => $sys_data->request_time,
-                      ':ip' => get_remote_address(),
-                      ':formsalt' => $fsalt,
-                      ':cksess' => '',
-                     ]
-                    );
-
-            sql_exec('UPDATE '.$user_module_settings->sql_tablename.' SET '.
-                      $user_module_settings->sql_lastlogin_column . '='.sql_t('current_timestamp').
-                     ' WHERE '.$user_module_settings->sql_login_column.' = :f_login;',
-                [':f_login' => $login ]
-            );
-
-            setcookie($sys_data->authcookie_name,$authsess_value,0,'/','',false,true);
-            $_COOKIE[$sys_data->authcookie_name] = $authsess_value;
-
-            setcookie($chkname,$chkval,0,'/','',false,true);
-            $_COOKIE[$chkname] = $chkval;
-
-            $formsalt = $fsalt;
-            user_load($row['uid'],'uid');
-            userblocking_clear();
-            run_hook('user_logged_in');
-            return 1;
+            return user_login_local_granted($row['uid'],$login);
         }
         else
         {
@@ -490,6 +444,60 @@ function user_login_local($login,$password)
    userblocking_set("Login-Failed: Unknown user");
    run_hook('user_failed_login',$login,"Login-Failed: Unknown user");
    return 0;
+}
+
+function user_login_local_granted($uid,$login)
+{
+    global $sys_data;
+    global $user_module_settings;
+    global $formsalt;
+
+    $chkname = encOneway62(hash('sha256',generateRandomString(128),true),32);
+    $authsess_value =
+        substr(
+            generateRandomString(8) .
+            encOneway62(hash('sha256',generateRandomString(128).'_'.$login.'_'.get_remote_address(),true),36)
+             . base_convert(strval(time()),10,36) . generateRandomString(24)
+          ,0,64);
+
+    generateRandomString(32);
+    $chkval = generateRandomString(16) .
+              encOneway62(hash('sha256',generateRandomString(128),true),32) .
+              generateRandomString(16);
+
+    $fsalt =  encOneway62(hash('sha256',generateRandomString(92).getFormSalt(true),true),32);
+
+    sql_exec('INSERT INTO authsess(uid,authsessval,chkname,chkval,changed,created,access,ip,fsalt,cksess)
+                      VALUES(:uid,:authserssval,:chkname,:chkval,:changed,:timec,:timea,:ip,:formsalt,:cksess);',
+             [':uid' => $uid,
+              ':authserssval' => $authsess_value,
+              ':chkname' => $chkname,
+              ':chkval' => $chkval,
+              ':changed' => $sys_data->request_time,
+              ':timec' => $sys_data->request_time,
+              ':timea' => $sys_data->request_time,
+              ':ip' => get_remote_address(),
+              ':formsalt' => $fsalt,
+              ':cksess' => '',
+             ]);
+
+    sql_exec('UPDATE '.$user_module_settings->sql_tablename.' SET '.
+                $user_module_settings->sql_lastlogin_column . '='.sql_t('current_timestamp').
+             ' WHERE '.$user_module_settings->sql_login_column.' = :f_login;',
+        [':f_login' => $login ]
+    );
+
+    setcookie($sys_data->authcookie_name,$authsess_value,0,'/','',false,true);
+    $_COOKIE[$sys_data->authcookie_name] = $authsess_value;
+
+    setcookie($chkname,$chkval,0,'/','',false,true);
+    $_COOKIE[$chkname] = $chkval;
+
+    $formsalt = $fsalt;
+    user_load($uid,'uid');
+    userblocking_clear();
+    run_hook('user_logged_in');
+    return 1;
 }
 
 /** Logouts the current logged user (With built in algorithm)
