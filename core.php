@@ -1845,7 +1845,7 @@ function ck_valid_ip_address($addr)
 {
     if($addr == NULL || $addr == '' || strlen($addr) > 45)
         return false;
-    if(preg_match('/^[\:\.0-9]+$/',$addr) !== 1)
+    if(preg_match('/^[\:\.0-9a-f]+$/',$addr) !== 1)
         return false;
     return true;
 }
