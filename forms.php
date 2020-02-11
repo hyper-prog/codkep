@@ -1016,6 +1016,10 @@ class HtmlForm
 
         if(par_ex($n) && (!isset($opts['no_par_load']) || !$opts['no_par_load']))
             $v = par($n);
+        if($type == 'checkbox' && $v == 'on')
+            $v = 1;
+        if($type == 'checkbox' && $v == 'off')
+            $v = 0;
         $this->input($type,$n,$v,$opts);
         return $this;
     }
