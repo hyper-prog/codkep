@@ -398,7 +398,14 @@ class ExcelXmlDocument
                 if(isset($opts['t']))
                 {
                     if($opts['t'] == 'num')
+                    {
                         $type = 'Number';
+                        $comma_cnt  = substr_count($c,',');
+                        if($comma_cnt == 1)
+                            $c = str_replace(',','.',$c);
+                        if($comma_cnt > 1)
+                            $c = str_replace(',','',$c);
+                    }
                     if($opts['t'] == 'dat')
                         $type = 'DateTime';
                 }
