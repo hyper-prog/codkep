@@ -1115,7 +1115,7 @@ function hook_user_required_sql_schema()
                 'changed'     => 'BIGINT',
                 'created'     => 'BIGINT',
                 'access'      => 'BIGINT',
-                'ip'          => 'VARCHAR(32)',
+                'ip'          => 'VARCHAR(48)',
                 'fsalt'       => 'VARCHAR(32)',
                 'cksess'      => sql_t('longtext_type'),
             ],
@@ -1129,7 +1129,7 @@ function hook_user_required_sql_schema()
                 'failhit'     => 'NUMERIC(3)',
                 'created'     => 'BIGINT',
                 'access'      => 'BIGINT',
-                'ip'          => 'VARCHAR(32)',
+                'ip'          => 'VARCHAR(48)',
             ],
         ];
 
