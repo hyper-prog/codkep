@@ -276,6 +276,8 @@ function url($loc,array $query=[],array $options=[])
     if(isset($options['query']) && is_array($options['query']))
         $query = array_merge($query,$options['query']);
     $u = parse_url($loc);
+    if($u === false)
+        return '';
     $uo = (object) $u;
     $uo->original = $loc;
     $uo->basepath = $site_config->base_path;
@@ -1835,9 +1837,9 @@ function ck_valid_http_host($host)
     // long host names.
     // Limit the number of subdomains and port separators to prevent DoS attacks
     // in conf_path().
-    return strlen($host) <= 1000
-            && substr_count($host, '.') <= 100
-            && substr_count($host, ':') <= 100
+    return strlen($host) <= 256
+            && substr_count($host, '.') <= 64
+            && substr_count($host, ':') <= 32
             && preg_match('/^\[?(?:[a-zA-Z0-9-:\]_]+\.?)+$/', $host);
 }
 
@@ -1985,7 +1987,7 @@ function menu_expand(array $m,$pad='',$toplevelclassname = 'menu')
             $classes .= "expanded ";
         else
             $classes .= "leaf ";
-            
+
         $vv = $v;
         while(is_array($vv))
           $vv = array_values($vv)[0];
