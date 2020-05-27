@@ -1880,7 +1880,6 @@ function generate_authcookie_name()
     $prefix = $is_https ? 'CACS' : 'CAC';
     $sys_data->authcookie_name =
         $prefix . encOneway62(hash('sha256',$site_config->authcookie_name_salt.$cookie_domain.get_remote_address(),true),32);
-    $sys_data->request_time = $_SERVER['REQUEST_TIME'];
 }
 /** Returns the remote (client) ip address. (Validated) */
 function get_remote_address()
@@ -1909,6 +1908,10 @@ function sys_determine_request_data()
         exit;
     }
     $sys_data->sys_requested_host = $_SERVER['HTTP_HOST'];
+    if(strlen($_SERVER['REQUEST_TIME']) < 16 && ctype_digit($_SERVER['REQUEST_TIME']))
+        $sys_data->request_time = $_SERVER['REQUEST_TIME'];
+    else
+        $sys_data->request_time = strval(time());
 
     if($site_config->srv_remoteaddr_spec != NULL &&
        isset($_SERVER[$site_config->srv_remoteaddr_spec]) &&
