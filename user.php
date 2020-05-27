@@ -429,7 +429,7 @@ function user_login_local($login,$password)
             return 0;
         }
         $cs = substr($row[$user_module_settings->sql_password_column],0,8);
-        if($row[$user_module_settings->sql_password_column] == scatter_string_local($password,$cs))
+        if(hash_equals($row[$user_module_settings->sql_password_column],scatter_string_local($password,$cs)))
         {
             //success
             return user_login_local_granted($row['uid'],$login);
@@ -1205,7 +1205,7 @@ function user_mypasswordchange()
 
         if( !isset($old_is) && $old_is == NULL ||
             !isset($old_get) && $old_get == NULL ||
-            $old_get != $old_is )
+            !hash_equals($old_get,$old_is) )
         {
             run_hook('passwordchange_failed',$user->login,"Password change failed, the given old password is wrong!");
             userblocking_set('Pwd-Change: wrong old pwd');
