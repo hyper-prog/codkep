@@ -189,18 +189,21 @@ function hook_node_defineroute()
         'path' => 'restapi/error',
         'callback' => 'sys_node_restapi_error_callback',
         'type' => 'json',
+        'redirectonly' => '',
     ];
 
     $i[] = [
         'path' => 'restapi/internalerror',
         'callback' => 'sys_node_restapi_sql_error_callback',
         'type' => 'json',
+        'redirectonly' => '',
     ];
 
     $i[] = [
         'path' => 'restapi/options',
         'callback' => 'sys_node_restapi_options_callback',
         'type' => 'raw',
+        'redirectonly' => '',
     ];
 
     return $i;

@@ -33,6 +33,7 @@ function hook_core_boot()
     $site_config->lang                  = 'en';
     $site_config->show_generation_time  = true;
     $site_config->hide_module_intros    = false;
+    $site_config->route_loop_max        = 3;
 
     $site_config->logo_img_url = NULL;
     $site_config->site_name    = NULL;
@@ -64,6 +65,8 @@ function hook_core_boot()
 
     $sys_data->current_route = NULL;
     $sys_data->r = NULL;
+    $sys_data->route_loop_count = 0;
+    $sys_data->route_redirections = [];
     $sys_data->month_names =
         [1  => 'January',
          2  => 'February',
@@ -507,6 +510,7 @@ function current_loc()
 function load_loc()
 {
     global $sys_data;
+    global $site_config;
     global $requested_location;
 
     $args = func_get_args();
@@ -520,10 +524,35 @@ function load_loc()
 
     //prevent recursion
     if(current_loc() == $location)
-        return;
+    {
+        sys_to_internal_server_error("CodKep routing recursion detected");
+        exit(0);
+    }
 
     while(ob_get_level() > 0)
         ob_end_clean();
+
+    if(isset($sys_data->r['redirectonly']))
+    {
+        if($sys_data->r['redirectonly'] == '')
+        {
+            sys_to_internal_server_error("A redirect request was received for a non-redirect page ".
+                                         "(".$sys_data->r['path'] . ' -> ' .$location.")");
+            exit(0);
+        }
+        $location = $sys_data->r['redirectonly'];
+    }
+
+    if(in_array($location,$sys_data->route_redirections))
+        $sys_data->route_loop_count++;
+    $sys_data->route_redirections[] = $location;
+    if($sys_data->route_loop_count >= $site_config->route_loop_max)
+    {
+        sys_to_internal_server_error(
+            "CodKep routing loop protection: Limit reached! \n".
+            "Routes loaded: ".implode(" -> ",$sys_data->route_redirections));
+        exit(0);
+    }
 
     sys_reset_content();
     sys_route($location,$args);
@@ -532,6 +561,16 @@ function load_loc()
     print sys_assemble($sys_data->content);
     flush();
     run_hook("after_deliver");
+    exit(0);
+}
+
+function sys_to_internal_server_error($message_to_log = '')
+{
+    http_response_code(500);
+    header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal server error');
+    file_put_contents('php://stderr',
+        date('Y-m-d H:i:s')." Error, ".$message_to_log . " \n");
+    print "Site error\n";
     exit(0);
 }
 
@@ -1245,11 +1284,16 @@ function hook_core_defineroute()
     $r[] = ["path" => "not_configured_startpage", "callback" => "core_notconfigured_startpage"   ];
     $r[] = ["path" => "emptycache",               "callback" => "pc_core_emptycache"             ];
 
-    $r[] = ["path" => "notfound",                 "callback" => "core_notfound_page",             "theme" => "base_page"];
-    $r[] = ["path" => "param_security_error",     "callback" => "core_paramsecurityerr_page",     "theme" => "base_page"];
-    $r[] = ["path" => "param_undefined_error",    "callback" => "core_paramundefinederror_page",  "theme" => "base_page"];
-    $r[] = ["path" => "error",                    "callback" => "core_customerror_page",          "theme" => "base_page"];
-    $r[] = ["path" => "missing_parameter_error",  "callback" => "core_missingparametererror_page","theme" => "base_page"];
+    $r[] = ["path" => "notfound",                 "callback" => "core_notfound_page",
+            "theme" => "base_page","redirectonly" => ""];
+    $r[] = ["path" => "param_security_error",     "callback" => "core_paramsecurityerr_page",
+            "theme" => "base_page","redirectonly" => ""];
+    $r[] = ["path" => "param_undefined_error",    "callback" => "core_paramundefinederror_page",
+            "theme" => "base_page","redirectonly" => ""];
+    $r[] = ["path" => "error",                    "callback" => "core_customerror_page",
+            "theme" => "base_page","redirectonly" => ""];
+    $r[] = ["path" => "missing_parameter_error",  "callback" => "core_missingparametererror_page",
+            "theme" => "base_page","redirectonly" => ""];
 
     $r[] = ["path" => "connector/connect/{target}", "callback" => "core_connector", "type" => "ajax"];
     $r[] = ["path" => "connector/fill/{target}"   , "callback" => "core_connector", "type" => "ajax"];
@@ -1704,7 +1748,7 @@ function core_customerror_page($text='',$title='')
 }
 
 /** @ignore Page callback of the "param_security_error" location */
-function core_paramsecurityerr_page($name,$type)
+function core_paramsecurityerr_page($name = '',$type = '')
 {
     set_title(t('Parameter security error'));
     ob_start();
@@ -1716,7 +1760,7 @@ function core_paramsecurityerr_page($name,$type)
 }
 
 /** @ignore Page callback of the "missing_parameter_error" location */
-function core_missingparametererror_page($name,$text)
+function core_missingparametererror_page($name = '',$text = '')
 {
     set_title(t('Missing parameter error'));
     ob_start();
@@ -1728,7 +1772,7 @@ function core_missingparametererror_page($name,$text)
 }
 
 /** @ignore Page callback of the "param_undefined_error" location */
-function core_paramundefinederror_page($name)
+function core_paramundefinederror_page($name = '')
 {
     set_title(t('Undefined parameter error'));
     ob_start();

@@ -112,6 +112,14 @@ The route definition array is an element should return by ***HOOK_defineroute***
  - ***"parameters" = parameter_definition_array***
   - Setup parameters for the page. Read [parameters chapter|url:doc/codkep/parameters#par_def_inroutedef]
   \ to learn how to use it.
+ - ***"redirectonly"*** = codkep_location
+  - If this value is set, the route only can redirected to the specified location by [***load_loc()***|url:#redir_load_loc].
+  \ If a redirection request occurs during the execution, the redirection will do to the location set here.
+  \ (Regardless of the requested redirection location) Useful to set this value when an internal
+  \ error handler page is redefined by a new one. This case the new error handler page only can redirect to the original
+  \ error handler location.
+  - If this value is set and empty the route cannot be redirected. Any redirection will skipped.
+  \ (This is set in the core parameter error handler pages.)
  - ***#tag_string = string *** tag. See [tags|url:#tags].
 
 #urlparameters#
@@ -306,6 +314,7 @@ the programmer always can query the actual location is requested by the ***curre
 .
 It is possible to change the location is currently executed. There is two possible way to do this:
 .
+#redir_load_loc#
 @@@load_loc($location, ...parameters...)@@@
 .
 Stops (or won't start) the current executing, drops the outputs,
@@ -313,7 +322,11 @@ and immediately start execution of the parameter passed location/page.
 It means that this function does internal routing again,
 so the requested url in the browser will be unfinished.
 - ***$location*** parameter is the location to go/exec. (Uses ***url()*** to generate)
-- The other parameters are passed to the callback function of the requested location
+- The other parameters are passed to the callback function of the requested location.
+- **WARNING** : If the current location have ***"redirectonly"*** value set some valid CodKep route
+\ the ***load_loc()*** does redirection to this url instead of parameter passed value.
+- **WARNING** : If the current location have ***"redirectonly"*** value set empty the ***load_loc()*** stops
+\ the page execution and an error message is passed to the log.
 
 _Note: Because this function do internal redirection the original requested url is stay unchanged in browser._
 _After this kind of redirection the client cannot detect the redirection._
@@ -329,7 +342,7 @@ This function does redirection with http redirect header.
 - ***$query*** array
    - An array of query key/value-pairs (without any URL-encoding) to append to the URL.
    \ (GET parameters) Uses ***url()*** inside.
-_Note: Bacause this function requiest the redirection from browser, the url will change in the browser's address line._
+_Note: Because this function request the redirection from browser, the url will change in the browser's address line._
 
 
 
