@@ -309,14 +309,17 @@ function pc_speedform_builder()
     p_gral_item(3,'strkey-strval'   ,BTYPE_KEYSVAL ,BSEC_FUNC,['parents' => ['values'],'types' => ['txtselect','txtradio']]);
     p_gral_item(3,'regex-errortext' ,BTYPE_KEYSVAL ,BSEC_VALID,['parents' => ['check_regex']]);
 
-    p_gral_item(3,'class'         ,BTYPE_TEXT ,BSEC_LOOK,['parents' => ['form_options']]);
-    p_gral_item(3,'style'         ,BTYPE_TEXT ,BSEC_LOOK,['parents' => ['form_options']]);
-    p_gral_item(3,'onclick'       ,BTYPE_TEXT ,BSEC_FUNC,['parents' => ['form_options']]);
-    p_gral_item(3,'id'            ,BTYPE_TEXT ,BSEC_FUNC,['parents' => ['form_options']]);
-    p_gral_item(3,'before'        ,BTYPE_TEXT ,BSEC_LOOK,['parents' => ['form_options']]);
-    p_gral_item(3,'after'         ,BTYPE_TEXT ,BSEC_LOOK,['parents' => ['form_options']]);
-    p_gral_item(3,'size'          ,BTYPE_INT  ,BSEC_LOOK,['parents' => ['form_options']]);
-    p_gral_item(3,'maxlength'     ,BTYPE_INT  ,BSEC_LOOK,['parents' => ['form_options']]);
+    p_gral_item(3,'class'         ,BTYPE_TEXT ,BSEC_LOOK,['parents' => ['form_options']],"The class attribute of the html tag");
+    p_gral_item(3,'style'         ,BTYPE_TEXT ,BSEC_LOOK,['parents' => ['form_options']],"The style (CSS) attribute of the html tag");
+    p_gral_item(3,'placeholder'   ,BTYPE_TEXT ,BSEC_LOOK,['parents' => ['form_options']],"The placeholder string, value hint");
+    p_gral_item(3,'required'      ,BTYPE_SELB ,BSEC_LOOK,['parents' => ['form_options'],'values' => ['true','false']],"If this option is true, the field will receive the required and aria-required attributes");
+    p_gral_item(3,'onclick'       ,BTYPE_TEXT ,BSEC_FUNC,['parents' => ['form_options']],"The content of the html onlick attribute");
+    p_gral_item(3,'id'            ,BTYPE_TEXT ,BSEC_FUNC,['parents' => ['form_options']],"The html id of the tag");
+    p_gral_item(3,'before'        ,BTYPE_TEXT ,BSEC_LOOK,['parents' => ['form_options']],"Raw string which prepended before the html tag");
+    p_gral_item(3,'after'         ,BTYPE_TEXT ,BSEC_LOOK,['parents' => ['form_options']],"Raw string which appended after the html tag");
+    p_gral_item(3,'size'          ,BTYPE_INT  ,BSEC_LOOK,['parents' => ['form_options']],"The size attribute of the html input tag");
+    p_gral_item(3,'maxlength'     ,BTYPE_INT  ,BSEC_LOOK,['parents' => ['form_options']],"The maxlength attribute of the html input tag");
+    p_gral_item(3,'rawattributes' ,BTYPE_TEXT ,BSEC_LOOK,['parents' => ['form_options']],"This is a raw string appended into the attribute section of the html tag .");
 
     $builder_ajax_preview_url = url('speedformbuilder_preview_req');
     $builder_ajax_loaddef_url = url('speedformbuilder_nodetypedef_req/NODETYPENAME');
