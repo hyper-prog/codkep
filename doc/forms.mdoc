@@ -134,6 +134,9 @@ __Definition methods of HtmlForm class:__
     - ***"readonly"=true*** - Sets the field readonly.
     - ***"autofocus"=true*** - Sets the form item has the initial focus
     - ***"lang"=text*** - Adds the "lang" attribute to the input tag to avoid locale specific number format problems.
+    - ***"required"=true*** - Sets the html5 required and aria-required attribute. (The form handles the field as mandatory)
+    - ***"placeholder"=string*** - Add a placeholder value (value hint)
+    - ***"rawattributes"=string*** - Adds additional parameters to the html tag as raw string
  - @@@text($name, $t, array $opts = [])@@@
   - Adds a simple text to the form (Not an input field, this is only a text to display)
    - The ***$name*** parameter is the name of the item. (Not displayed)
@@ -186,6 +189,7 @@ __Definition methods of HtmlForm class:__
     \ After the option tags in select mode and after the input and label tags in radio mode.
     - ***"itemlabelprefix"=string*** - This string is written before the label text ind radio mode.
     - ***"itemlabelsuffix"=string*** - This string is written after the label text ind radio mode.
+    - ***"rawattributes"=string*** - Adds additional parameters to the html tag as raw string
  - @@@textarea($n, $v, $row, $col, array $opts = [])@@@
   - Adds a textarea field to the form. (Large text editor field)
    - The ***$name*** parameter is the name of the field.
@@ -204,6 +208,9 @@ __Definition methods of HtmlForm class:__
     - ***"softreadonly"=true*** - Disable input of textarea. (See the standard html textarea readonly attribute)
     - ***"disablercsize"=true*** - Disable put row and col attributes to the textarea html tag.
     - ***"autofocus"=true*** - Sets the form item has the initial focus
+    - ***"required"=true*** - Sets the html5 required and aria-required attribute. (The form handles the field as mandatory)
+    - ***"placeholder"=string*** - Add a placeholder value (value hint)
+    - ***"rawattributes"=string*** - Adds additional parameters to the html tag as raw string
  - @@@hidden($n, $v, array $opts = [])@@@
   - Adds a hidden field to the form (This is an ***input type="hidden"*** tag)
    - The ***$name*** parameter is the name of the field.
@@ -296,7 +303,8 @@ __Definition methods of HtmlForm class:__
        - The ***$readonly*** parameter is true when readonly form should generate, otherwise is false.
       - The callback function should return the html codes of the custom made element. The "after" and "before" strings
       \ are concatenated, but the others like "class" or "id", etc should be handled by your custom codes.
-    - The ***$opts*** is an associative array can set some features of the field.
+    - The ***$opts*** is an associative array can set some features of the field. *This options below does not have any*
+    \ *effect to the generated code. (Except before and after) Your callback will receive these values as parameter!*
      - ***"class"=string*** - Sets the css class of the field.
      - ***"style"=string*** - Sets the css/style attribute of the field.
      - ***"onclick"=string*** - Sets the onclick attribute of the field.
@@ -310,6 +318,9 @@ __Definition methods of HtmlForm class:__
      - ***"autofocus"=true*** - Sets the form item has the initial focus
      - ***"itemprefix"=string*** - This string is written immediately before the item tags.
      - ***"itemsuffix"=string*** - This string is written immediately after the item tags.
+     - ***"required"=true*** - Sets the html5 required and aria-required attribute. (The form handles the field as mandatory)
+     - ***"placeholder"=string*** - Add a placeholder value (value hint)
+     - ***"rawattributes"=string*** - Adds additional parameters to the html tag as raw string
  - @@@setCallback($name, callable $callback)@@@
   - You can add a named callback to the object and run it later with the given name. This callbacks can used as macros.
   \ This callback mechanism works same in HtmlTable,HtmlForm and ExcelXmlDocument. It possible to set different
