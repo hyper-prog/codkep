@@ -874,6 +874,9 @@ class HtmlForm
              'maxlength' => (isset($opts['maxlength']) ? $opts['maxlength'] : ''),
              'readonly' => (isset($opts['readonly']) ? $opts['readonly'] : false),
              'autofocus' => (isset($opts['autofocus']) ? $opts['autofocus'] : false),
+             'required' => (isset($opts['required']) ? $opts['required'] : false),
+             'placeholder' => (isset($opts['placeholder']) ? $opts['placeholder'] : ''),
+             'rawattributes' => (isset($opts['rawattributes']) ? $opts['rawattributes'] : ''),
              'lang' => (isset($opts['lang']) ? $opts['lang'] : '')
             ]);
         return $this;
@@ -896,6 +899,7 @@ class HtmlForm
              'maxlength' => (isset($opts['maxlength']) ? $opts['maxlength'] : ''),
              'readonly' => (isset($opts['readonly']) ? $opts['readonly'] : false),
              'autofocus' => (isset($opts['autofocus']) ? $opts['autofocus'] : false),
+             'rawattributes' => (isset($opts['rawattributes']) ? $opts['rawattributes'] : ''),
             ]);
         return $this;
     }
@@ -911,6 +915,7 @@ class HtmlForm
              'before' => (isset($opts['before']) ? $opts['before'] : ''),
              'after' => (isset($opts['after']) ? $opts['after'] : ''),
              'readonly' => (isset($opts['readonly']) ? $opts['readonly'] : false),
+             'rawattributes' => (isset($opts['rawattributes']) ? $opts['rawattributes'] : ''),
              'autofocus' => false,
             ]);
         return $this;
@@ -936,6 +941,7 @@ class HtmlForm
              'itemsuffix' => (isset($opts['itemsuffix']) ? $opts['itemsuffix'] : ''),
              'itemlabelprefix' => (isset($opts['itemlabelprefix']) ? $opts['itemlabelprefix'] : ''),
              'itemlabelsuffix' => (isset($opts['itemlabelsuffix']) ? $opts['itemlabelsuffix'] : ''),
+             'rawattributes' => (isset($opts['rawattributes']) ? $opts['rawattributes'] : ''),
             ]);
         return $this;
     }
@@ -959,6 +965,9 @@ class HtmlForm
              'softreadonly' => (isset($opts['softreadonly']) ? $opts['softreadonly'] : false),
              'disablercsize' => (isset($opts['disablercsize']) ? $opts['disablercsize'] : false),
              'autofocus' => (isset($opts['autofocus']) ? $opts['autofocus'] : false),
+             'required' => (isset($opts['required']) ? $opts['required'] : false),
+             'placeholder' => (isset($opts['placeholder']) ? $opts['placeholder'] : ''),
+             'rawattributes' => (isset($opts['rawattributes']) ? $opts['rawattributes'] : ''),
             ]);
         return $this;
     }
@@ -978,6 +987,7 @@ class HtmlForm
              'after' => (isset($opts['after']) ? $opts['after'] : ''),
              'readonly' => (isset($opts['readonly']) ? $opts['readonly'] : false),
              'autofocus' => (isset($opts['autofocus']) ? $opts['autofocus'] : false),
+             'rawattributes' => (isset($opts['rawattributes']) ? $opts['rawattributes'] : ''),
             ]);
         return $this;
     }
@@ -1000,6 +1010,9 @@ class HtmlForm
                 'autofocus' => (isset($opts['autofocus']) ? $opts['autofocus'] : false),
                 'itemprefix' => (isset($opts['itemprefix']) ? $opts['itemprefix'] : ''),
                 'itemsuffix' => (isset($opts['itemsuffix']) ? $opts['itemsuffix'] : ''),
+                'required' => (isset($opts['required']) ? $opts['required'] : false),
+                'placeholder' => (isset($opts['placeholder']) ? $opts['placeholder'] : ''),
+                'rawattributes' => (isset($opts['rawattributes']) ? $opts['rawattributes'] : ''),
             ]);
         return $this;
     }
@@ -1142,6 +1155,7 @@ class HtmlForm
                     ($dta['class']==''?'':' class="'.$dta['class'].'"').
                     ($dta['style']==''?'':' style="'.$dta['style'].'"').
                     ($dta['id']==''?'':' id="'.$dta['id'].'"').
+                    ($dta['rawattributes']==''?'':' '.$dta['rawattributes']).
                     "/>".$dta['after']."\n";
         }
 
@@ -1173,6 +1187,9 @@ class HtmlForm
                     ($dta['maxlength']==''?'':' maxlength="'.$dta['maxlength'].'"').
                     ($dta['lang']==''?'':' lang="'.$dta['lang'].'"').
                     ($dta['autofocus']?' autofocus':'').
+                    ($dta['required']?' required="required" aria-required="true"':'').
+                    ($dta['placeholder']==''?'':' placeholder="'.$dta['placeholder'].'"').
+                    ($dta['rawattributes']==''?'':' '.$dta['rawattributes']).
                     "/>".$dta['after'],$dta['name']);
         }
 
@@ -1212,6 +1229,7 @@ class HtmlForm
                     ($dta['style']==''?'':' style="'.$dta['style'].'"').
                     ($dta['onclick']==''?'':' onclick="'.$dta['onclick'].'"').
                     ($dta['id']==''?'':' id="'.$dta['id'].'"').
+                    ($dta['rawattributes']==''?'':' '.$dta['rawattributes']).
                     "$s/>".$dta['after'],$dta['name']);
         }
 
@@ -1224,6 +1242,7 @@ class HtmlForm
                  ($dta['onchange']==''?'':' onchange="'.$dta['onchange'].'"').
                  ($dta['id']==''?'':' id="'.$dta['id'].'"').
                  ($dta['autofocus']?' autofocus':'').
+                 ($dta['rawattributes']==''?'':' '.$dta['rawattributes']).
                  '>';
             foreach($dta['values'] as $h => $v)
             {
@@ -1249,6 +1268,7 @@ class HtmlForm
                 ($dta['class']==''?'':' class="'.$dta['class'].'"').
                 ($dta['style']==''?'':' style="'.$dta['style'].'"').
                 ' id="sel_'.$id.'"'.
+                ($dta['rawattributes']==''?'':' '.$dta['rawattributes']).
                 '>';
             foreach($dta['values'] as $h => $v)
             {
@@ -1301,8 +1321,11 @@ class HtmlForm
                  ($dta['style']==''?'':' style="'.$dta['style'].'"').
                  ($dta['onclick']==''?'':' onclick="'.$dta['onclick'].'"').
                  ($dta['id']==''?'':' id="'.$dta['id'].'"').
+                 ($dta['required']?' required="required" aria-required="true"':'').
                  ($dta['autofocus']?' autofocus':'').
                  ($dta['softreadonly']?' readonly':'').
+                 ($dta['placeholder']==''?'':' placeholder="'.$dta['placeholder'].'"').
+                 ($dta['rawattributes']==''?'':' '.$dta['rawattributes']).
                  '>';
             $t .= $dta['value'];
             $t .= '</textarea>';

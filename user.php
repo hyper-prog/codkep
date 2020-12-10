@@ -748,8 +748,14 @@ function user_login_page()
     print "<input type=\"hidden\" name=\"fid\" value=\"$fs\"/>";
     print '<div class="login_div_internal">';
     print '<table class="login_table_internal">';
-    print '<tr><td>'.t('Username').'</td><td><input type="text" name="login" value="" maxlength="128" id="ulitid"/></td></tr>';
-    print '<tr><td>'.t('Password').'</td><td><input type="password" name="password" value="" maxlength="128" autocomplete="off"/></td></tr>';
+    print '<tr><td>'.t('Username').'</td><td>';
+     print '<input type="text" name="login" value="" maxlength="128" id="ulitid"
+                   autocorrect="none" spellcheck="false" required="required" aria-required="true"/>';
+    print '</td></tr>';
+    print '<tr><td>'.t('Password').'</td><td>';
+     print '<input type="password" name="password" value="" maxlength="128" autocomplete="off"
+                   autocorrect="none" spellcheck="false" required="required" aria-required="true"/>';
+    print '</td></tr>';
     print '<tr><td colspan="2" align="center">';
     print '<input type="submit" name="loginbutton" value="'.t('Login').'"/></td></tr>';
     if(trim($sys_data->original_requested_location) != '' && $sys_data->original_requested_location != current_loc())
@@ -813,8 +819,14 @@ function user_login_block_inner()
     print '<form method="POST" action="'.url('user/ajaxlogin').'" class="use-ajax">';
     print "<input type=\"hidden\" name=\"fid\" value=\"$fs\"/>";
     print '<table class="login_table_block">';
-    print '<tr><td><input type="text" name="login" value=""/></td></tr>';
-    print '<tr><td><input type="password" name="password" value="" maxlength="128" autocomplete="off"/></td></tr>';
+    print '<tr><td>';
+     print '<input type="text" name="login" value="" maxlength="128" autocorrect="none" spellcheck="false"
+                   placeholder="'.t("Username").'" required="required" aria-required="true"/>';
+    print '</td></tr>';
+    print '<tr><td>';
+     print '<input type="password" name="password" value="" maxlength="128" autocomplete="off" autocorrect="none"
+                   spellcheck="false" placeholder="'.t("Password").'" required="required" aria-required="true"/>';
+    print '</td></tr>';
     print '<tr><td align="center">';
     print '<input type="submit" name="loginblockbutton" value="'.t('Login').'"/></td></tr>';
     print '<input type="hidden" name="act" value="in"/>';
@@ -916,6 +928,10 @@ function hook_user_nodetype()
                         "type" => "smalltext",
                         "check_noempty" => "You have to fill the login name",
                         "par_sec" => "text3ns",
+                        "form_options" => [
+                            "required" => true,
+                            "rawattributes" => "autocorrect=\"none\" spellcheck=\"false\"",
+                        ],
                     ],
                     40 => [
                         "sql" => "name",
@@ -924,6 +940,7 @@ function hook_user_nodetype()
                         "check_noempty" => "you have to fill the full name field",
                         "form_options" => [
                             "size" => 40,
+                            "required" => true,
                         ],
                     ],
                     50 => [
@@ -936,6 +953,10 @@ function hook_user_nodetype()
                         "check_noempty" => "You have to fill the password field",
                         "skip" => "exceptinsert",
                         "par_sec" => "text3ns",
+                        "form_options" => [
+                            "required" => true,
+                            "rawattributes" => "autocorrect=\"none\" spellcheck=\"false\"",
+                        ],
                     ],
                     60 => [
                         "sql" => "lindis",
@@ -1026,6 +1047,10 @@ function hook_user_nodetype()
                     "default" => "",
                     "check_noempty" => "You have to fill the password field!",
                     "par_sec" => "text3ns",
+                    "form_options" => [
+                        "required" => true,
+                        "rawattributes" => "autocorrect=\"none\" spellcheck=\"false\"",
+                    ],
                 ],
                 100 => [
                     "sql" => "submit_edit",
@@ -1071,10 +1096,14 @@ function hook_user_nodetype()
                     "par_sec" => "text3ns",
                 ],
                 40 => [
-                    'sql' => 'oldpwd',
-                    'text' => 'Old password',
-                    'type' => 'password',
-                    'skip' => 'sql',
+                    "sql" => "oldpwd",
+                    "text" => "Old password",
+                    "type" => "password",
+                    "skip" => "sql",
+                    "form_options" => [
+                        "required" => true,
+                        "rawattributes" => "autocorrect=\"none\" spellcheck=\"false\"",
+                    ],
                 ],
                 50 => [
                     "sql" => $user_module_settings->sql_password_column,
@@ -1085,6 +1114,10 @@ function hook_user_nodetype()
                     "default" => "",
                     "check_noempty" => "You have to fill the password field!",
                     "par_sec" => "text3ns",
+                    "form_options" => [
+                        "required" => true,
+                        "rawattributes" => "autocorrect=\"none\" spellcheck=\"false\"",
+                    ],
                 ],
                 100 => [
                     "sql" => "submit_edit",
