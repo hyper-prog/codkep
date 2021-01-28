@@ -292,14 +292,14 @@ function url($loc,array $query=[],array $options=[])
     {
         foreach($sys_data->loaded_routes as $r)
         {
-            $match = false;
+            $rtmatch = false;
             if($r["mtype"] == 1 && $r["path"] == $uo->path)
-                $match = true;
+                $rtmatch = true;
             if($r["mtype"] == 2)
                 if(preg_match($r["rex"],$uo->path))
-                    $match = true;
+                    $rtmatch = true;
 
-            if($match)
+            if($rtmatch)
             {
                 $p=false;
                 run_hook("outbound_internal_url",$uo);
@@ -1599,9 +1599,9 @@ function sys_route($location,array $args = [])
     run_hook('inbound_url',$loc);
     foreach($sys_data->loaded_routes as $route)
     {
-        $match = false;
+        $rtmatch = false;
         if($route["mtype"] == 1 && $route["path"] == $loc->executed)
-            $match = true;
+            $rtmatch = true;
         if($route["mtype"] == 2)
         {
             $matches = [];
@@ -1610,10 +1610,10 @@ function sys_route($location,array $args = [])
                 $url_parameters = [];
                 for($i = 1;$i<count($matches);++$i)
                     $route['url_par_values'][$i-1] = $matches[$i];
-                $match = true;
+                $rtmatch = true;
             }
         }
-        if($match)
+        if($rtmatch)
         {
             $hit = true;
             $sys_data->current_route = $loc->executed;
