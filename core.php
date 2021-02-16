@@ -33,6 +33,7 @@ function hook_core_boot()
     $site_config->lang                  = 'en';
     $site_config->show_generation_time  = true;
     $site_config->hide_module_intros    = false;
+    $site_config->custom_mail_sender    = NULL;
     $site_config->route_loop_max        = 3;
 
     $site_config->logo_img_url = NULL;
@@ -1204,11 +1205,25 @@ function div($class,$content)
  * @param string $message The message body of the email. This string is inserted in <body> tag. */
 function mail_html($to,$from,$subject,$message)
 {
-    $mess_s = "<html><head><title>$subject</title></title></head></head><body>$message</body></html>";
+    global $site_config;
+    $mess_s = "<html>".
+                "<head><title>$subject</title></head>".
+                "<body>$message</body>".
+              "</html>";
     $headers = 'MIME-Version: 1.0' . "\r\n";
     $headers .= 'Content-type: text/html; charset=utf-8' . "\r\n";
     $headers .= "From: $from" . "\r\n";
-    mail($to,$subject,$mess_s,$headers);
+    if($site_config->custom_mail_sender != NULL && is_callable($site_config->custom_mail_sender))
+    {
+        call_user_func($site_config->custom_mail_sender,[
+                            "from" => $from,
+                            "to" => $to,
+                            "subject" => $subject,
+                            "htmlbody" => $mess_s,
+                        ]);
+        return;
+    }
+    mail($to, $subject, $mess_s, $headers);
 }
 
 /** Invoke a hook in all enabled modules that implement it.
