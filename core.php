@@ -1215,15 +1215,14 @@ function mail_html($to,$from,$subject,$message)
     $headers .= "From: $from" . "\r\n";
     if($site_config->custom_mail_sender != NULL && is_callable($site_config->custom_mail_sender))
     {
-        call_user_func($site_config->custom_mail_sender,[
-                            "from" => $from,
-                            "to" => $to,
-                            "subject" => $subject,
-                            "htmlbody" => $mess_s,
-                        ]);
-        return;
+        return call_user_func($site_config->custom_mail_sender,[
+                                    "from" => $from,
+                                    "to" => $to,
+                                    "subject" => $subject,
+                                    "htmlbody" => $mess_s,
+                                ]);
     }
-    mail($to, $subject, $mess_s, $headers);
+    return mail($to, $subject, $mess_s, $headers);
 }
 
 /** Invoke a hook in all enabled modules that implement it.
