@@ -66,6 +66,8 @@ function hook_user_boot()
     $user_module_settings->user_init_callback   = NULL;
     $user_module_settings->user_after_callback  = NULL;
 
+    $user_module_settings->disable_after_deliver_garbage_collection = false;
+
     $user = new stdClass();
     $user->uid = 0;
     $user->auth = false;
@@ -93,7 +95,8 @@ function hook_user_after_deliver()
         call_user_func($user_module_settings->user_after_callback);
         return;
     }
-    user_garbage_collection_local();
+    if(!$user_module_settings->disable_after_deliver_garbage_collection)
+        user_garbage_collection_local();
 }
 
 function hook_user_defineroute()
