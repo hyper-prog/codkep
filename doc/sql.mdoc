@@ -220,6 +220,12 @@ print "</ul>";
 See [error handling section|url:#errorhandling]
 
 ----------------------------------------------------------------------------
+@@@sql_exec_fetchAll_noredirect($sql,array $parameters = [],$fetch_names_only = false)@@@
+.
+Same as ***sql_exec_fetchAll*** except the automatic error redirection is disabled.
+.
+See [error handling section|url:#errorhandling]
+----------------------------------------------------------------------------
 @@@sql_getLastInsertId($tablename,$keyname,$specifiedname = '')@@@
 .
 Try to get the value of the last inserted key. (Through the php lastInsertId() function).

@@ -198,6 +198,7 @@ function sql_exec_noredirect($sql,array $parameters = [])
     catch(PDOException $e)
     {
         $db->error = true;
+        $db->errormsg = "SQL Error: " . $e->getMessage();
         return NULL;
     }
     return $stmt;
@@ -279,6 +280,32 @@ function sql_exec_fetchAll($sql,array $parameters = [],$errormsg='',$fetch_names
         $db->error = true;
         if($db->auto_error_page)
             load_loc($db->error_locations['generic_error']);
+        return [];
+    }
+    return $r;
+}
+
+/** Executes and fetchAll an sql command and does not do error handling.
+ *  It returns an executed and fetchAll() fetched array of arrays */
+function sql_exec_fetchAll_noredirect($sql,array $parameters = [],$fetch_names_only = false)
+{
+    global $db;
+    $r = [];
+    $do = sql_exec_noredirect($sql,$parameters);
+    if($db->error)
+        return [];
+    if($do != NULL)
+    {
+        if($fetch_names_only)
+            $r = $do->fetchAll(PDO::FETCH_NAMED);
+        else
+            $r = $do->fetchAll();
+    }
+    if($do == NULL || !is_array($r) || $r === NULL)
+    {
+        $db->errormsg = ($db->errormsg == '' ? '' : $db->errormsg . ' - ') .
+            t('Cannot fetch data (no valid result)');
+        $db->error = true;
         return [];
     }
     return $r;
