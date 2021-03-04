@@ -1673,6 +1673,8 @@ class DatabaseQuerySql extends DatabaseQuery
         $fetch_names_only = false;
         if(isset($eopts['fetch_names_only']) && $eopts['fetch_names_only'])
             $fetch_names_only = true;
+        if(isset($eopts['noredirect']) && $eopts['noredirect'])
+            return sql_exec_fetchAll_noredirect($this->calculated_query,$this->passed_parameters,$errormsg,$fetch_names_only);
         return sql_exec_fetchAll($this->calculated_query,$this->passed_parameters,$errormsg,$fetch_names_only);
     }
 }
