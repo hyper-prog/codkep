@@ -1,10 +1,7 @@
 version: '2'
 services:
   ckapache:
-    image: codkep_apache
-    build: .
-    container_name: codkep_apache
-    restart: always
+    image: hyperprog/codkepdebian
     links:
       - ckdatabase
     ports:
@@ -13,16 +10,11 @@ services:
       - ./site:/var/www/html/site
       - ./data:/var/www/html/data
   ckdatabase:
-    image: "mysql:5"
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
     container_name: codkep_database
-    restart: always
     volumes:
-      - ./mysql:/etc/mysql/conf.d
       - ./dbfiles/:/var/lib/mysql/
     environment:
       MYSQL_ROOT_PASSWORD: codkepapptest
       MYSQL_DATABASE: codkep
-
-
-
-
