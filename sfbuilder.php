@@ -206,6 +206,7 @@ function pc_speedform_builder()
     p_gral_item(0,'color'        ,BTYPE_TEXT ,BSEC_LOOK,[],'The bgcolor of the entire table');
     p_gral_item(0,'before'       ,BTYPE_TEXT ,BSEC_LOOK,[],'Printed before the whole form');
     p_gral_item(0,'after'        ,BTYPE_TEXT ,BSEC_LOOK,[],'Printed after the whole form');
+    p_gral_item(0,'default_csstop_class',BTYPE_TEXT ,BSEC_LOOK,[],'The default css top class. If you change this, the default css styles wont affect the area. (Value is: f_gendiv_defaultcodkepstyle)');
     p_gral_item(0,'table_class'  ,BTYPE_TEXT ,BSEC_LOOK);
     p_gral_item(0,'table_style'  ,BTYPE_TEXT ,BSEC_LOOK);
     p_gral_item(0,'table_border' ,BTYPE_TEXT ,BSEC_LOOK);
@@ -213,6 +214,8 @@ function pc_speedform_builder()
     p_gral_item(0,'div_c_afterv' ,BTYPE_TEXT ,BSEC_LOOK);
     p_gral_item(0,'div_c_afterl' ,BTYPE_TEXT ,BSEC_LOOK);
     p_gral_item(0,'collapsable_fieldsets',BTYPE_SELB ,BSEC_LOOK,['values' => ['true','false']]);
+
+
 
     p_gral_item(1,'- NEW FIELD -',BTYPE_FOPEN,BSEC_FUNC);
 

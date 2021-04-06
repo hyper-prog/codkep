@@ -3432,6 +3432,7 @@ class Div_SpeedFormFormFormmater extends HtmlFormFormatter
     public $highl;
     public $last_fs;
     public $has_fs;
+    public $default_css_class;
     public function __construct($definition,$highlighted = [])
     {
         $this->name = 'div_speedform_formatter';
@@ -3439,6 +3440,9 @@ class Div_SpeedFormFormFormmater extends HtmlFormFormatter
         $this->highl = $highlighted;
         $this->last_fs = '';
         $this->has_fs = false;
+        $this->default_css_class = 'f_gendiv_defaultcodkepstyle';
+        if(isset($this->def['default_csstop_class']) && $this->def['default_csstop_class'] != '')
+            $this->default_css_class = $this->def['default_csstop_class'];
     }
 
     public function get_definition_of_field($name)
@@ -3465,7 +3469,7 @@ class Div_SpeedFormFormFormmater extends HtmlFormFormatter
         if(isset($this->def['before']))
             $before = $this->def['before'];
 
-        $dc = 'f_gener_div f_gener_div_'.$this->def['table'];
+        $dc = 'f_gener_div f_gener_div_'.$this->def['table'].' '.$this->default_css_class;
         if(isset($this->def['div_class']))
             $dc .= ' '.$this->def['div_class'];
         $t = "<div class=\"$dc\">";
@@ -3475,6 +3479,14 @@ class Div_SpeedFormFormFormmater extends HtmlFormFormatter
     public function end_form($txt)
     {
         $after = '';
+        $closefieldset = '';
+
+        if($this->last_fs != '')
+        {
+            $closefieldset = "</div></fieldset></div>"; // .fieldset-body-div-wrapper , fieldset , .fieldset-div-wrapper
+            $this->last_fs = '';
+        }
+
         if(isset($this->def['after']))
             $after = $this->def['after'];
 
@@ -3522,7 +3534,7 @@ class Div_SpeedFormFormFormmater extends HtmlFormFormatter
                 });
             </script>";
         }
-        return $t . $txt . $after . $fieldset_script;
+        return $closefieldset . $t . $txt . $after . $fieldset_script;
     }
 
     public function item($txt,$name)

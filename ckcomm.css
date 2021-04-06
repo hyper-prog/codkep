@@ -144,4 +144,41 @@ a.onoffsw_lnk_mini_switch img{
     padding-right: 4px;
 }
 
+/* Forms Div_SpeedFormFormFormmater : f_gendiv_defaultcodkep */
+.f_gendiv_defaultcodkepstyle .f_gen_line {
+    padding: 3px;
+}
+.f_gendiv_defaultcodkepstyle .f_gen_title {
+    font-weight: bold;
+}
+
+.f_gendiv_defaultcodkepstyle .fieldset-div-wrapper {
+    padding: 5px;
+    margin: 0;
+}
+.f_gendiv_defaultcodkepstyle .fieldset-div-wrapper fieldset {
+    background-color: #dddddd;
+    border: 1px solid #555555;
+    padding: 0;
+    margin: 0;
+    border-radius: 5px;
+}
+.f_gendiv_defaultcodkepstyle .fieldset-legend-div-wrapper  {
+    margin: 0;
+    padding: 0;
+}
+.f_gendiv_defaultcodkepstyle .fieldset-legend-div-wrapper legend {
+    background-color: gray;
+    color: white;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+.f_gendiv_defaultcodkepstyle .fieldset-body-div-wrapper {
+    padding: 10px;
+}
+
+.f_gendiv_defaultcodkepstyle .field-description {
+    font-size: small;
+}
+
 /* end css */
