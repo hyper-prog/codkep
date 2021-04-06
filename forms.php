@@ -3430,11 +3430,15 @@ class Div_SpeedFormFormFormmater extends HtmlFormFormatter
     public $name;
     public $def;
     public $highl;
+    public $last_fs;
+    public $has_fs;
     public function __construct($definition,$highlighted = [])
     {
         $this->name = 'div_speedform_formatter';
         $this->def = $definition;
         $this->highl = $highlighted;
+        $this->last_fs = '';
+        $this->has_fs = false;
     }
 
     public function get_definition_of_field($name)
@@ -3475,7 +3479,50 @@ class Div_SpeedFormFormFormmater extends HtmlFormFormatter
             $after = $this->def['after'];
 
         $t = '</div>';
-        return $t . $txt . $after;
+
+        $fieldset_script = '';
+        if($this->has_fs && isset($this->def['collapsable_fieldsets']) && $this->def['collapsable_fieldsets'])
+        {
+            $fcls = 'f_gener_div_' . $this->def['table'];
+            $fieldset_script = "<script>
+                jQuery(document).ready(function() {
+                    jQuery('.$fcls .fieldset-body-div-wrapper').each(function() {
+                        var id = jQuery(this).attr('id');
+                        if(!id.startsWith('fs-bdy-'))
+                            return;
+                        id = id.replace('fs-bdy-','');
+                        if(jQuery(this).hasClass('collapsed'))
+                        {
+                            jQuery(this).hide();
+                            jQuery('.$fcls #fs-lpfx-'+id).html('⮞ ');
+                        }
+                        else
+                            jQuery('.$fcls #fs-lpfx-'+id).html('⮟ ');
+                    });
+                    jQuery('.$fcls .fs-legend-line').click(function() {
+                        var id = jQuery(this).attr('id');
+                        if(!id.startsWith('fs-lgd-'))
+                            return;
+                        id = id.replace('fs-lgd-','');
+                        var fs_body = jQuery('#fs-bdy-'+id);
+                        if(fs_body.hasClass('collapsed'))
+                        {
+                            fs_body.show('fast');
+                            fs_body.removeClass('collapsed');
+                            jQuery('.$fcls #fs-lpfx-'+id).html('⮟ ');
+                        }
+                        else
+                        {
+                            fs_body.hide('fast');
+                            fs_body.addClass('collapsed');
+                            jQuery('.$fcls #fs-lpfx-'+id).html('⮞ ');
+                        }
+
+                    });
+                });
+            </script>";
+        }
+        return $t . $txt . $after . $fieldset_script;
     }
 
     public function item($txt,$name)
@@ -3483,6 +3530,37 @@ class Div_SpeedFormFormFormmater extends HtmlFormFormatter
         $f = $this->get_definition_of_field($name);
 
         ob_start();
+        if(isset($f['fieldset']) && $f['fieldset'] != '') //field in field set
+        {
+            if($f['fieldset'] != $this->last_fs)
+            {
+                $bdy_extra_classes = '';
+                if($this->last_fs != '')
+                    print "</div></fieldset></div>"; // .fieldset-body-div-wrapper , fieldset , .fieldset-div-wrapper
+                print '<div class="fieldset-div-wrapper"><fieldset>';
+                $fs_text = $f['fieldset'];
+                if(isset($f['fieldset_text']) && $f['fieldset_text'] != '')
+                    $fs_text = $f['fieldset_text'];
+                print '<div class="fieldset-legend-div-wrapper">'.
+                        '<legend id="fs-lgd-'.$f['fieldset'].'" class="fs-legend-line">'.
+                          '<span id="fs-lpfx-'.$f['fieldset'].'"></span>'.
+                          $fs_text.
+                        '</legend></div>';
+                if(isset($f['fieldset_body_extraclass']))
+                    $bdy_extra_classes = $f['fieldset_body_extraclass'];
+                if($bdy_extra_classes != '')
+                    $bdy_extra_classes = ' '.$bdy_extra_classes;
+                print '<div class="fieldset-body-div-wrapper'.$bdy_extra_classes.'" id="fs-bdy-'.$f['fieldset'].'">';
+                $this->last_fs = $f['fieldset'];
+                $this->has_fs = true;
+            }
+        }
+        else if($this->last_fs != '') //need close field set
+        {
+            print "</div></fieldset></div>"; // .fieldset-body-div-wrapper , fieldset , .fieldset-div-wrapper
+            $this->last_fs = '';
+        }
+
         if(isset($f['before']))
                 print $f['before'];
         if(!isset($f['formatters']) || $f['formatters'] == 'before' || $f['formatters'] == 'all')
@@ -3538,6 +3616,8 @@ class Div_SpeedFormFormFormmater extends HtmlFormFormatter
 
             if(isset($this->def['div_c_afterv']) && $this->def['div_c_afterv'])
                 print '<div class="c"></div>';
+            if(isset($f['description']) && $f['description'] != '')
+                print '<div class="field-description">'.$f['description'].'</div>';
             print '</div>';
             if(isset($this->def['div_c_afterl']) && $this->def['div_c_afterl'])
                 print '<div class="c"></div>';

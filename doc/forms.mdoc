@@ -895,6 +895,8 @@ You have to copy out the final result and insert into your code to use it.
 | ***div_class***      |(background-color: #99aaff;) The CSS class of the form's main div (If ***show=div***) |Optional| string |
 | ***div_c_afterv***   |(background-color: #99aaff;) Put an empty "clear:both;" css styled div block after the value's div (If ***show=div***) |Optional| true or false |
 | ***div_c_afterl***   |(background-color: #99aaff;) Put an empty "clear:both;" css styled div block after the data block's div (line) (If ***show=div***) |Optional| true or false |
+| ***collapsable_fieldsets*** |(background-color: #99aaff;) Enable collapsable fieldsets. (Injects required javascript codes) (If ***show=div***) |Optional| true or false |
+
 
 Sample of top level attributes:
 ~~~code
@@ -1955,6 +1957,11 @@ do data validation etc.
 | ***script***     |(background-color: #ffbb55;) You can add arbitrary javascript code to the field, which inserted after the data between ___srcipt___ tags. | javascript code |
 | ***check_loaded_function*** |(background-color: #ffbb55;) You can add function callback/name here which is called immediately after parameter is loaded by load_parameters() function. The function can do some early parameter check and can do redirection to error targets if something wrong. The function cannot change the loaded value! | php function name |
 | ***hide***       |(background-color: #ffbb55;) If this option is ***true*** the field will hided out in form. |***true*** or ***false***|
+| ***fieldset***       |(background-color: #99aaff;) If this attribute is set, the field belongs a html fieldset tag. The tag automatically created before the first member field. (Only if top level ***show=div***) | string |
+| ***fieldset_text***  |(background-color: #99aaff;) If the field is belongs a fieldset and the field is the first (opener tag) of the fieldset this value will be the title of the fieldset. Unnecessary but safe to set this in all fieldset member field. (Only if top level ***show=div***) | string |
+| ***fieldset_body_extraclass*** |(background-color: #99aaff;) Adds extra css classes to the body of the fieldset if the field is the first (opener tag) of the fieldset. Unnecessary but safe to set this in all fieldset member field. (Only if top level ***show=div***) | string |
+| ***description***    |(background-color: #99aaff;) Print this description text after the value set area in a separate div (Only if top level ***show=div***) | string |
+
 
 .
 #skiptable#

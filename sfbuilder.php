@@ -212,6 +212,7 @@ function pc_speedform_builder()
     p_gral_item(0,'div_class'    ,BTYPE_TEXT ,BSEC_LOOK);
     p_gral_item(0,'div_c_afterv' ,BTYPE_TEXT ,BSEC_LOOK);
     p_gral_item(0,'div_c_afterl' ,BTYPE_TEXT ,BSEC_LOOK);
+    p_gral_item(0,'collapsable_fieldsets',BTYPE_SELB ,BSEC_LOOK,['values' => ['true','false']]);
 
     p_gral_item(1,'- NEW FIELD -',BTYPE_FOPEN,BSEC_FUNC);
 
@@ -304,6 +305,11 @@ function pc_speedform_builder()
     p_gral_item(2,'title_class'   ,BTYPE_TEXT ,BSEC_LOOK);
     p_gral_item(2,'value_class'   ,BTYPE_TEXT ,BSEC_LOOK);
     p_gral_item(2,'hide'          ,BTYPE_SELB ,BSEC_LOOK,['values' => ['true','false']]);
+
+    p_gral_item(2,'fieldset'      ,BTYPE_TEXT ,BSEC_LOOK,[],'If this text is set, the field belongs a html fieldset tag. (Only if show=div)');
+    p_gral_item(2,'fieldset_text' ,BTYPE_TEXT ,BSEC_LOOK,[],'If the field is belongs a fieldset and the field is the first (opener tag) of the fieldset this value will be the title of the fieldset. (Only if show=div)');
+    p_gral_item(2,'fieldset_body_extraclass'   ,BTYPE_SEL ,BSEC_LOOK,['values' => ['','collapsed']]);
+    p_gral_item(2,'description'   ,BTYPE_TEXT ,BSEC_LOOK,[],'Longer description text put after the value line. (Only if show=div)');
 
     p_gral_item(3,'intkey-strval'   ,BTYPE_KEYIVAL ,BSEC_FUNC,['parents' => ['values'],'types' => ['numselect','numradio']]);
     p_gral_item(3,'strkey-strval'   ,BTYPE_KEYSVAL ,BSEC_FUNC,['parents' => ['values'],'types' => ['txtselect','txtradio']]);
