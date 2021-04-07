@@ -811,7 +811,7 @@ function node_delete($nid)
 
 function sys_node_callback_nid()    {  return sys_node_view_uni(node_load(par('nid')));  }
 function sys_node_callback_intype() {  return sys_node_view_uni(node_load_intype(par('joinid'),par('nodetype'))); }
-function sys_node_view_uni(Node $node)
+function sys_node_view_uni($node)
 {
     global $site_config;
     global $user;
@@ -847,7 +847,7 @@ function sys_node_view_uni(Node $node)
 
 function sys_node_edit_callback_nid()    { return sys_node_edit_uni(node_load(par('nid'))); }
 function sys_node_edit_callback_intype() { return sys_node_edit_uni(node_load_intype(par('joinid'),par('nodetype'))); }
-function sys_node_edit_uni(Node $node)
+function sys_node_edit_uni($node)
 {
     global $site_config;
     global $user;
@@ -904,18 +904,18 @@ function sys_node_edit_uni(Node $node)
 
 function sys_node_delete_callback_nid()    { return sys_node_delete_uni(node_load(par('nid'))); }
 function sys_node_delete_callback_intype() { return sys_node_delete_uni(node_load_intype(par('joinid'),par('nodetype'))); }
-function sys_node_delete_uni(Node $node)
+function sys_node_delete_uni($node)
 {
     global $site_config;
     global $user;
     $op = 'delete';
 
-    $type = $node->node_type;
     if($node == null || $node->node_nid == NULL)
     {
         load_loc('error',t('The requested node is not found'),t('Not found'));
         return 'Not found';
     }
+    $type = $node->node_type;
     if(!$node->get_ui_action_enabled())
     {
         load_loc('error',t('You don\'t have the required permission to access this node'),t('Permission denied'));
