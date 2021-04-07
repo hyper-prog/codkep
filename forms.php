@@ -1598,7 +1598,14 @@ class HtmlFormFormatter
 function hook_forms_boot()
 {
     global $site_config;
+    global $speedform_formatters;
+
     $site_config->speedform_number_langtag = ""; //Defautl empty -> not added
+    $speedform_formatters = [
+        'null'  => 'HtmlFormFormatter',
+        'div'   => 'Div_SpeedFormFormFormmater',
+        'table' => 'Table_SpeedFormFormFormmater',
+    ];
 }
 
 function hook_forms_init()
@@ -1892,6 +1899,22 @@ function hook_forms_init()
 
     $field_repository = array_merge($field_repository,run_hook('field_repository'));
     $datadef_repository = run_hook('datadef_repository');
+}
+
+function register_speedform_formatter($name,$classname)
+{
+    global $speedform_formatters;
+
+    $rc = new ReflectionClass($classname);
+    if(!$rc->isSubclassOf('HtmlFormFormatter'))
+        throw new Exception("The registred SpeedformFormatter class name is not sublass of HtmlFormFormatter!\n");
+    $speedform_formatters[$name] = $classname;
+}
+
+function registered_speedform_formatters()
+{
+    global $speedform_formatters;
+    return array_keys($speedform_formatters);
 }
 
 function datadef_from_repository($name)
@@ -3195,16 +3218,21 @@ class SpeedForm
     public function generate_form($mode = 'all', $tablename = '')
     {
         global $speedform_handlers;
+        global $speedform_formatters;
 
         if(!in_array($mode,SpeedForm::$valid_form_modes))
             throw new Exception("The SpeedForm::generate_form() method's mode parameter contains bad value!\n".
                                 " Accepted values: ".implode(','.SpeedForm::$valid_form_modes));
 
         $ff = NULL;
-        if($this->def['show'] == 'table')
-            $ff = new Table_SpeedFormFormFormmater($this->def,$this->highlighted);
-        if($this->def['show'] == 'div')
-            $ff = new Div_SpeedFormFormFormmater($this->def,$this->highlighted);
+        if(isset($this->def['show']))
+        {
+            if(!isset($speedform_formatters[$this->def['show']]))
+                throw new Exception("The requested SpeedformFormatter class is unknown!\n".
+                    " Accepted values: ".implode(','.array_keys($speedform_formatters)));
+            $fclassname = $speedform_formatters[$this->def['show']];
+            $ff = new $fclassname($this->def,$this->highlighted);
+        }
         if($ff === NULL) //fallback
             $ff = new HtmlFormFormatter();
 
@@ -3295,16 +3323,15 @@ class SpeedForm
     }
 }
 
-class Table_SpeedFormFormFormmater extends HtmlFormFormatter
+
+class HtmlFormFormatter_WithDefinition extends HtmlFormFormatter
 {
-    public $name;
     public $def;
-    public $highl;
-    public function __construct($definition,$highlighted = [])
+
+    public function __construct($definition)
     {
-        $this->name = 'table_speedform_formatter';
+        $this->name = 'definitionbased_speedform_formatter';
         $this->def = $definition;
-        $this->highl = $highlighted;
     }
 
     public function get_definition_of_field($name)
@@ -3323,6 +3350,17 @@ class Table_SpeedFormFormFormmater extends HtmlFormFormatter
             }
         }
         return [];
+    }
+}
+
+class Table_SpeedFormFormFormmater extends HtmlFormFormatter_WithDefinition
+{
+    public $highl;
+    public function __construct($definition,$highlighted = [])
+    {
+        parent::__construct($definition);
+        $this->name = 'table_speedform_formatter';
+        $this->highl = $highlighted;
     }
 
     public function begin_form($txt)
@@ -3425,42 +3463,22 @@ class Table_SpeedFormFormFormmater extends HtmlFormFormatter
     }
 }
 
-class Div_SpeedFormFormFormmater extends HtmlFormFormatter
+class Div_SpeedFormFormFormmater extends HtmlFormFormatter_WithDefinition
 {
-    public $name;
-    public $def;
     public $highl;
     public $last_fs;
     public $has_fs;
     public $default_css_class;
     public function __construct($definition,$highlighted = [])
     {
+        parent::__construct($definition);
         $this->name = 'div_speedform_formatter';
-        $this->def = $definition;
         $this->highl = $highlighted;
         $this->last_fs = '';
         $this->has_fs = false;
         $this->default_css_class = 'f_gendiv_defaultcodkepstyle';
         if(isset($this->def['default_csstop_class']) && $this->def['default_csstop_class'] != '')
             $this->default_css_class = $this->def['default_csstop_class'];
-    }
-
-    public function get_definition_of_field($name)
-    {
-        foreach($this->def['fields'] as $f)
-        {
-            if(isset($f['htmlname']) && $f['htmlname'] != '')
-            {
-                if($f['htmlname'] == $name || (isset($f['table']) && $name == $f['table'] . '.' . $f['htmlname']))
-                    return $f;
-            }
-            else
-            {
-                if($f['sql'] == $name || (isset($f['table']) && $name == $f['table'] . '.' . $f['sql']))
-                    return $f;
-            }
-        }
-        return [];
     }
 
     public function begin_form($txt)

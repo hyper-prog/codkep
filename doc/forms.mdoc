@@ -2024,7 +2024,7 @@ You can completely skip some fields by setting the skip attribute to a value sho
 The SpeedForm's data definition array have a top level attribute ***show*** which basically influence the appearance of
 the generated form. The generated ***HtmlForm*** object is built with ***HtmlFormFormatter*** descendant object set.
 .
-**Two base types are available as output format:**
+**By default two base types are available as output format:**
 - ***"show" => "table"***
  - The ***HtmlForm*** will contains a tuned ***Table_SpeedFormFormFormmater*** formatter.
  - The form is shows as a big html table where every field is show in a table row.
@@ -2039,6 +2039,17 @@ the generated form. The generated ***HtmlForm*** object is built with ***HtmlFor
 *Note: Both output format has the possibility to generate the final form codes by field to field*
 *and put arbitrary codes between the field this way.*
 *See HtmlFrom's ***get_start***,***get_part*** and ***get_end*** functions. Read [here|url:#htmlformcodgen].*
+.
+You can register a custom SpeedFormFormatter class to make your own form style:
+@@@register_speedform_formatter($name,$classname)@@@
+<br/>
+This function registers a custom SpeedFormFormatter class so the class will be available in the data definition
+array's top level ***show*** attribute and the SpeedFormBuilder will known it (you can select it).
+
+- ***$name*** name is a simple string which reference the registered formatter in the data definition array's top level
+\ ***show*** attribute
+- ***$classname*** the classname of the SpeedFormFormatter descendant class you already defined in your module.
+\ If the passed classname is not a sublass of SpeedFormFormatter an exception is thrown.
 
 
 == Query and Add field types ==

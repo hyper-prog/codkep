@@ -192,7 +192,7 @@ function pc_speedform_builder()
 
     p_gral_item(0,'name'         ,BTYPE_TEXT ,BSEC_FUNC,[],'Identifier name of the form object. It will be marked in classes, hooks.');
     p_gral_item(0,'table'        ,BTYPE_TEXT ,BSEC_FUNC,['required'=>true],'The SQL table name in the database');
-    p_gral_item(0,'show'         ,BTYPE_SEL  ,BSEC_FUNC,['required'=>true,'values' => ['table','div']],'The formatter mode of the form. Html table or divs');
+    p_gral_item(0,'show'         ,BTYPE_SEL  ,BSEC_FUNC,['required'=>true,'values' => registered_speedform_formatters()],'The formatter mode of the form. Html table or divs or any custom formatter');
     p_gral_item(0,'fields'       ,BTYPE_OPEN ,BSEC_FUNC,[],'Add fields to the form object');
     p_gral_item(0,'classname'    ,BTYPE_TEXT ,BSEC_FUNC,[],'If you specify node type you can tell a classname, which a subclass of Node. The node instances created with this type.');
     p_gral_item(0,'access_earlyblock'    ,BTYPE_SELB ,BSEC_FUNC,['values' => ['true','false']],'If this value is true the system will block the first phase (loading to view) of a node before the a not permitted update/insert/delete request.');
@@ -214,7 +214,6 @@ function pc_speedform_builder()
     p_gral_item(0,'div_c_afterv' ,BTYPE_TEXT ,BSEC_LOOK);
     p_gral_item(0,'div_c_afterl' ,BTYPE_TEXT ,BSEC_LOOK);
     p_gral_item(0,'collapsable_fieldsets',BTYPE_SELB ,BSEC_LOOK,['values' => ['true','false']]);
-
 
 
     p_gral_item(1,'- NEW FIELD -',BTYPE_FOPEN,BSEC_FUNC);
