@@ -115,6 +115,10 @@ Every File object has same built-in properties which are available in any kind o
  - Loads the file object according to the ***$ufi*** parameter.
   - If the ***$disable_show_error*** parameter is ***true*** the load() method won't do an automatic redirection
   \ to the error page when the ufi is not loadable.
+- @@@load_from_array($file_data_array)@@@
+ - Loads the file object from a previously read array which contains all columns from the file table.
+ \ (See sql scheme editor) This function exists for that purpose to avoiding an unnecessary database read
+ \ if the required data already loaded somewhere.
 - @@@remove()@@@
  - Removes the file object from the system, which means the removing both of the database record
  \ and the referenced file from the filesystem.
@@ -130,6 +134,11 @@ Every File object has same built-in properties which are available in any kind o
 <br/>
 Loads a file object by UFI.
 This function is create an empty File object and call ***load($ufi,$disable_show_error)*** method on it.
+.
+@@@file_load_from_array($file_data_array)@@@
+<br/>
+Loads the file object from a previously read array which contains all columns from the file table.
+This function is create an empty File object and call ***load_from_array($file_data_array)*** method on it.
 .
 @@@file_remove($ufi,$disable_show_error = false)@@@
 <br/>

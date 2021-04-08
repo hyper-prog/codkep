@@ -286,6 +286,24 @@ class File
         return $this->ufi;
     }
 
+    public function load_from_array($file_data_array)
+    {
+        $this->ufi      = $file_data_array['file_ufi'];
+        $this->type     = $file_data_array['file_type'];
+        $this->name     = $file_data_array['file_name'];
+        $this->subdir   = $file_data_array['file_sub'];
+        $this->mime     = $file_data_array['file_mime'];
+        $this->fsname   = $file_data_array['file_fsname'];
+        $this->uploader = $file_data_array['file_uploader'];
+        $this->uploaded = $file_data_array['file_uploaded'];
+
+        $p1 = new stdClass();
+        $p1->file_ref = &$this;
+        run_hook('file_loaded',$p1);
+
+        return $this->ufi;
+    }
+
     public function remove()
     {
         global $user;
@@ -479,6 +497,13 @@ function file_load($ufi,$disable_show_error = false)
 {
     $file = new File('');
     $file->load($ufi,$disable_show_error);
+    return $file;
+}
+
+function file_load_from_array($file_data_array)
+{
+    $file = new File('');
+    $file->load_from_array($file_data_array);
     return $file;
 }
 
