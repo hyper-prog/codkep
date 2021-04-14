@@ -293,6 +293,7 @@ class Node
                 return;
             }
         }
+        $this->m_initialized();
     }
 
     public function __set($name,$value)
@@ -741,6 +742,7 @@ class Node
         return $this->dataspeedform->get_field($sqlname);
     }
 
+    public function m_initialized() { }
     public function m_after_loaded()  { }
     public function m_before_insert()  { }
     public function m_after_insert()  { }

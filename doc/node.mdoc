@@ -139,6 +139,8 @@ Methods:
 Methods which does nothing (or do a minimal basic operations) in Node class.
 They can redefined in subclasses to achieve some special functions.
 See [custom node object chapter|url:#customnodeobject]:
+- @@@m_initialized()@@@
+ - Called after the node constructor finished. (Use this instead of your own constructor)
 - @@@m_after_loaded()@@@
  - Called immediately after node loaded from the database.
 - @@@m_before_insert()@@@
@@ -912,6 +914,7 @@ function hook_mymodule_nodetype()
 class TaskNode extends Node
 {
     //Do not define constructor. (It uses the Node's constructor)
+    //Use the m_initialized() function to initialize your own data
 .
     //Sample method which prints a title on node create page
     public function m_before_form($op)
