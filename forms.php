@@ -1246,7 +1246,7 @@ class HtmlForm
                  '>';
             foreach($dta['values'] as $h => $v)
             {
-                $s = $dta['value'] == $h ? ' selected' : ''; 
+                $s = strval($dta['value']) == strval($h) ? ' selected' : '';
                 $t .= $dta['itemprefix']."<option value=\"$h\"$s>$v</option>".$dta['itemsuffix'];
             }
             $t .= '</select>';
@@ -1272,7 +1272,7 @@ class HtmlForm
                 '>';
             foreach($dta['values'] as $h => $v)
             {
-                $s = $dta['value'] == $h ? ' selected' : '';
+                $s = strval($dta['value']) == strval($h) ? ' selected' : '';
                 $t .= $dta['itemprefix']."<option value=\"$h\"$s>$v</option>".$dta['itemsuffix'];
             }
             $t .= '</select> ';
@@ -1300,7 +1300,7 @@ class HtmlForm
                 $cssid = 'r_'.$dta['name'].'_'.rand(1000,9999);
             foreach($dta['values'] as $h => $v)
             {
-                $s = $dta['value'] == $h ? ' checked="checked"' : '';
+                $s = strval($dta['value']) == strval($h) ? ' checked="checked"' : '';
                 $t .= $dta['itemprefix'].
                     "<input type=\"radio\" name=\"".$dta['name']."\" value=\"$h\"".
                     ($dta['class']==''?'':' class="'.$dta['class'].'"').
@@ -1436,7 +1436,7 @@ class HtmlForm
             $dispv = '';
             foreach($dta['values'] as $h => $v)
             {
-                if($dta['value'] == $h)
+                if(strval($dta['value']) == strval($h))
                     $dispv = $v;
             }
             print $this->formatter->item($dta['before'].$dispv.$dta['after'],$dta['name']);
@@ -1450,7 +1450,7 @@ class HtmlForm
             else
                 foreach($dta['values'] as $h => $v)
                 {
-                    if($dta['value'] == $h)
+                    if(strval($dta['value']) == strval($h))
                         $dispv = $v;
                 }
             print $this->formatter->item($dta['before'].$dispv.$dta['after'],$dta['name']);

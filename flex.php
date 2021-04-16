@@ -227,7 +227,7 @@ function flex_body($content,$route)
     }
 
     print "     <a id=\"main-content-pos\"></a>\n";
-    print "     <div class=\"content\">\n";
+    print "     <div id=\"flex-main-content-html\" class=\"content\">\n";
     print $content->generated;
     print "     </div> <!-- .content --> \n";
     print "     <div id=\"dialog_placeholder\"></div>";
