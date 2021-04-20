@@ -2041,7 +2041,17 @@ function menu_expand(array $m,$pad='',$toplevelclassname = 'menu')
     $f = key($m);
     foreach($m as $k => $v)
     {
+        $lopts = [];
         $classes = "";
+        if(is_array($v) && isset($v['__special__']) && $v['__special__'])
+        {
+            if(isset($v['class']))
+                $classes = $v['class'].' ';
+            if(isset($v['lopts']))
+                $lopts = $v['lopts'];
+            $v = $v['href'];
+        }
+
         if($f == $k)
             $classes .= "first ";
         if($l == $k)
@@ -2055,7 +2065,7 @@ function menu_expand(array $m,$pad='',$toplevelclassname = 'menu')
         while(is_array($vv))
           $vv = array_values($vv)[0];
 
-        print "$pad <li class=\"$classes\">".l($k,is_array($v) ? $vv : $v);
+        print "$pad <li class=\"$classes\">".l($k,is_array($v) ? $vv : $v,$lopts);
         if(is_array($v))
         {
             print "\n" . menu_expand($v, $pad . '  ');
