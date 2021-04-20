@@ -7,6 +7,7 @@
 define('ABOVE_LOGO',1);
 define('BETWEEN_LOGO_HEADER',2);
 define('BELOW_HEADER',3);
+define('NOT_RENDERED',9);
 
 function hook_flex_boot()
 {
@@ -40,6 +41,8 @@ function hook_flex_theme()
     $items = [];
     $items['flex'] = [
                 "pageparts" => [
+                    "before_page",
+                    "first_in_page",
                     "header",
                     "sidebar_left",
                     "sidebar_right",
@@ -136,7 +139,9 @@ function flex_body($content,$route)
 
     ob_start();
     print "<body class=\"$flex->body_classes\">\n";
+    print $content->pageparts['before_page'];
     print "<div id=\"page\" class=\"pagebgcolor center\">\n";
+    print $content->pageparts['first_in_page'];
 
     if($flex->mainmenu_pos == ABOVE_LOGO)
         print flex_show_mainmenu();

@@ -129,10 +129,16 @@ The page areas usable in ***flex*** theme:
 {file:flex_areas.png|css: border: 0;}
 .
 
+- ***before_page*** area. You can set arbitrary content here by ***before_page*** hook.
+ - This area is located before the #page div.
+- ***first_in_page*** area. You can set arbitrary content here by ***first_in_page*** hook.
+ - This area is placed immediately after the #page div opened.
+.
 - Logo image area. You can set the logo image by ***$site_config->logo_img_url*** setting.
 \ By default no logo is set for the site.
 - The site name and slogan. You can set the site name and slogan by ***$site_config->site_name***
 \ and  ***$site_config->site_slogan*** settings.
+.
 - ***header*** area. You can set arbitrary content here by ***sitearea_header*** hook.
 - ***sidebar_left*** area. You can set arbitrary content here by ***sitearea_sidebar_left*** hook.
 - ***sidebar_right*** area. You can set arbitrary content here by ***sitearea_sidebar_right*** hook.
