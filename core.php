@@ -2031,10 +2031,15 @@ function sys_get_sitearea($areaname,$prefix='',$suffix='')
 }
 
 /* Generate html menu structure from menu array */
-function menu_expand(array $m,$pad='',$toplevelclassname = 'menu')
+function menu_expand(array $m,$pad='',$toplevelclassname = 'menu',$level = 0)
 {
     ob_start();
-    print "$pad<ul class=\"$toplevelclassname\">\n";
+    print "$pad<ul class=\"";
+    print $toplevelclassname;
+    if($toplevelclassname != '')
+        print ' ';
+    print $level == 0 ? 'topmul' : 'submul';
+    print "\">\n";
     end($m);
     $l = key($m);
     reset($m);
@@ -2042,7 +2047,7 @@ function menu_expand(array $m,$pad='',$toplevelclassname = 'menu')
     foreach($m as $k => $v)
     {
         $lopts = [];
-        $classes = "";
+        $classes = ($level == 0 ? 'topmli' : 'submli') . ' ';
         if(is_array($v) && isset($v['__special__']) && $v['__special__'])
         {
             if(isset($v['class']))
@@ -2068,7 +2073,7 @@ function menu_expand(array $m,$pad='',$toplevelclassname = 'menu')
         print "$pad <li class=\"$classes\">".l($k,is_array($v) ? $vv : $v,$lopts);
         if(is_array($v))
         {
-            print "\n" . menu_expand($v, $pad . '  ');
+            print "\n" . menu_expand($v, $pad . '  ','',$level + 1);
             print "$pad </li>\n";
         }
         else
