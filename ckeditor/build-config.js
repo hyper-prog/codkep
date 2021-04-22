@@ -1,6 +1,6 @@
 ﻿/**
- * @license Copyright (c) 2003-2018, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or http://ckeditor.com/license
+ * @license Copyright (c) 2003-2021, CKSource - Frederico Knabben. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/license
  */
 
 /**
@@ -10,13 +10,13 @@
  * If you would like to build CKEditor online again
  * (for example to upgrade), visit one the following links:
  *
- * (1) http://ckeditor.com/builder
+ * (1) https://ckeditor.com/cke4/builder
  *     Visit online builder to build CKEditor from scratch.
  *
- * (2) http://ckeditor.com/builder/f6b00373e382a91ac8845081b87cad17
+ * (2) https://ckeditor.com/cke4/builder/d4f38273599d2677168bba20c67f7d48
  *     Visit online builder to build CKEditor, starting with the same setup as before.
  *
- * (3) http://ckeditor.com/builder/download/f6b00373e382a91ac8845081b87cad17
+ * (3) https://ckeditor.com/cke4/builder/download/d4f38273599d2677168bba20c67f7d48
  *     Straight download link to the latest version of CKEditor (Optimized) with the same setup as before.
  *
  * NOTE:
@@ -25,7 +25,7 @@
  */
 
 var CKBUILDER_CONFIG = {
-	skin: 'bootstrapck',
+	skin: 'moonocolor',
 	preset: 'standard',
 	ignore: [
 		'.DS_Store',
@@ -39,6 +39,7 @@ var CKBUILDER_CONFIG = {
 		'.jshintrc',
 		'.mailmap',
 		'.npm',
+		'.nvmrc',
 		'.travis.yml',
 		'README.md',
 		'bender-err.log',
@@ -49,19 +50,26 @@ var CKBUILDER_CONFIG = {
 		'gruntfile.js',
 		'less',
 		'node_modules',
+		'package-lock.json',
 		'package.json',
 		'tests'
 	],
 	plugins : {
+		'SimpleImage' : 1,
+		'SimpleLink' : 1,
 		'about' : 1,
 		'base64image' : 1,
 		'basicstyles' : 1,
 		'blockquote' : 1,
 		'clipboard' : 1,
 		'codeTag' : 1,
+		'codesnippet' : 1,
 		'colorbutton' : 1,
 		'colordialog' : 1,
+		'colorinput' : 1,
 		'contextmenu' : 1,
+		'cssanim' : 1,
+		'devtools' : 1,
 		'div' : 1,
 		'divarea' : 1,
 		'elementspath' : 1,
@@ -70,12 +78,21 @@ var CKBUILDER_CONFIG = {
 		'filebrowser' : 1,
 		'find' : 1,
 		'floatingspace' : 1,
+		'font' : 1,
 		'format' : 1,
+		'format_buttons' : 1,
 		'horizontalrule' : 1,
 		'htmlbuttons' : 1,
 		'htmlwriter' : 1,
 		'image' : 1,
+		'imagebase' : 1,
+		'imagepaste' : 1,
+		'imageresize' : 1,
+		'imageresizerowandcolumn' : 1,
+		'imageresponsive' : 1,
 		'indentlist' : 1,
+		'insertpre' : 1,
+		'justify' : 1,
 		'layoutmanager' : 1,
 		'link' : 1,
 		'list' : 1,
@@ -83,6 +100,7 @@ var CKBUILDER_CONFIG = {
 		'magicline' : 1,
 		'maximize' : 1,
 		'nbsp' : 1,
+		'pagebreak' : 1,
 		'pastefromword' : 1,
 		'pastetext' : 1,
 		'pbckcode' : 1,
@@ -100,6 +118,7 @@ var CKBUILDER_CONFIG = {
 		'tableresize' : 1,
 		'tabletools' : 1,
 		'tabletoolstoolbar' : 1,
+		'texttransform' : 1,
 		'toolbar' : 1,
 		'undo' : 1,
 		'wsc' : 1,
