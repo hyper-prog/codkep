@@ -1659,7 +1659,8 @@ function sys_route($location,array $args = [])
 
                 foreach($templ["pageparts"] as $partname)
                     $sys_data->content->pageparts[$partname] =
-                        sys_get_sitearea($partname,'<div class="block">','</div>');
+                        sys_get_sitearea($partname,'block');
+
             }
 
             //before_generation
@@ -2005,7 +2006,7 @@ function sitearea_definition_cmp_callback($a,$b)
 /** Gererate and returns the html code of the specified site area.
  *  It will invoke the "sitearea_$areaname" hook, and will build the codes with the appropriate callback
  *  @package core */
-function sys_get_sitearea($areaname,$prefix='',$suffix='')
+function sys_get_sitearea($areaname,$classforblocks = '')
 {
     $area = '';
     $definitions = run_hook("sitearea_".$areaname);
@@ -2025,7 +2026,16 @@ function sys_get_sitearea($areaname,$prefix='',$suffix='')
         $pass->html = &$rv;
         run_hook('alter_sitearea',$areaname,$d['name'],$pass);
         if($rv != '')
-            $area .= $prefix.$rv.$suffix;
+        {
+            $c = $classforblocks;
+            if(isset($d["class"]))
+            {
+                if(strlen($c) > 0)
+                    $c .= ' ';
+                $c .= $d["class"];
+            }
+            $area .= "<div class=\"$c\">$rv</div>";
+        }
     }
     return $area;
 }

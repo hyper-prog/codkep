@@ -49,6 +49,8 @@ function hook_flex_theme()
                     "pagetop",
                     "highlighted",
                     "footer",
+                    "last_in_page",
+                    "after_page",
                 ],
                 "generators" => [
                     "runonce"   => "flex_runonce",
@@ -265,7 +267,9 @@ function flex_body($content,$route)
         print " </div> <!-- #footer -->\n";
     }
 
+    print $content->pageparts['last_in_page'];
     print "</div> <!-- /#page,  -->\n";
+    print $content->pageparts['after_page'];
 
     if($flex->mainmenu_stay_fixed_scrolldown > 0)
     {

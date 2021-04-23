@@ -145,6 +145,11 @@ The page areas usable in ***flex*** theme:
 - ***pagetop*** area. You can set arbitrary content here by ***sitearea_pagetop*** hook.
 - ***highlighted*** area. You can set arbitrary content here by ***sitearea_highlighted*** hook.
 - ***footer*** area. You can set arbitrary content here by ***sitearea_footer*** hook.
+.
+- ***last_in_page*** area. You can set arbitrary content here by ***last_in_page*** hook.
+ - This area is placed immediately before the #page div closed.
+- ***after_page*** area. You can set arbitrary content here by ***after_page*** hook.
+ - This area is located after the #page div.
 
 === Place your own content to a site area ===
 
@@ -166,6 +171,8 @@ The ***sitearea_XYZ*** hook have to return an array of associated arrays which s
  - ***"file" = filename***
   - This value is works as ***"callback"*** but this way the CodKep will execute
   \ the specified php file instead of callback function.
+ - ***"class" = string***
+  - Optional css class name to set to the container div
 
 Example of put some content to right sidebar:
 ~~~php
