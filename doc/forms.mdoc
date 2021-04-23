@@ -952,6 +952,7 @@ Sample of top level attributes:
 | [dateu|url:#type_dateu] | {file:type_dateu.png} | ***DATE*** |
 | [timestamp_create|url:#type_timestamp_create] | Static text | ***TIMESTAMP*** |
 | [timestamp_mod|url:#type_timestamp_mod] | Static text | ***TIMESTAMP*** |
+| [creating_user|url:#type_creating_user] | Static text | ***VARCHAR*** |
 | [modifier_user|url:#type_modifier_user] | Static text | ***VARCHAR*** |
 | [sqlnchoose|url:#type_sqlnchoose] | {file:type_select.png}<br/>{file:type_select2.png}(If ***optional=yes***)<br/>{file:type_select3.png}(If ***optional=yes***) | ***NUMERIC*** |
 | [sqlschoose|url:#type_sqlschoose] | {file:type_select.png}<br/>{file:type_select2.png}(If ***optional=yes***)<br/>{file:type_select3.png}(If ***optional=yes***) | ***VARCHAR*** |
@@ -1754,6 +1755,40 @@ A sample definition of this kind of field:
     "sql" => "moduser",
     "text" => "Modifier user",
     "type" => "modifier_user",
+    "userdata" => "fullname",
+    "color" => "#999999",
+ ],
+~~~
+See [all field types|url:#ftypes]...
+
+
+#type_creating_user#
+==== creating_user ====
+.
+This is a special readonly varchar field which hold the user identifier who create the record.
+It means that this field is not updated after created. It can hold user name or login name.
+.
+<table class="invisible">
+<tr><td> Form appearance: </td><td> Static text </td></tr>
+<tr><td> Database type: </td><td> ***VARCHAR*** </td></tr>
+</table>
+
+Attributes of the field
+
+| Index name      | Necessity           | Description          | Value |
+| ---             | --- |          ---         | ---   |
+| ***type***      | Mandatory |(background-color: #ff7777;) The type specification string | "***creating_user***" |
+| ***sql***       | Mandatory |(background-color: #ff7777;) The name of the sql row holds this data field + The identifier of the data field | string |
+| ***text***      | Optional |(background-color: #ffbb55;) The describe text of the field. This will be displayed to the user in forms| string |
+| ***userdata***  | Optional |(background-color: #ffbb55;) Sets the field is store the user's full name or login name |"fullname" or "login" |
+You **can use more attributes here** which are [common and usable in all field definitions|url:#commonattributes].
+.
+A sample definition of this kind of field:
+~~~php
+ 140 => [
+    "sql" => "creatuser",
+    "text" => "Creating user",
+    "type" => "creating_user",
     "userdata" => "fullname",
     "color" => "#999999",
  ],

@@ -1850,6 +1850,17 @@ function hook_forms_init()
             'sqltype'  => 'VARCHAR(128)',
             'validator'=> NULL, ];
 
+    $speedform_handlers['creating_user'] = [
+            'sqlname'  => 'sfh_emptyonupdate_name_simple',
+            'sqlvalue' => 'sfh_value_modifieruser',
+            'directval'=> false,
+            'dispval'  => 'sfh_dispval_simple',
+            'form'     => 'sfh_key_form',
+            'loadpar'  => NULL,
+            'par_sec'  => 'text5',
+            'sqltype'  => 'VARCHAR(128)',
+            'validator'=> NULL, ];
+
     $speedform_handlers['sqlnchoose'] = [
              'sqlname'  => 'sfh_name_simple',
              'sqlvalue' => 'sfh_value_numtype',
@@ -1932,6 +1943,15 @@ function sfh_name_empty($field_def,$op)
 
 function sfh_name_simple($field_def,$op)
 {
+    if(isset($field_def['table']) && $op == 'SELECT')
+        return $field_def['table'].'.'.$field_def['sql'];
+    return $field_def['sql'];
+}
+
+function sfh_emptyonupdate_name_simple($field_def,$op)
+{
+    if($op == 'UPDATE')
+        return '';
     if(isset($field_def['table']) && $op == 'SELECT')
         return $field_def['table'].'.'.$field_def['sql'];
     return $field_def['sql'];
