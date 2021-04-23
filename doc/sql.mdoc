@@ -147,7 +147,7 @@ See [error handling section|url:#errorhandling] to learn how to handle errors.
 ----------------------------------------------------------------------------
 @@@sql_exec_noredirect($sql,array $parameters = [])@@@
 .
-Same function as ***sql_exec*** but newer do any redirection in case of error.
+Same function as ***sql_exec*** but never do any redirection in case of error.
 Useful when sql used in some special hooks where the redirection is not possible or would create a loop.
 
 ----------------------------------------------------------------------------
