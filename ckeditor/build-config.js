@@ -13,10 +13,10 @@
  * (1) https://ckeditor.com/cke4/builder
  *     Visit online builder to build CKEditor from scratch.
  *
- * (2) https://ckeditor.com/cke4/builder/d4f38273599d2677168bba20c67f7d48
+ * (2) https://ckeditor.com/cke4/builder/57dd2495e72d3cd06f3822c525a17250
  *     Visit online builder to build CKEditor, starting with the same setup as before.
  *
- * (3) https://ckeditor.com/cke4/builder/download/d4f38273599d2677168bba20c67f7d48
+ * (3) https://ckeditor.com/cke4/builder/download/57dd2495e72d3cd06f3822c525a17250
  *     Straight download link to the latest version of CKEditor (Optimized) with the same setup as before.
  *
  * NOTE:
@@ -68,8 +68,8 @@ var CKBUILDER_CONFIG = {
 		'colordialog' : 1,
 		'colorinput' : 1,
 		'contextmenu' : 1,
+		'copyformatting' : 1,
 		'cssanim' : 1,
-		'devtools' : 1,
 		'div' : 1,
 		'divarea' : 1,
 		'elementspath' : 1,
@@ -90,10 +90,14 @@ var CKBUILDER_CONFIG = {
 		'imageresize' : 1,
 		'imageresizerowandcolumn' : 1,
 		'imageresponsive' : 1,
+		'indentblock' : 1,
 		'indentlist' : 1,
 		'insertpre' : 1,
 		'justify' : 1,
+		'language' : 1,
 		'layoutmanager' : 1,
+		'letterspacing' : 1,
+		'lineheight' : 1,
 		'link' : 1,
 		'list' : 1,
 		'liststyle' : 1,
@@ -104,13 +108,17 @@ var CKBUILDER_CONFIG = {
 		'pastefromword' : 1,
 		'pastetext' : 1,
 		'pbckcode' : 1,
+		'preview' : 1,
+		'quicktable' : 1,
 		'removeformat' : 1,
 		'resize' : 1,
 		'scayt' : 1,
 		'selectall' : 1,
+		'showblocks' : 1,
 		'showborders' : 1,
 		'simplebutton' : 1,
 		'sourcearea' : 1,
+		'sourcedialog' : 1,
 		'specialchar' : 1,
 		'stylescombo' : 1,
 		'tab' : 1,
@@ -125,6 +133,7 @@ var CKBUILDER_CONFIG = {
 		'wysiwygarea' : 1
 	},
 	languages : {
-		'en' : 1
+		'en' : 1,
+		'hu' : 1
 	}
 };
