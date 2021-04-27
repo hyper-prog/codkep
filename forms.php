@@ -2807,7 +2807,7 @@ class SpeedForm
     public function clean_before_delete()
     {
         foreach($this->def['fields'] as $idx => $f)
-            if($f['type'] == 'file' && !isset($f['ondelete']) && $f['ondelete'] != 'keep')
+            if($f['type'] == 'file' && (!isset($f['ondelete']) || $f['ondelete'] != 'keep'))
             {
                 if($this->values[$f['sql']] != '')
                 {

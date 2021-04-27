@@ -325,7 +325,11 @@ class File
             global $sys_data;
             foreach($sys_data->image_file_sizeclass_list as $sc => $sc_sizes)
                 if(file_image_sizeclass($this,$sc) == FILE_ACCESS_ALLOW)
-                    unlink($this->scCacheFilePath($sc));
+                {
+                    $sc_file = $this->scCacheFilePath($sc);
+                    if(file_exists($sc_file))
+                        unlink($sc_file);
+                }
         }
 
         if(file_exists($this->basePath(false) . '/' . $this->fsname))
