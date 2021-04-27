@@ -10,7 +10,8 @@
 
 function hook_page_boot()
 {
-
+    global $site_config;
+    $site_config->page_show_control_on_top = true;
 }
 
 function hook_page_defineroute()
@@ -109,6 +110,48 @@ function hook_page_node_inserted($obj)
 {
     if($obj->node_ref->node_type == 'page')
         ccache_delete('routecache');
+}
+
+function hook_page_pageview_before($node)
+{
+    global $user;
+    global $site_config;
+
+    if(!$site_config->page_show_control_on_top)
+        return '';
+
+    $e = '';
+    $d = '';
+    $cbtn = 0;
+    if(node_access($node,'delete',$user) == NODE_ACCESS_ALLOW)
+    {
+        $d .=  '<div class="pagetop-control-right pagetop-control-del">';
+        $d .=  l('<img class="pe-btn-img" src="'.codkep_get_path('page','web').'/images/del35.png"/>',
+            'node/' . $node->node_nid . '/delete',
+            ['title' => t('Delete this page')]);
+        $d .=  '</div>';
+        $cbtn++;
+    }
+    if(node_access($node,'update',$user) == NODE_ACCESS_ALLOW)
+    {
+        $e .= '<div class="pagetop-control-right pagetop-control-edit">';
+        $e .=  l('<img class="pd-btn-img" src="' . codkep_get_path('page', 'web') . '/images/edit35.png"/>',
+            'node/' . $node->node_nid . '/edit',
+            ['title' => t('Edit this page')]);
+        $e .=  '</div>';
+        $cbtn++;
+    }
+
+    if($cbtn == 0)
+        return '';
+
+    ob_start();
+    add_style('.pagetop-control-right { float: right; }');
+    print '<div class="pagetop-controlline-btns">';
+    print $d.$e;
+    print '<div class="c"></div>';
+    print '</div>';
+    return ob_get_clean();
 }
 
 function hook_page_nodetype()
