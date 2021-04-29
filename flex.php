@@ -150,7 +150,7 @@ function flex_body($content,$route)
     if($site_config->logo_img_url != NULL)
     {
         $logo_image_rawurl = url($site_config->logo_img_url);
-        print " <div id=\"thelogoarea\" class=\"flex-layout-row center logobgcolor\">\n";
+        print " <section id=\"thelogoarea\" class=\"flex-layout-row center logobgcolor\">\n";
         if(!$flex->disable_logo_link)
             print "  <a href=\"$startpage_rawurl\" title=\"$home_text\" rel=\"home\" id=\"logo\">\n";
         print "   <div id=\"thelogoimage\" class=\"".($flex->logoimage_parallax_scrolling ? "parallaxlogo" : "")."\">\n";
@@ -159,7 +159,7 @@ function flex_body($content,$route)
         print "   </div> <!-- #thelogoimage -->\n";
         if(!$flex->disable_logo_link)
             print "  </a>\n";
-        print " </div> <!-- #thelogoarea -->\n";
+        print " </section> <!-- #thelogoarea -->\n";
 
         if($flex->logoimage_parallax_scrolling)
             add_style("#thelogoimage {
@@ -170,8 +170,8 @@ function flex_body($content,$route)
     if($flex->mainmenu_pos == BETWEEN_LOGO_HEADER)
         print flex_show_mainmenu();
 
-    print " <div id=\"header\" class=\"flex-layout-row headerbgcolor\">\n";
-    print "  <div class=\"section c\">\n";
+    print " <header id=\"header\" class=\"flex-layout-row headerbgcolor\">\n";
+    print "  <section class=\"section c\">\n";
 
     if($site_config->site_name != NULL || $site_config->site_slogan != NULL)
     {
@@ -197,40 +197,40 @@ function flex_body($content,$route)
 
     print $content->pageparts['header'];
 
-    print "  </div> <!-- .section -->\n";
-    print " </div> <!-- #header -->\n";
+    print "  </section> <!-- .section -->\n";
+    print " </header> <!-- #header -->\n";
 
     if($flex->mainmenu_pos == BELOW_HEADER)
         print flex_show_mainmenu();
 
-    print " <div id=\"mainarea\" class=\"pagebgcolor c\">\n";
+    print " <section id=\"mainarea\" class=\"pagebgcolor c\">\n";
 
-    print "  <div id=\"page-top\" class=\"flex-layout-row page-top-area\">\n";
+    print "  <section id=\"page-top\" class=\"flex-layout-row page-top-area\">\n";
     print "   <div class=\"section\">\n";
     print $content->pageparts['pagetop'];
     print "   </div> <!-- .section -->\n";
-    print "  </div> <!-- #page-top -->\n";
+    print "  </section> <!-- #page-top -->\n";
 
     print "  <div id=\"sliderblocks\" class=\"flex-layout-row\">";
 
     if($content->pageparts['sidebar_left'] != '')
     {
-        print "   <div id=\"sidebar-left\" class=\"col-".$flex->size_of_left_sidebar_desktop.
+        print "   <section id=\"sidebar-left\" class=\"col-".$flex->size_of_left_sidebar_desktop.
                " col-m-".$flex->size_of_left_sidebar_mobile." $flex->sidebar_classes\">\n";
         print "    <div class=\"section\">\n";
         print $content->pageparts['sidebar_left'];
         print "    </div> <!-- .section -->\n";
-        print "   </div> <!-- #sidebar-left -->\n";
+        print "   </section> <!-- #sidebar-left -->\n";
     }
 
-    print "   <div id=\"maincontent\" class=\"col-".$flex->size_of_centerarea_desktop.
+    print "   <section id=\"maincontent\" class=\"col-".$flex->size_of_centerarea_desktop.
            " col-m-".$flex->size_of_centerarea_mobile." column\">\n";
     print "    <div class=\"section\">\n"; //SecMainC-b
     if($content->pageparts['highlighted'] != '')
     {
-        print "     <div id=\"highlighted\">\n";
+        print "     <section id=\"highlighted\">\n";
         print $content->pageparts['highlighted'];
-        print "     </div> <!-- #highlighted -->\n";
+        print "     </section> <!-- #highlighted -->\n";
     }
 
     print "     <a id=\"main-content-pos\"></a>\n";
@@ -241,30 +241,30 @@ function flex_body($content,$route)
 
     print "    </div> <!-- .section -->\n"; //SecMainC-e
     print "    <div class=\"c\"></div>\n";
-    print "   </div> <!-- #maincontent -->\n";
+    print "   </section> <!-- #maincontent -->\n";
 
     if($content->pageparts['sidebar_right'] != '')
     {
-        print "   <div id=\"sidebar-right\" class=\"col-".$flex->size_of_right_sidebar_desktop.
+        print "   <section id=\"sidebar-right\" class=\"col-".$flex->size_of_right_sidebar_desktop.
                " col-m-".$flex->size_of_right_sidebar_mobile." $flex->sidebar_classes\">\n";
         print "    <div class=\"section\">\n";
         print $content->pageparts['sidebar_right'];
         print "    </div> <!-- .section -->\n";
-        print "   </div> <!-- #sidebar-right -->\n";
+        print "   </section> <!-- #sidebar-right -->\n";
     }
 
     print "  </div> <!-- #sliderblocks -->"; 
 
-    print " </div> <!-- #mainarea -->\n";
+    print " </section> <!-- #mainarea -->\n";
 
     if($content->pageparts['footer'] != '' || $flex->allow_empty_footer)
     {
-        print " <div id=\"footer\" class=\"flex-layout-row footerbgcolor\">\n";
-        print "  <div class=\"section\">\n";
+        print " <footer id=\"footer\" class=\"flex-layout-row footerbgcolor\">\n";
+        print "  <section class=\"section\">\n";
         print $content->pageparts['footer'];
-        print "  </div> <!-- .section -->\n";
+        print "  </section> <!-- .section -->\n";
         print "  <div class=\"c\"></div>\n";
-        print " </div> <!-- #footer -->\n";
+        print " </footer> <!-- #footer -->\n";
     }
 
     print $content->pageparts['last_in_page'];
@@ -293,15 +293,14 @@ function flex_show_mainmenu()
     global $flex;
 
     ob_start();
-    print "<div id=\"mainmenu-show-area\" class=\"mmenubgcolor_out pageout\">\n";
-    print " <div id=\"flex-mainmenu\" class=\"mmenubgcolor\">\n";
-    print $flex->mainmenu_structure_prefix;
-    print generate_menu_structure('  ');
-    print $flex->mainmenu_structure_suffix;
-    print "  <div class=\"c\"></div>\n";
-    print " </div>\n";
-
-    print "</div>\n";
+    print "<section id=\"mainmenu-show-area\" class=\"mmenubgcolor_out pageout\">\n";
+      print "<nav id=\"flex-mainmenu\" class=\"mmenubgcolor\">\n";
+        print $flex->mainmenu_structure_prefix;
+        print generate_menu_structure('  ');
+        print $flex->mainmenu_structure_suffix;
+        print "<div class=\"c\"></div>\n";
+      print "</nav>";
+    print "</section>";
     return ob_get_clean();
 }
 

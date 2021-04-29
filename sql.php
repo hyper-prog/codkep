@@ -558,10 +558,12 @@ function sql_schema_page()
            !par_is("sep",$db->schema_editor_password))
         {
             ob_start();
-            print '<center>';
-            print '<h3>Schema info page</h3>';
+            print '<section class="loginform-block-wrp"
+                            style="width: 100%; display: flex; flex-flow: row wrap;
+                                   align-items: center; justify-content: center; text-align: center;">';
+            print '<div style="width: 100%;"><h3>Schema info page</h3></div>';
             print '<form method="POST" action="'.url(current_loc()).'">';
-            print '<div class="login_div_internal">';
+            print '<div class="login_div_internal" style="display: flex; align-items: center; justify-content: center;">';
             print '<table class="login_table_internal">';
             print '<tr><td>'.t('Password').'</td><td><input type="password" name="sep" value="" autocomplete="off" maxlength="128" /></td></tr>';
             print '<tr><td colspan="2" align="center">';
@@ -572,10 +574,10 @@ function sql_schema_page()
             add_style('table.login_table_internal input { padding: 2px; border-radius: 6px; }');
             print "</form>";
             print "</table>";
-            print "</div>";
-            print "The schema editor password was located in your site's settings file<br/>";
-            print "by set the <i>\$db->schema_editor_password</i> variable.";
-            print "</center>";
+            print "</div>"; // .login_div_internal
+            print "<p>The schema editor password was located in your site's settings file<br/>";
+            print "by set the <i>\$db->schema_editor_password</i> variable.</p>";
+            print "</section>";
             return ob_get_clean();
         }
     }

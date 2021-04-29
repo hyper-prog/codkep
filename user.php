@@ -716,6 +716,9 @@ function user_login_page()
 
     $fs = getFormSalt(true);
     ob_start();
+    print '<section class="loginform-block-wrp"
+            style="width: 100%; display: flex; flex-flow: row wrap; align-items: center; justify-content: center; text-align: center;">';
+
     if(par_is('loginbutton',t('Login')))
     {
         $pfs = par('fid');
@@ -727,7 +730,7 @@ function user_login_page()
         }
         if(!user_login( par('login'),par('password') ))
         {
-            print "<h2>".t('Failed to log in! Wrong user name or password.')."</h2>";
+            print '<div style="width: 100%;"><h2>'.t('Failed to log in! Wrong user name or password.').'</h2></div>';
         }
     }
 
@@ -742,25 +745,30 @@ function user_login_page()
         $sp = get_startpage();
         if($sp != '' && $sp != 'not_configured_startpage')
             goto_loc($sp);
-        print "User ".$user->name." logged in";
+        print '<div style="width: 100%;"><h2>'."User ".$user->name." logged in".'</h2></div>';
+        print '</section>'; // .loginform-block-wrp
         return ob_get_clean();
     }
 
-    print '<h3>'.$user_module_settings->login_title.'</h3>';
-    print '<form method="POST" action="'.url($sys_data->original_requested_location).'">';
+    print '<div style="width: 100%;"><h3>'.$user_module_settings->login_title.'</h3></div>';
+    print '<form method="POST" action="'.url($sys_data->original_requested_location).'"
+            style="text-align: left;">';
     print "<input type=\"hidden\" name=\"fid\" value=\"$fs\"/>";
     print '<div class="login_div_internal">';
     print '<table class="login_table_internal">';
-    print '<tr><td>'.t('Username').'</td><td>';
-     print '<input type="text" name="login" value="" maxlength="128" id="ulitid"
-                   autocorrect="none" spellcheck="false" required="required" aria-required="true"/>';
-    print '</td></tr>';
-    print '<tr><td>'.t('Password').'</td><td>';
-     print '<input type="password" name="password" value="" maxlength="128" autocomplete="off"
-                   autocorrect="none" spellcheck="false" required="required" aria-required="true"/>';
-    print '</td></tr>';
+    print '<tr>';
+    print '<td>'.t('Username').'</td>';
+    print '<td><input type="text" name="login" value="" maxlength="128" id="ulitid"
+                   autocorrect="none" spellcheck="false" required="required" aria-required="true"/></td>';
+    print '</tr>';
+    print '<tr>';
+    print '<td>'.t('Password').'</td>';
+    print '<td><input type="password" name="password" value="" maxlength="128" autocomplete="off"
+                   autocorrect="none" spellcheck="false" required="required" aria-required="true"/></td>';
+    print '</tr>';
     print '<tr><td colspan="2" align="center">';
-    print '<input type="submit" name="loginbutton" value="'.t('Login').'"/></td></tr>';
+    print '<input type="submit" name="loginbutton" value="'.t('Login').'"/>';
+    print '</td></tr>';
     if(trim($sys_data->original_requested_location) != '' && $sys_data->original_requested_location != current_loc())
     {
         print "<input type=\"hidden\" name=\"orignal_loc\" value=\"".
@@ -772,8 +780,10 @@ function user_login_page()
             par('orignal_loc')."\"/></td></tr>";
     }
     print "</table>";
+    print '</div>'; // .login_div_internal
     print "</form>";
-    print '</div>';
+    print '</section>'; // .loginform-block-wrp
+
     add_style('body { background-color: #eeeeee; }');
     add_style('table.login_table_internal { background-color: #cccccc; margin: 6px; padding: 10px; border: 1px solid #aaaaaa; box-shadow: 0px 10px 20px #454545;}');
     add_style('table.login_table_internal td { margin: 4px; padding: 4px;}');
@@ -782,7 +792,7 @@ function user_login_page()
 
     global $site_config;
     $site_config->show_generation_time = false;
-    return '<center>'.ob_get_clean().'</center>';
+    return ob_get_clean();
 }
 
 function user_logout_page($location_after = '')
@@ -798,7 +808,10 @@ function user_logout_page($location_after = '')
 /** This function can used as page part block callback to make an user login/logout */
 function user_login_block()
 {
-    return '<center><div id="login_div_block">'.user_login_block_inner().'</div></center>';
+    return '<div id="login-div-block-wrapper"
+             style="display: flex; flex-flow: row wrap; align-items: center; justify-content: center; text-align: center;">' .
+             user_login_block_inner() .
+           '</div>';
 }
 
 function user_login_block_inner()
@@ -809,7 +822,7 @@ function user_login_block_inner()
     ob_start();
     if($user->auth)
     {
-        print "User:".$user->name;
+        print '<div style="width: 100%">'."User:".$user->name.'</div>';
         print '<form method="POST" action="'.url('user/ajaxlogin').'" class="use-ajax">';
         print '<input type="submit" name="loginoutblockbutton" value="'.t('Logout').'"/>';
         print '<input type="hidden" name="act" value="out"/>';
@@ -818,24 +831,27 @@ function user_login_block_inner()
     }
 
     $fs = getFormSalt(true);
-    print $user_module_settings->login_title;
+    print '<div style="width: 100%">'.$user_module_settings->login_title.'</div>';
     print '<form method="POST" action="'.url('user/ajaxlogin').'" class="use-ajax">';
     print "<input type=\"hidden\" name=\"fid\" value=\"$fs\"/>";
     print '<table class="login_table_block">';
     print '<tr><td>';
      print '<input type="text" name="login" value="" maxlength="128" autocorrect="none" spellcheck="false"
-                   placeholder="'.t("Username").'" required="required" aria-required="true"/>';
+                   placeholder="'.t("Username").'" required="required" aria-required="true"
+                   style="padding: 2px; border-radius: 4px;"/>';
     print '</td></tr>';
     print '<tr><td>';
      print '<input type="password" name="password" value="" maxlength="128" autocomplete="off" autocorrect="none"
-                   spellcheck="false" placeholder="'.t("Password").'" required="required" aria-required="true"/>';
+                   spellcheck="false" placeholder="'.t("Password").'" required="required" aria-required="true"
+                   style="padding: 2px; border-radius: 4px;"/>';
     print '</td></tr>';
     print '<tr><td align="center">';
-    print '<input type="submit" name="loginblockbutton" value="'.t('Login').'"/></td></tr>';
-    print '<input type="hidden" name="act" value="in"/>';
-    print "</table>";
-    print "</form>";
-    add_style('table.login_table_block input { padding: 2px; border-radius: 4px; }');
+    print '<input type="submit" name="loginblockbutton" value="'.t('Login').'"
+                  style="padding: 2px; border-radius: 4px;"/>';
+    print '</td></tr>';
+    print '<input type="hidden" name="act" value="in" />';
+    print '</table>';
+    print '</form>';
     return ob_get_clean();
 }
 
@@ -866,8 +882,7 @@ function user_block_ajax_handler()
         user_logout();
         run_hook("user_ajax_logout");
     }
-
-    ajax_add_html("#login_div_block",user_login_block_inner());
+    ajax_add_html("#login-div-block-wrapper",user_login_block_inner());
 }
 
 function user_whoami_page()
@@ -905,8 +920,8 @@ function hook_user_nodetype()
                 "table" => $user_module_settings->sql_tablename,
                 "show" => "table",
                 "color" => "#8888ff",
-                "before" => "<center>",
-                "after" => "</center>",
+                "before" => '<div style="display: flex; align-items: center; justify-content: center;">',
+                "after" => '</div>',
                 "table_border" => "1",
                 "table_style" => "border-collapse: collapse;",
                 "fields" => [
@@ -1249,7 +1264,8 @@ function user_mypasswordchange()
         }
 
         $sf->do_update();
-        print "<center><h2>Ok</h2><br/>" . l(t('Startpage'),get_startpage(),['class' => 'lnk']) . "</center>";
+        print '<h2 style="width: 100%; text-align: center;">Ok</h2><br/>' .
+              l(t('Startpage'),get_startpage(),['class' => 'lnk']);
     }
     else
     {
@@ -1257,9 +1273,11 @@ function user_mypasswordchange()
         $sf->do_select();
         $form = $sf->generate_form('update');
         $form->action_post(current_loc());
-        print '<center>'.$form->get().'</center>';
+        print $form->get();
     }
-    return ob_get_clean();
+    return '<div class="usr0-pwd-change-block"
+                 style="display: flex; flex-flow: row wrap; align-items: center; justify-content: center;">'.
+              ob_get_clean() . '</div>';
 }
 
 function user_passwordchange_page()
@@ -1295,7 +1313,7 @@ function user_passwordchange($uid)
         $sf->do_select();
         $sf->load_parameters();
         $sf->do_update();
-        print "<center><h2>Ok</h2><br/>" . l(t('Startpage'),get_startpage(),['class' => 'lnk']) . "</center>";
+        print '<h2 style="width: 100%; text-align: center;">Ok</h2><br/>' . l(t('Startpage'),get_startpage(),['class' => 'lnk']);
     }
     else
     {
@@ -1303,9 +1321,11 @@ function user_passwordchange($uid)
         $sf->do_select();
         $form = $sf->generate_form('update');
         $form->action_post(current_loc());
-        print '<center>'.$form->get().'</center>';
+        print $form->get();
     }
-    return ob_get_clean();
+    return '<div class="usr1-pwd-change-block"
+                 style="display: flex; flex-flow: row wrap; align-items: center; justify-content: center;">'.
+             ob_get_clean() . '</div>';
 }
 
 function hook_user_introducer()

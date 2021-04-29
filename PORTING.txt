@@ -1,6 +1,11 @@
 This file describes the non fully compatible
 changes between the released versions
 
+1.234 -> 1.235
+ - Lots of html tag changed in flex theme from div to header,footer,section,nav
+ - CSS class names changed in user login,logout forms and flex theme.
+ - Check your design after this...
+
 1.226 -> 1.227
  - The parameters of sys_get_sitearea has changed.
 

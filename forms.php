@@ -3455,7 +3455,7 @@ class Table_SpeedFormFormFormmater extends HtmlFormFormatter_WithDefinition
             print '<td'.($cs?' colspan="2" ':'').' class="'.$vc.'">';
 
             if(isset($f['centered'])  && $f['centered'])
-                print "<center>";
+                print '<div style="display: flex; align-items: center; justify-content: center; text-align: center;">';
         }
 
         if(isset($f['prefix']))
@@ -3474,7 +3474,7 @@ class Table_SpeedFormFormFormmater extends HtmlFormFormatter_WithDefinition
         if(!isset($f['formatters']) || $f['formatters'] == 'after' || $f['formatters'] == 'all')
         {
             if(isset($f['centered']) && $f['centered'])
-                print "</center>";
+                print "</div>";
             print '</td></tr>';
         }
         if(isset($f['after']))
@@ -3642,7 +3642,7 @@ class Div_SpeedFormFormFormmater extends HtmlFormFormatter_WithDefinition
             }
             print "<div class=\"$vc\">";
             if(isset($f['centered']) && $f['centered'])
-                print "<center>";
+                print '<div style="display: flex; align-items: center; justify-content: center; text-align: center;">';
         }
 
         if(isset($f['prefix']))
@@ -3661,7 +3661,7 @@ class Div_SpeedFormFormFormmater extends HtmlFormFormatter_WithDefinition
         if(!isset($f['formatters']) || $f['formatters'] == 'after' || $f['formatters'] == 'all')
         {
             if(isset($f['centered'])  && $f['centered'])
-                print "</center>";
+                print '</div>';
             print '</div>';
 
             if(isset($this->def['div_c_afterv']) && $this->def['div_c_afterv'])

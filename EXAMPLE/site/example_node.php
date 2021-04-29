@@ -40,8 +40,8 @@ function hook_example_node_nodetype()
       "name" => "person",
       "table" => "person",
       "show" => "table",
-      "before" => "<center>",
-      "after" => "</center>",
+      "before" => '<div style="display: flex; align-items: center; justify-content: center;">',
+      "after" => '</div>',
       "color" => "#77ff88",
       "fields" => [
           10 => [

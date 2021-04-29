@@ -312,7 +312,7 @@ function extcallable_simpleajaxtest()
     $t->cellss([['One','Two','Three'],
                 ['Red','Green','Blue'],
                 ['Up','Down','Left']]);
-    ajax_add_popupdialog('Triggered from ajax call','<center>'.$t->get().'</center>');
+    ajax_add_popupdialog('Triggered from ajax call','<div>'.$t->get().'</div>');
 }
 ~~~
 The code above generates the following dialog:
