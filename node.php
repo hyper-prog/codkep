@@ -40,7 +40,8 @@ function hook_node_init()
         $pass->src = 0;
         $pass->def = &$sys_data->node_types[$name];
         run_hook('nodetype_alter_'.$name,$pass,'loaded');
-        ksort($sys_data->node_types[$name]['fields']);
+        if(isset($sys_data->node_types[$name]['fields']))
+            ksort($sys_data->node_types[$name]['fields']);
     }
 
     spl_autoload_register(function($classname) {
@@ -63,7 +64,8 @@ function hook_node_init()
                     $pass->src = 1;
                     $pass->def = &$classname::$definition;
                     run_hook('nodetype_alter_'.$oname,$pass,'loaded');
-                    ksort($classname::$definition['fields']);
+                    if(isset($classname::$definition['fields']))
+                        ksort($classname::$definition['fields']);
                 }
                 return;
             }
