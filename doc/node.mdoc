@@ -257,6 +257,7 @@ An example, which define the "sampletype" node type in "mymodule" module:
 ~~~php
 function hook_mymodule_nodetype()
 {
+  $d = [];
   $d['sampletype'] =  [
                 "name" => "samplenode",
                 "table" => "sample",
@@ -351,25 +352,64 @@ class ToolNode
 }
 ~~~
 
-*Node: The ***HOOK_nodetype_alter_NODENAME*** hook cannot modify the definition of node type which specified dynamically.*
-*The reason is that the node definitions are not loaded only if used. Don't worry about this,*
-*all built-in node type defined standard way (not dynamic).*
+#derivednodes#
+=== Derive node definition from another node ===
 
+You can reuse the definition of another node and use as base to the current defined node.
+To do this you have to set the top level ***base*** value to the derived node's name.
+.
+All options/values of the base definition will exists in the defined one.
+The values of the current structure are overwrites of the base.
+You can use an additional ***fields-by-sql*** top level associative array which a helper field enables you to modify
+the derived fields without knowing the index of the field.
+This associative array is similar to ***fields*** where the indexes are not numbers but sql names.
+
+~~~php
+function hook_mymodule_nodetype()
+{
+    return [
+        'poweredtool' => [
+            'base' => 'tool', //definition derived from this node
+            'table' => 'poweredtools', //change the sql table name to this
+            'name' => 'poweredtool', //change the name to this
+            'fields' => [  //Adds a new field
+                25 => [
+                    'sql' => 'powerreq',
+                    'text' => 'Required power',
+                    'type' => 'smalltext',
+                    'color' => '#ffaaaa',
+                ],
+            ],
+            'fields-by-sql' => [  //Modify an attribute of a derived field
+                'name' => [
+                    'text' => 'Names of the powered tool',
+                ],
+            ],
+        ],
+    ];
+}
+
+~~~
 
 
 #alternode#
 === Modify existing node types ===
 
 
-
-The node module provides the ***HOOK_nodetype_alter_NODENAME($obj)*** [hook|url:doc/codkep/hooks]
+The node module provides the ***HOOK_nodetype_alter_NODENAME($obj,$reason)*** [hook|url:doc/codkep/hooks]
 which can alter the already defined node types.
 You have to substitute the desired node type with NODENAME word in hook name.
 This hook receives an object which contains a reference to the data definition structure modifiable way.
+The reason parameter can be "loaded" or "assembled".<br/>
+If the ***$reason*** is ***"loaded"*** the hook is activated when the specified node type is loaded.
+In case of the specified node type has a derived definition array (Assembled on a base of an another node) the
+***HOOK_nodetype_alter_NODENAME*** is call again when the base definition is merged with the subject definition.
+On this second case the ***$reason*** parameter is ***"assembled"***.
+This merge process only happens when it is needed. (The subject node is used)
 .
 Let's see an example code where we add an email field to the CodKep's built in ***user*** node type:
 ~~~php
-function hook_mymodule_nodetype_alter_user($p)
+function hook_mymodule_nodetype_alter_user($p,$reason)
 {
     $p->def['fields'][55] = [
         'sql' => 'email',
@@ -960,7 +1000,7 @@ The following [hooks|url:doc/codkep/hooks] can be implement to interact with nod
 | HOOK_nodetype()                      | Define one or more node type. |
 | HOOK_objectnodetype()                | Define one or more node type with dynamic loaded classes. |
 | HOOK_load_nodedefclass($obj)         | Invoked before the Node module loads a node-type class from the specified file. |
-| HOOK_nodetype_alter_NODETYPE($obj)   | You can change the definition of the specified node type by this hook. |
+| HOOK_nodetype_alter_NODETYPE($obj,$reason)   | You can change the definition of the specified node type by this hook. |
 | HOOK_node_loaded($pass,$nid,$type,$join_id) | Runs immediately after a node is loaded. This hook can change the node data by the $pass pass parameter.  |
 | HOOK_node_form_before($node,$op)     | This hook can put some content before the node add/edit/view/delete forms <br/> The value of ***$op*** can be ***view,add,edit,delete***. The string returned by this hook will be inserted before the form. |
 | HOOK_node_form_after($node,$op)      | This hook can put some content after the node add/edit/view/delete forms <br/> The value of ***$op*** can be ***view,add,edit,delete***. The string returned by this hook will be inserted after the form. |

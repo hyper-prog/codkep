@@ -1,8 +1,8 @@
 <?php
 /*  CodKep - Lightweight web framework core file
- *
  *  Written by Peter Deak (C) hyper80@gmail.com , License GPLv2
- */
+ *
+ *  Flex theme */
 
 define('ABOVE_LOGO',1);
 define('BETWEEN_LOGO_HEADER',2);

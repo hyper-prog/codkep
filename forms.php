@@ -1,8 +1,6 @@
 <?php
 /*  CodKep - Lightweight web framework core file
- *
  *  Written by Peter Deak (C) hyper80@gmail.com , License GPLv2
- *
  *
  * Forms module
  *  Required modules: core,sql

@@ -857,6 +857,7 @@ You have to copy out the final result and insert into your code to use it.
 .
 - **Top level attributes**
  # Name of the definition
+ # Base definition (if this node is derived from another)
  # Features of the whole form
  # Associated sql table
   - ***"fields" =>***
@@ -877,6 +878,8 @@ You have to copy out the final result and insert into your code to use it.
 | ***fields*** |(background-color: #ff7777;) Definition of data fields itself |Mandatory| definition of fields |
 
 | ***classname***      |(background-color: #da7fee;) In case you specify a node type you can tell a php class name here. If you do this, all this typed node object will be created with the specified class. You have to reach many customisation of node type this way. See the specific node documentation [here|url:doc/codkep/node#customnodeobject].|Optional| php class name (Subclass of Node) |
+| ***base***           |(background-color: #da7fee;) You can use the definition structure of another node as a base to the current defined one. This way you can inherit the options and features of another node which can overwrite here. This ***base*** value holds the node name of the base node. |Optional| node name |
+| ***fields-by-sql***  |(background-color: #da7fee;) If the ***base*** value is set (which means the current definition is derived from another) you can set an associative array here to modify fields by the sql name. This field is a helper field which enables you to modify a derived field without knowing the index of the field. This associative array is similar to ***fields*** where the indexes are not numbers but sql names. |Optional| an associative array |
 | ***rest_enabled***   |(background-color: #da7fee;) This option is necessary to enable the [automatic REST API interface|url:doc/codkep/node#restinterface] for this node type. You can write combinations of lowercase letters here to enable main functions. "c" - enable create, "r" - enable read, "u" - enable update, "d" - enable delete, "l" - enable list. You should type "crudl" here to enable all functions or leave blank to disable all.|Optional| String with lowercase cars: ***"c","r","u","d","l"*** |
 | ***access_earlyblock***                |(background-color: #da7fee;) If this value is true the system will block the first phase (loading to view) of a node before the a not permitted update/insert/delete request. Otherwise only the not permitted action is blocked which means that possible to edit the form of the node and cannot save if denied.|Optional| true or false(default) |
 | ***access_loadp_before_create_perm *** |(background-color: #da7fee;) If this value is true the node create page will load the html parameters before the node_access check is executed. It means that you can use the user input data to determine the create permissions in hook_node_access. Otherwise the permission check is precede the parameter load. |Optional| true or false(default) |
@@ -917,6 +920,7 @@ Sample of top level attributes:
 
 - Top level attributes
  # Name of the definition
+ # Base definition (if this node is derived from another)
  # Features of the whole form
  # Associated sql table
   - ***"fields" =>***

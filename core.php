@@ -1,9 +1,8 @@
 <?php
 /*  CodKep - Lightweight web framework core file
- *
  *  Written by Peter Deak (C) hyper80@gmail.com , License GPLv2
  *
-  *  Core module: There is no dependencies of this module. Can be used with index.php
+ *  Core module: There is no dependencies of this module. Can be used with index.php
  */
 
 define('NO_APC'  , 0);

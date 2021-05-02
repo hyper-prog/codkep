@@ -1,5 +1,4 @@
 /*  CodKep - Core javascript file
- *
  *  Written by Peter Deak (C) hyper80@gmail.com , License GPLv2
  */
 function initializeAjaxLinks()

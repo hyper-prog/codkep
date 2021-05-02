@@ -1,8 +1,6 @@
 <?php
 /*  CodKep - Lightweight web framework core file
- *
  *  Written by Peter Deak (C) hyper80@gmail.com , License GPLv2
- *
  *
  * Node module
  *  Required modules: core,sql,user,forms
@@ -39,23 +37,34 @@ function hook_node_init()
     {
         $pass = new stdClass();
         $pass->name = $name;
+        $pass->src = 0;
         $pass->def = &$sys_data->node_types[$name];
-        run_hook('nodetype_alter_'.$name,$pass);
+        run_hook('nodetype_alter_'.$name,$pass,'loaded');
         ksort($sys_data->node_types[$name]['fields']);
     }
 
     spl_autoload_register(function($classname) {
         global $sys_data;
-        foreach($sys_data->node_otypes as $otype)
+        foreach($sys_data->node_otypes as $oname => $otype)
         {
             if($otype['defineclass'] == $classname)
             {
                 $file = $otype['file'];
                 $pass = new stdClass();
+                $pass->name = $oname;
                 $pass->file = &$file;
                 $pass->classname = &$classname;
                 run_hook('load_nodedefclass',$pass);
                 include $file;
+                if(class_exists($classname,false))
+                {
+                    $pass = new stdClass();
+                    $pass->name = $oname;
+                    $pass->src = 1;
+                    $pass->def = &$classname::$definition;
+                    run_hook('nodetype_alter_'.$oname,$pass,'loaded');
+                    ksort($classname::$definition['fields']);
+                }
                 return;
             }
         }
@@ -231,6 +240,93 @@ function node_access($node,$op,$account)
     return NODE_ACCESS_DENY;
 }
 
+function node_raw_definition_by_name($typename)
+{
+    global $sys_data;
+    $definition_array = null;
+    if(isset($sys_data->node_types[$typename]))
+        $definition_array = $sys_data->node_types[$typename];
+    if(isset($sys_data->node_otypes[$typename]))
+    {
+        $definerclass = $sys_data->node_otypes[$typename]['defineclass'];
+        $definition_array = $definerclass::$definition;
+    }
+    return $definition_array;
+}
+
+function node_internal_nodetype_init($def,$typename)
+{
+    if(!isset($def['base']))
+        return;
+
+    global $sys_data;
+    $from_base = node_raw_definition_by_name($def['base']);
+    if($from_base != null && isset($from_base['base']))
+    {
+        node_internal_nodetype_init($from_base, $def['base']);
+        $from_base = node_raw_definition_by_name($def['base']);
+    }
+
+    if($from_base != null)
+    {
+        $caclulated_definition = codkep_defmerge($from_base, $def);
+        $caclulated_definition['base-processed'] = $def['base'];
+        if(array_key_exists($typename,$sys_data->node_types))
+        {
+            $sys_data->node_types[$typename] = $caclulated_definition;
+            $pass = new stdClass();
+            $pass->name = $typename;
+            $pass->src = 3;
+            $pass->def = &$sys_data->node_types[$typename];
+            run_hook('nodetype_alter_'.$typename,$pass,'assembled');
+            ksort($sys_data->node_types[$typename]['fields']);
+        }
+        else if(array_key_exists($typename,$sys_data->node_otypes))
+        {
+            $definerclass = $sys_data->node_otypes[$typename]['defineclass'];
+            $definerclass::$definition = $caclulated_definition;
+            $pass = new stdClass();
+            $pass->name = $typename;
+            $pass->src = 3;
+            $pass->def = &$definerclass::$definition;
+            run_hook('nodetype_alter_'.$typename,$pass,'assembled');
+            ksort($definerclass::$definition['fields']);
+        }
+    }
+}
+
+function codkep_defmerge($base,$add,$l = 0)
+{
+    $ret = $base;
+    $fieldsBySql = null;
+    foreach($add as $add_k => $add_v)
+    {
+        if($add_k == 'base' && $l == 0)
+            continue;
+        if($add_k == 'fields-by-sql' && $l == 0)
+        {
+            $fieldsBySql = $add_v;
+            continue;
+        }
+        if(isset($ret[$add_k]) && is_array($ret[$add_k]))
+        {
+            if(is_array($add_v))
+                $ret[$add_k] = codkep_defmerge($ret[$add_k],$add_v,$l+1);
+            continue;
+        }
+        $ret[$add_k] = $add_v;
+    }
+    if($fieldsBySql != null && is_array($fieldsBySql) && isset($ret['fields']))
+        foreach($fieldsBySql as $fbs_n => $fbs_v)
+            foreach($ret['fields'] as $retfld_n => $retfld_v)
+                if(isset($retfld_v['sql']) && $retfld_v['sql'] == $fbs_n)
+                {
+                    $ret['fields'][$retfld_n] = codkep_defmerge($ret['fields'][$retfld_n],$fbs_v,1);
+                    break;
+                }
+    return $ret;
+}
+
 /**
  *  Node class
  *
@@ -276,6 +372,7 @@ class Node
             {
                 $this->deftype = DEF_ARRAY;
                 $this->type = $type;
+                node_internal_nodetype_init($sys_data->node_types[$type],$type);
                 $this->dataspeedform = new SpeedForm($sys_data->node_types[$type]);
             }
             if(array_key_exists($type,$sys_data->node_otypes))
@@ -283,6 +380,7 @@ class Node
                 $this->deftype = DEF_OBJECT;
                 $this->type = $type;
                 $definerclass = $sys_data->node_otypes[$type]['defineclass'];
+                node_internal_nodetype_init($definerclass::$definition,$type);
                 $this->dataspeedform = new SpeedForm($definerclass::$definition);
             }
             if($this->deftype == DEF_NONE)
@@ -549,12 +647,16 @@ class Node
 
         $classname = 'Node';
         if(array_key_exists($type,$sys_data->node_types))
+        {
+            node_internal_nodetype_init($sys_data->node_types[$type],$type);
             if(isset($sys_data->node_types[$type]['classname']))
                 $classname = $sys_data->node_types[$type]['classname'];
+        }
 
         if(array_key_exists($type,$sys_data->node_otypes))
         {
             $definerclass = $sys_data->node_otypes[$type]['defineclass'];
+            node_internal_nodetype_init($definerclass::$definition,$type);
             $d = $definerclass::$definition;
             if(isset($d['classname']))
                 $classname = $d['classname'];
@@ -1011,12 +1113,14 @@ function sql_table_of_nodetype($type)
     global $sys_data;
     if(array_key_exists($type,$sys_data->node_types))
     {
+        node_internal_nodetype_init($sys_data->node_types[$type],$type);
         $s = new SpeedForm($sys_data->node_types[$type]);
         return $s->sql_create_string();
     }
     if(array_key_exists($type,$sys_data->node_otypes))
     {
         $definerclass = $sys_data->node_otypes[$type]['defineclass'];
+        node_internal_nodetype_init($definerclass::$definition,$type);
         $s = new SpeedForm($definerclass::$definition);
         return $s->sql_create_string();
     }
@@ -1040,6 +1144,15 @@ function hook_node_required_sql_schema()
                 'created'   => 'TIMESTAMP',
         ],
     ];
+
+    foreach($sys_data->node_types as $nname => $ndef)
+        node_internal_nodetype_init($ndef,$nname);
+
+    foreach($sys_data->node_otypes as $nname => $nval)
+    {
+        $definerclass = $nval['defineclass'];
+        node_internal_nodetype_init($definerclass::$definition,$nname);
+    }
 
     foreach($sys_data->node_types as $nname => $ndef)
     {
@@ -1095,10 +1208,20 @@ function sys_node_codkep_definednodes()
 
     $coll = [];
     foreach($sys_data->node_types as $node_name => $def_body)
+        node_internal_nodetype_init($def_body,$node_name);
+
+    foreach($sys_data->node_otypes as $nname => $nval)
+    {
+        $definerclass = $nval['defineclass'];
+        node_internal_nodetype_init($definerclass::$definition,$nname);
+    }
+
+    foreach($sys_data->node_types as $node_name => $def_body)
     {
         $coll[$node_name] = [];
         $coll[$node_name]['type'] = 'static';
         $coll[$node_name]['classname'] = isset($def_body['classname']) ? $def_body['classname'] : "Node";
+        $coll[$node_name]['base-processed'] = isset($def_body['base-processed']) ? $def_body['base-processed'] : "-";
         $coll[$node_name]['sqltable']  = $def_body['table'];
         $coll[$node_name]['showmode']  = $def_body['show'];
         $coll[$node_name]['rest']      = isset($def_body['rest_enabled']) ? $def_body['rest_enabled'] : '';
@@ -1132,6 +1255,7 @@ function sys_node_codkep_definednodes()
         $coll[$node_name] = [];
         $coll[$node_name]['type'] = 'dynamic';
         $coll[$node_name]['classname'] = $classname;
+        $coll[$node_name]['base-processed'] = isset($def_body['base-processed']) ? $def_body['base-processed'] : "-";
         $coll[$node_name]['file']      = $def_body['file'];
         $coll[$node_name]['sqltable']  = $loaded_def_body['table'];
         $coll[$node_name]['showmode']  = $loaded_def_body['show'];
@@ -1176,6 +1300,7 @@ function sys_node_codkep_definednodes()
     $t->heads(['name',
                'class type',
                'external sql<br/>table name',
+               'Base',
                'external key field',
                'number<br/> of fileds',
                'REST',
@@ -1187,8 +1312,8 @@ function sys_node_codkep_definednodes()
                 ['type' => 'uni','background-color' => ($c['type'] == 'static' ? '#88ff88' : '#ffcc88')]);
         $t->cell($c['classname'],['type' => 'uni','background-color' => '#f2f2f2']);
         $t->cell('<code>' . $c['sqltable'] . '</code>',['type' => 'uni','background-color' => '#f2e2e2']);
+        $t->cell($c['base-processed'],['type' => 'uni','background-color' => '#c2e2e2']);
         $t->cell('#'.$c['keyidx'].' : <code>'.$c['keyname'] . '</code>',['type' => 'uni','background-color' => '#f2d2d2']);
-
         $t->cell($c['cnt'],['type' => 'uni','background-color' => '#f2f2f2']);
         $t->cell($c['rest'],['type' => 'uni','background-color' => '#f2f2f2']);
         $t->cell('<small>'.$c['file'].'</small>',['type' => 'uni','background-color' => '#c2c2c2']);
@@ -1530,10 +1655,14 @@ function node_get_definition_of_nodetype($type)
 {
     global $sys_data;
     if(array_key_exists($type,$sys_data->node_types))
+    {
+        node_internal_nodetype_init($sys_data->node_types[$type],$type);
         return $sys_data->node_types[$type];
+    }
     if(array_key_exists($type,$sys_data->node_otypes))
     {
         $definerclass = $sys_data->node_otypes[$type]['defineclass'];
+        node_internal_nodetype_init($definerclass::$definition,$type);
         return $definerclass::$definition;
     }
     return null;

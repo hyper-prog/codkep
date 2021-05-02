@@ -1,8 +1,6 @@
 <?php
 /*  CodKep - Lightweight web framework core file
- *
  *  Written by Peter Deak (C) hyper80@gmail.com , License GPLv2
- *
  *
  * Page module
  *  Required modules: core,sql,user,forms,node
@@ -186,7 +184,6 @@ function hook_page_nodetype()
                 "form_options" => [
                     "size" => 30,
                 ],
-
             ],
             40 => [
                 "sql" => "published",

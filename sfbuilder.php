@@ -1,8 +1,6 @@
 <?php
 /*  CodKep - Lightweight web framework core file
- *
  *  Written by Peter Deak (C) hyper80@gmail.com , License GPLv2
- *
  *
  * SfBuilder module
  *  Required modules: core,sql,forms
@@ -402,14 +400,17 @@ function pc_speedform_builder_nodetypedef_req()
         return '';
 
     $def = NULL;
-    if(array_key_exists(par('nodename'),$sys_data->node_types))
+    $nodename = par('nodename');
+    if(array_key_exists($nodename,$sys_data->node_types))
     {
-        $def = $sys_data->node_types[par('nodename')];
+        node_internal_nodetype_init($sys_data->node_types[$nodename],$nodename);
+        $def = $sys_data->node_types[$nodename];
     }
 
-    if(array_key_exists(par('nodename'),$sys_data->node_otypes))
+    if(array_key_exists($nodename,$sys_data->node_otypes))
     {
-        $c = $sys_data->node_otypes[par('nodename')]['defineclass'];
+        $c = $sys_data->node_otypes[$nodename]['defineclass'];
+        node_internal_nodetype_init($c::$definition,$nodename);
         $rc = new ReflectionClass($c);
         if(!$rc->isSubclassOf('Node'))
         {
