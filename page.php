@@ -165,13 +165,13 @@ function hook_page_nodetype()
             10 => [
                 "sql" => "pid",
                 "type" => "keyn",
-                "text" => "Page identifier",
+                "text" => t('Page identifier'),
                 "hide" => true,
                 "pgsql_sql_sequence_name" => "page_pid_seq",
             ],
             20 => [
                 "sql" => "title",
-                "text" => "Page title",
+                "text" => t('Page title'),
                 "type" => "smalltext",
                 "form_options" => [
                     "size" => 60,
@@ -179,7 +179,7 @@ function hook_page_nodetype()
             ],
             30 => [
                 "sql" => "path",
-                "text" => "Page path (location)",
+                "text" => t('Page path (location)'),
                 "type" => "smalltext",
                 "form_options" => [
                     "size" => 30,
@@ -187,13 +187,13 @@ function hook_page_nodetype()
             ],
             40 => [
                 "sql" => "published",
-                "text" => "Published",
+                "text" => t('Published'),
                 "type" => "check",
                 "default" => false,
             ],
             50 => [
                 "sql" => "body",
-                "text" => "Page body html",
+                "text" => t('Page body html'),
                 "type" => "largetext",
                 "par_sec" => "free",
                 "row" => 25,
@@ -204,14 +204,14 @@ function hook_page_nodetype()
             ],
             60 => [
                 "sql" => "tag1n",
-                "text" => "Tag 1",
+                "text" => t('Tag 1'),
                 "type" => "smalltext",
                 "par_sec" => "text3",
                 "formatters" => "before",
             ],
             61 => [
                 "sql" => "tag1v",
-                "text" => "Tag 1",
+                "text" => t('Tag 1'),
                 "type" => "smalltext",
                 "par_sec" => "text3",
                 "formatters" => "after",
@@ -219,14 +219,14 @@ function hook_page_nodetype()
 
             70 => [
                 "sql" => "tag2n",
-                "text" => "Tag 2",
+                "text" => t('Tag 2'),
                 "type" => "smalltext",
                 "par_sec" => "text3",
                 "formatters" => "before",
             ],
             71 => [
                 "sql" => "tag2v",
-                "text" => "Tag 2",
+                "text" => t('Tag 2'),
                 "type" => "smalltext",
                 "par_sec" => "text3",
                 "formatters" => "after",
@@ -235,38 +235,44 @@ function hook_page_nodetype()
             110 => [
                 "sql" => "created",
                 "type" => "timestamp_create",
-                "text" => "Create time",
+                "text" => t('Create time'),
                 "readonly" => true,
             ],
             120 => [
+                "sql" => "creator",
+                "type" => "creating_user",
+                "text" => t('Creating user'),
+            ],
+
+            130 => [
                 "sql" => "modified",
                 "type" => "timestamp_mod",
-                "text" => "Modification time",
+                "text" => t('Modification time'),
                 "readonly" => true,
             ],
-            130 => [
+            140 => [
                 "sql" => "moduser",
                 "type" => "modifier_user",
-                "text" => "Modifier user",
+                "text" => t('Modifier user'),
             ],
             200 => [
                 "sql" => "submit_add",
                 "type" => "submit",
-                "default" => "Create",
+                "default" => t('Create'),
                 "centered" => true,
                 "in_mode" => "insert",
             ],
             210 => [
                 "sql" => "submit_edit",
                 "type" => "submit",
-                "default" => "Save",
+                "default" => t('Save'),
                 "centered" => true,
                 "in_mode" => "update",
             ],
             220 => [
                 "sql" => "submit_del",
                 "type" => "submit",
-                "default" => "Delete",
+                "default" => t('Delete'),
                 "centered" => true,
                 "in_mode" => "delete",
             ],
