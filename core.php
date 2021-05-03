@@ -94,6 +94,7 @@ function hook_core_boot()
          'text0'    => '/^[\sa-zA-Z0-9]*$/u',
          'text0ns'  => '/^[a-zA-Z0-9]*$/u',
          'text0nsne'=> '/^[a-zA-Z0-9]+$/u',
+         'text0sune'=> '/^[\_a-z0-9]+$/u',
          'text1'    => '/^[\s\-\_a-zA-Z0-9]*$/u',
          'text1ns'  => '/^[\-\_a-zA-Z0-9]*$/u',
          'text2'    => '/^[\sa-zA-Z0-9\p{L}]*$/u',
