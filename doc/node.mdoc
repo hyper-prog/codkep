@@ -355,12 +355,12 @@ class ToolNode
 #derivednodes#
 === Derive node definition from another node ===
 
-You can reuse the definition of another node and use as base to the current defined node.
-To do this you have to set the top level ***base*** value to the derived node's name.
+You can reuse the definition of another node and use as base to a new defined one.
+To do this you have to set the top level ***base*** attribute to the derived node's name.
 .
 All options/values of the base definition will exists in the defined one.
-The values of the current structure are overwrites of the base.
-You can use an additional ***fields-by-sql*** top level associative array which a helper field enables you to modify
+The values of the base and the current defined structure are merged with the priority of the new values.
+You can use an additional ***fields-by-sql*** top level associative array which a helper field to enables you modify
 the derived fields without knowing the index of the field.
 This associative array is similar to ***fields*** where the indexes are not numbers but sql names.
 
@@ -369,9 +369,9 @@ function hook_mymodule_nodetype()
 {
     return [
         'poweredtool' => [
-            'base' => 'tool', //definition derived from this node
-            'table' => 'poweredtools', //change the sql table name to this
-            'name' => 'poweredtool', //change the name to this
+            'base' => 'tool', //definition derived from "tool" node
+            'table' => 'poweredtools', //change the sql table name to "poweredtools"
+            'name' => 'poweredtool', //change the name
             'fields' => [  //Adds a new field
                 25 => [
                     'sql' => 'powerreq',
@@ -388,24 +388,24 @@ function hook_mymodule_nodetype()
         ],
     ];
 }
-
 ~~~
-
+*Note: The derived definition are not calculated (merged) at CodKep start when the node types are loaded. *
+*The merging is only processed when the derived node's definition structure is needed. For example you do a node_load()*
+*on a derived node.*
 
 #alternode#
 === Modify existing node types ===
-
 
 The node module provides the ***HOOK_nodetype_alter_NODENAME($obj,$reason)*** [hook|url:doc/codkep/hooks]
 which can alter the already defined node types.
 You have to substitute the desired node type with NODENAME word in hook name.
 This hook receives an object which contains a reference to the data definition structure modifiable way.
-The reason parameter can be "loaded" or "assembled".<br/>
+The reason parameter can be ***"loaded"*** or ***"assembled"***.<br/>
 If the ***$reason*** is ***"loaded"*** the hook is activated when the specified node type is loaded.
 In case of the specified node type has a derived definition array (Assembled on a base of an another node) the
 ***HOOK_nodetype_alter_NODENAME*** is call again when the base definition is merged with the subject definition.
-On this second case the ***$reason*** parameter is ***"assembled"***.
-This merge process only happens when it is needed. (The subject node is used)
+This case the ***$reason*** parameter is ***"assembled"***.
+The merge process only executed when it is needed. (The subject node type is used)
 .
 Let's see an example code where we add an email field to the CodKep's built in ***user*** node type:
 ~~~php
