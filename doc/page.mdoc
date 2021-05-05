@@ -84,9 +84,10 @@ function hook_mymodule_nodetype_alter_page($p)
 The page settings which can set [in site settings|url:doc/codkep/modules#site_settings].
 .
 
-| name                                                     | default                             | description |
-|---                                                       |--                                   | ---                              |---          |
-|<small> ***$site_config->page_show_control_on_top*** </small>      |<small> true  </small>   | In case of this option is ***true*** the codkep shows the "edit this page" and "delete this page" control buttons on top right of the current rendered page if the permission makes it possible. |
+| name                                              | default                             | description |
+|---                                                |--                                   | ---                              |---          |
+|<small> ***$site_config->page_show_control_on_top*** </small>       |<small> true  </small>                 | In case of this option is ***true*** the codkep shows the "edit this page" and "delete this page" control buttons on top right of the current rendered page if the permission makes it possible. |
+|<small> ***$site_config->page_show_internal_full_topcss*** </small> |<small>page-internal-view-full</small> | Top level css class of page view. If you change this value all default css rule will be inactivated. |
 
 == Hooks ==
 

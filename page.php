@@ -10,6 +10,7 @@ function hook_page_boot()
 {
     global $site_config;
     $site_config->page_show_control_on_top = true;
+    $site_config->page_show_internal_full_topcss = 'page-internal-view-full';
 }
 
 function hook_page_defineroute()
@@ -63,6 +64,7 @@ function page_page_view(Node $node)
     global $site_config;
     set_title($node->title);
     ob_start();
+    print '<section class="'.$site_config->page_show_internal_full_topcss.'">';
     print implode('',run_hook('pageview_before',$node));
     print '<div class="page-show-titleline">';
         print '<div class="page-title-str">';
@@ -94,6 +96,7 @@ function page_page_view(Node $node)
     print implode('',run_hook('pageview_aftertitle',$node));
     print $node->body;
     print implode('',run_hook('pageview_after',$node));
+    print '</section>';
     return ob_get_clean();
 }
 
