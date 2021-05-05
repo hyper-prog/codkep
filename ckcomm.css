@@ -181,4 +181,17 @@ a.onoffsw_lnk_mini_switch img{
     font-size: small;
 }
 
+/* page */
+.page-show-titleline {
+    display: flex; align-items: center; justify-content: center; margin-top: 0; margin-bottom: 5px;
+}
+.page-title-str {
+    display: inline-flex; margin-left: 2px; margin-right: auto;
+}
+.page-control-btns {
+    display: inline-flex; margin-left: auto; margin-right: 0;
+}
+.page-control-btns .btn-img {
+    width: 25px;
+}
 /* end css */

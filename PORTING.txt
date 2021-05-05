@@ -1,6 +1,10 @@
 This file describes the non fully compatible
 changes between the released versions
 
+1.240 -> 1.241
+ - Removed "created" and "creator" fields from page node type,
+   because this information is redundant while stored in node table also.
+
 1.234 -> 1.235
  - Lots of html tag changed in flex theme from div to header,footer,section,nav
  - CSS class names changed in user login,logout forms and flex theme.

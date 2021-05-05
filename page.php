@@ -59,9 +59,39 @@ function page_page_callback()
 
 function page_page_view(Node $node)
 {
-    ob_start();
+    global $user;
+    global $site_config;
     set_title($node->title);
+    ob_start();
     print implode('',run_hook('pageview_before',$node));
+    print '<div class="page-show-titleline">';
+        print '<div class="page-title-str">';
+            print '<h1>' . $node->title . '</h1>';
+        print '</div>';
+
+        if($site_config->page_show_control_on_top)
+        {
+            print '<div class="page-control-btns">';
+            if(node_access($node,'update',$user) == NODE_ACCESS_ALLOW)
+            {
+                print '<div class="page-control-edit">';
+                print l('<img class="pe-btn-img btn-img" src="' . codkep_get_path('page', 'web') . '/images/edit35.png"/>',
+                        'node/' . $node->node_nid . '/edit',
+                        ['title' => t('Edit this page')]);
+                print '</div>';
+            }
+            if(node_access($node,'delete',$user) == NODE_ACCESS_ALLOW)
+            {
+                print '<div class="page-control-del">';
+                print l('<img class="pd-btn-img btn-img" src="' . codkep_get_path('page', 'web') . '/images/del35.png"/>',
+                        'node/' . $node->node_nid . '/delete',
+                        ['title' => t('Delete this page')]);
+                print '</div>';
+            }
+            print '</div>';
+        }
+    print '</div>';
+    print implode('',run_hook('pageview_aftertitle',$node));
     print $node->body;
     print implode('',run_hook('pageview_after',$node));
     return ob_get_clean();
@@ -81,7 +111,6 @@ function hook_page_node_access(Node $node,$op,$acc)
     }
     return NODE_ACCESS_IGNORE;
 }
-
 
 function hook_page_node_form_before(Node $node,$op)
 {
@@ -108,48 +137,6 @@ function hook_page_node_inserted($obj)
 {
     if($obj->node_ref->node_type == 'page')
         ccache_delete('routecache');
-}
-
-function hook_page_pageview_before($node)
-{
-    global $user;
-    global $site_config;
-
-    if(!$site_config->page_show_control_on_top)
-        return '';
-
-    $e = '';
-    $d = '';
-    $cbtn = 0;
-    if(node_access($node,'delete',$user) == NODE_ACCESS_ALLOW)
-    {
-        $d .=  '<div class="pagetop-control-right pagetop-control-del">';
-        $d .=  l('<img class="pe-btn-img" src="'.codkep_get_path('page','web').'/images/del35.png"/>',
-            'node/' . $node->node_nid . '/delete',
-            ['title' => t('Delete this page')]);
-        $d .=  '</div>';
-        $cbtn++;
-    }
-    if(node_access($node,'update',$user) == NODE_ACCESS_ALLOW)
-    {
-        $e .= '<div class="pagetop-control-right pagetop-control-edit">';
-        $e .=  l('<img class="pd-btn-img" src="' . codkep_get_path('page', 'web') . '/images/edit35.png"/>',
-            'node/' . $node->node_nid . '/edit',
-            ['title' => t('Edit this page')]);
-        $e .=  '</div>';
-        $cbtn++;
-    }
-
-    if($cbtn == 0)
-        return '';
-
-    ob_start();
-    add_style('.pagetop-control-right { float: right; }');
-    print '<div class="pagetop-controlline-btns">';
-    print $d.$e;
-    print '<div class="c"></div>';
-    print '</div>';
-    return ob_get_clean();
 }
 
 function hook_page_nodetype()
@@ -231,26 +218,13 @@ function hook_page_nodetype()
                 "par_sec" => "text3",
                 "formatters" => "after",
             ],
-
             110 => [
-                "sql" => "created",
-                "type" => "timestamp_create",
-                "text" => t('Create time'),
-                "readonly" => true,
-            ],
-            120 => [
-                "sql" => "creator",
-                "type" => "creating_user",
-                "text" => t('Creating user'),
-            ],
-
-            130 => [
                 "sql" => "modified",
                 "type" => "timestamp_mod",
                 "text" => t('Modification time'),
                 "readonly" => true,
             ],
-            140 => [
+            120 => [
                 "sql" => "moduser",
                 "type" => "modifier_user",
                 "text" => t('Modifier user'),
