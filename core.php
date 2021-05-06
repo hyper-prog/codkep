@@ -95,6 +95,10 @@ function hook_core_boot()
          'text0ns'  => '/^[a-zA-Z0-9]*$/u',
          'text0nsne'=> '/^[a-zA-Z0-9]+$/u',
          'text0sune'=> '/^[\_a-z0-9]+$/u',
+         'text0sdne'=> '/^[\-a-z0-9]+$/u',
+         'text0sd'  => '/^[\-a-z0-9]*$/u',
+         'text0sudne'=> '/^[\_\-a-z0-9]+$/u',
+         'text0sud' => '/^[\_\-a-z0-9]*$/u',
          'text1'    => '/^[\s\-\_a-zA-Z0-9]*$/u',
          'text1ns'  => '/^[\-\_a-zA-Z0-9]*$/u',
          'text2'    => '/^[\sa-zA-Z0-9\p{L}]*$/u',
@@ -1726,6 +1730,24 @@ function sys_assemble($c)
            "\n</head>\n" .
            $c->body .
            $c->html_end;
+}
+
+/** Returns true if the $location route is exists in the system. */
+function sys_route_exists($location)
+{
+    global $sys_data;
+    foreach($sys_data->loaded_routes as $route)
+    {
+        if($route["mtype"] == 1 && $route["path"] == $location)
+            return true;
+        if($route["mtype"] == 2)
+        {
+            $matches = [];
+            if(preg_match($route["rex"], $location, $matches))
+                return true;
+        }
+    }
+    return false;
 }
 
 /** Set CORS headers according to the $site_config->cors_requests_enabled_hosts settings */

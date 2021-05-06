@@ -11,6 +11,7 @@ function hook_page_boot()
     global $site_config;
     $site_config->page_show_control_on_top = true;
     $site_config->page_show_internal_full_topcss = 'page-internal-view-full';
+    $site_config->page_edit_autopath_by_title = true;
 }
 
 function hook_page_defineroute()
@@ -115,15 +116,6 @@ function hook_page_node_access(Node $node,$op,$acc)
     return NODE_ACCESS_IGNORE;
 }
 
-function hook_page_node_form_before(Node $node,$op)
-{
-    if($node->node_type == 'page' && ($op == 'add' || $op == 'edit'))
-    {
-        add_js_file('/sys/ckeditor/ckeditor.js');
-        add_header("<script> window.onload = function() { CKEDITOR.replace('page_body_ckedit'); }; </script>");
-    }
-}
-
 function hook_page_node_saved($obj)
 {
     if($obj->node_ref->node_type == 'page')
@@ -142,8 +134,27 @@ function hook_page_node_inserted($obj)
         ccache_delete('routecache');
 }
 
+function validator_page_path(&$path,$def,$values)
+{
+    if(sys_route_exists($path))
+        return t('The path of the page used by the system! Please choose a different path!');
+
+    $q = db_query('page')
+        ->counting('pid','count')
+        ->cond_fv('path',$path,'=');
+    if(isset($values['pid']) && $values['pid'] != null && $values['pid'] != '')
+        $q->cond_fv('pid',$values['pid'],'!=');
+    $c = $q->execute_to_single();
+
+    if($c > 0)
+        return t('The path of the page must be unique! There is an existing page in the database which already have a path you set.');
+    return '';
+}
+
 function hook_page_nodetype()
 {
+    global $site_config;
+
     $n = [];
     $n['page'] = [
         "name" => "page",
@@ -151,6 +162,13 @@ function hook_page_nodetype()
         "show" => "table",
         "div_class" => "page_edit_area",
         "view_callback" => "page_page_view",
+        "javascript_files" => [codkep_get_path('core','web') . '/ckeditor/ckeditor.js'],
+        "form_script" => "window.onload = function() { CKEDITOR.replace('page_body_ckedit'); };
+                          jQuery(document).ready(function() {
+                              jQuery('.autopath').each(function() {
+                                  codkep_set_autofill(this);
+                              });
+                          });",
         "fields" => [
             10 => [
                 "sql" => "pid",
@@ -165,6 +183,7 @@ function hook_page_nodetype()
                 "type" => "smalltext",
                 "form_options" => [
                     "size" => 60,
+                    "id" => "page-title-edit",
                 ],
             ],
             30 => [
@@ -172,8 +191,12 @@ function hook_page_nodetype()
                 "text" => t('Page path (location)'),
                 "type" => "smalltext",
                 "form_options" => [
-                    "size" => 30,
+                    "size" => 60,
+                    "class" => ($site_config->page_edit_autopath_by_title ? "autopath" : ""),
+                    "rawattributes" => "data-autopath-from=\"page-title-edit\" data-autopath-type=\"als\"",
                 ],
+                'check_noempty' => t('You have to fill the path field'),
+                'check_callback' => 'validator_page_path',
             ],
             40 => [
                 "sql" => "published",

@@ -397,6 +397,31 @@ function save_and_close_dyntable_dialog(id)
     });
 }
 
+function codkep_set_autofill(element)
+{
+    var affrom = jQuery(element);
+    var fromid = affrom.attr('data-autopath-from');
+    var mtype = affrom.attr('data-autopath-type');
+    if(typeof fromid === 'undefined' || typeof mtype === 'undefined')
+        return;
+    jQuery('#'+fromid).on('input',function() {
+        var cval = jQuery('#'+fromid).val();
+
+        if(mtype.includes('a'))
+            cval = cval.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        if(mtype.includes('l'))
+            cval = cval.toLowerCase();
+        if(mtype.includes('s'))
+            cval = cval.replace(/[^a-zA-Z0-9]/g,"-");
+        if(mtype.includes('d'))
+        {
+            var d = new Date();
+            cval += '-' + d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
+        }
+        affrom.val(cval);
+    });
+}
+
 function executeCodkepAjaxCall(tourl)
 {
     jQuery.ajax({

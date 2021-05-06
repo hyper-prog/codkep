@@ -3210,6 +3210,19 @@ class SpeedForm
                 }
             }
 
+            //callback check
+            if(isset($f['check_callback']))
+                if(is_callable($f['check_callback']))
+                {
+                    $str = call_user_func_array($f['check_callback'],array(&$this->values[$f['sql']], $f, $this->values));
+                    if($str != '')
+                    {
+                        $this->highlighted[$f['sql']] = 1;
+                        $this->validate_errortext .= "$i: $str\n";
+                        ++$i;
+                    }
+                }
+
             //custom checks
             $vf = $speedform_handlers[$f['type']]['validator'];
             if($vf != NULL)
@@ -3410,7 +3423,19 @@ class Table_SpeedFormFormFormmater extends HtmlFormFormatter_WithDefinition
             $after = $this->def['after'];
 
         $t = '</table>';
-        return $t . $txt . $after;
+
+        $other_script = '';
+        if(isset($this->def['form_script']))
+            $other_script = '<script>' . $this->def['form_script'] . '</script>';
+
+        if(isset($this->def['javascript_files']))
+            foreach($this->def['javascript_files'] as $javascript_file)
+                add_js_file($javascript_file);
+        if(isset($this->def['css_files']))
+            foreach($this->def['css_files'] as $css_file)
+                add_css_file($css_file);
+
+        return $t . $txt . $after . " \n" . $other_script;
     }
 
     public function item($txt,$name)
@@ -3570,7 +3595,19 @@ class Div_SpeedFormFormFormmater extends HtmlFormFormatter_WithDefinition
                 });
             </script>";
         }
-        return $closefieldset . $t . $txt . $after . $fieldset_script;
+
+        $other_script = '';
+        if(isset($this->def['form_script']))
+            $other_script = '<script>' . $this->def['form_script'] . '</script>';
+
+        if(isset($this->def['javascript_files']))
+            foreach($this->def['javascript_files'] as $javascript_file)
+                add_js_file($javascript_file);
+        if(isset($this->def['css_files']))
+            foreach($this->def['css_files'] as $css_file)
+                add_css_file($css_file);
+
+        return $closefieldset . $t . $txt . $after . " \n" . $other_script . ' ' .$fieldset_script;
     }
 
     public function item($txt,$name)

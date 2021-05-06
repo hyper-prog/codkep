@@ -886,6 +886,9 @@ You have to copy out the final result and insert into your code to use it.
 | ***access_loadp_before_update_perm *** |(background-color: #da7fee;) If this value is true the node edit page will load the html parameters before the node_access check is executed. It means that you can use the user input data to determine the edit permissions in hook_node_access. Otherwise the permission check is precede the parameter load. |Optional| true or false(default) |
 | ***view_callback***  |(background-color: #da7fee;) In case you specify a node type you can tell a php function name here to redirect the standard view of node to the given function|Optional| php function name |
 | ***view_phpfile***   |(background-color: #da7fee;) In case you specify a node type you can tell a php file name here to redirect the standard view of the node to the given php file |Optional| php file name |
+| ***form_script***    |(background-color: #da7fee;) You can put arbitrary javascript codes after the form if you set this value. |Optional| javascript codes |
+| ***javascript_files*** |(background-color: #da7fee;) You can specify an array of javascript files which are automatically load with the form | Optional| array of filepaths |
+| ***css_files***        |(background-color: #da7fee;) You can specify an array of css files which are automatically load with the form | Optional| array of filepaths |
 
 | ***color***          |(background-color: #99ffcc;) The background color of the entire table (Each field can redefine it.)|Optional| A html color code. Example: ***#aa8888*** |
 | ***before***         |(background-color: #99ffcc;) This text is printed before the whole form |Optional| string (Can contains html codes) |
@@ -900,6 +903,8 @@ You have to copy out the final result and insert into your code to use it.
 | ***div_c_afterl***   |(background-color: #99aaff;) Put an empty "clear:both;" css styled div block after the data block's div (line) (If ***show=div***) |Optional| true or false |
 | ***collapsable_fieldsets*** |(background-color: #99aaff;) Enable collapsable fieldsets. (Injects required javascript codes) (If ***show=div***) |Optional| true or false |
 | ***default_csstop_class*** |(background-color: #99aaff;) The default css top class. If you change this, the default css styles won't affect the area. (Value is: ***f_gendiv_defaultcodkepstyle***) (If ***show=div***) |Optional| string |
+
+
 
 
 
@@ -2054,6 +2059,7 @@ You can completely skip some fields by setting the skip attribute to a value sho
 | ---              | --- |
 | ***check_regex*** |(background-color: #ffff33;) You can set the regex based validations of the field's value. You have to set an associative array here, where the key is the regex and the value is the error text to show in case the value does not match to the regex. (See the sample code of ***smalltext*** to see how to use it.) | An associative array with key-value pairs |
 | ***check_noempty*** |(background-color: #ffff33;) If you set this attribute, the SpeedForm does not allow to save the empty value. In that case the error message printed which set as value. | Error message |
+| ***check_callback*** |(background-color: #ffff33;) You can set a php callback here, which usable to validate or even change the value. The callback function looks like this way: ***validator_callback(&$value,$definition,$allvalues)***. If the callback returns a non-empty string, the field will raise error and the string will be the error message. | ***&$value,array $definition,array $allvalues*** |
 
 
 #sfoutputf#
