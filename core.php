@@ -1733,18 +1733,20 @@ function sys_assemble($c)
 }
 
 /** Returns true if the $location route is exists in the system. */
-function sys_route_exists($location)
+function sys_route_exists($location,$except_callback = '')
 {
     global $sys_data;
     foreach($sys_data->loaded_routes as $route)
     {
         if($route["mtype"] == 1 && $route["path"] == $location)
-            return true;
+            if(!isset($route['callback']) || $except_callback != $route['callback'])
+                return true;
         if($route["mtype"] == 2)
         {
             $matches = [];
             if(preg_match($route["rex"], $location, $matches))
-                return true;
+                if(!isset($route['callback']) || $except_callback != $route['callback'])
+                    return true;
         }
     }
     return false;

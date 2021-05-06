@@ -136,7 +136,7 @@ function hook_page_node_inserted($obj)
 
 function validator_page_path(&$path,$def,$values)
 {
-    if(sys_route_exists($path))
+    if(sys_route_exists($path,'page_page_callback'))
         return t('The path of the page used by the system! Please choose a different path!');
 
     $q = db_query('page')
