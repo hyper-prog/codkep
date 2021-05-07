@@ -2,7 +2,7 @@
 /*  CodKep - Lightweight web framework START file
  *  Written by Peter Deak (C) hyper80@gmail.com , License GPLv2  */
 
-define('VERSION', '1.247');
+define('VERSION', '1.248');
 
 define('CODKEP_MINIMUM_PHP', '5.6.0');
 

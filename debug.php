@@ -64,9 +64,7 @@ function hook_debug_execute_sql($sql,$parameters)
     global $sys_data;
 
     if($site_config->show_sql_commands_executed)
-    {
-        array_push($sys_data->debug_executed_sql,$sql);
-    }
+        array_push($sys_data->debug_executed_sql,preg_replace('!\s+!', ' ',$sql));
 }
 
 /** @ignore */
@@ -79,12 +77,18 @@ function hook_debug_before_deliver($content)
     if($site_config->show_sql_commands_executed )
     {
         ob_start();
-        print "\n<div class=\"debug_ex_sql\">\n";
+        $n=0;
+        print "\n<div class=\"debug_ex_sql\" style=\"text-align: left;\">\n";
         print "Executed SQL:\n";
-        print "<table>\n";
+        print "<table style=\"width: 100%;\">\n";
         foreach($sys_data->debug_executed_sql as $c)
         {
-            print "<tr><td><pre>$c</pre></td></tr>";
+            print '<tr style="background-color: #efefef;">';
+            print '<td>'.$n.'</td>';
+            print '<td><pre style="margin: 2px; padding: 2px;">';
+            print $c;
+            print '</pre></td></tr>';
+            $n++;
         }
         print "</table>\n";
         print "</div>\n";

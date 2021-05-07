@@ -193,7 +193,7 @@ function user_init_local()
             ($user_module_settings->login_timeout_sec > 0 &&
                 $sys_data->request_time - $row['created'] > $user_module_settings->login_timeout_sec))
         {
-            sql_exec_noredirect('DELETE FROM authsess WHERE authsessval = :authsessval;',
+            sql_exec_noredirect('DELETE FROM authsess WHERE authsessval=:authsessval;',
                 [':authsessval' => $cookie_value]
             );
             return;
@@ -209,7 +209,7 @@ function user_init_local()
         if(!isset($_COOKIE[$row['chkname']]) ||
             substr($_COOKIE[$row['chkname']],0,64) != $row['chkval'])
         {
-            sql_exec_noredirect('UPDATE authsess SET chkval=\'blocked\' WHERE authsessval = :authsessval;',
+            sql_exec_noredirect('UPDATE authsess SET chkval=\'blocked\' WHERE authsessval=:authsessval;',
                 [':authsessval' => $cookie_value]
             );
             return;
@@ -228,7 +228,7 @@ function user_init_local()
                       generateRandomString(16);
 
             sql_exec_noredirect('UPDATE authsess SET chkname=:chkname,chkval=:chkval,changed=:changed
-                                 WHERE authsessval = :authsessval;',
+                                 WHERE authsessval=:authsessval;',
                 [':chkname' => $chkname,
                  ':chkval'  => $chkval,
                  ':changed' => $sys_data->request_time,
@@ -244,7 +244,7 @@ function user_init_local()
 
         //Set lastlog
         sql_exec_noredirect('UPDATE authsess SET access=:acctime WHERE
-                             authsessval = :authsessval;',
+                             authsessval=:authsessval;',
             [':authsessval' => $cookie_value,
                 ':acctime' => $sys_data->request_time ]
         );
