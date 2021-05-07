@@ -127,6 +127,11 @@ function processAjaxResponse(data)
         {
             window.location.replace(obj[i][1]);
         }
+        if(obj[i][0] == "scrolltop")
+        {
+            console.log('scroll');
+            jQuery(window).scrollTop(jQuery(obj[i][1]).offset().top);
+        }
     }
 }
 

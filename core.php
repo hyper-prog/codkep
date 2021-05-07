@@ -807,6 +807,16 @@ function ajax_add_popupdialog($title,$content)
     ajax_add_run("popup_ckdialog");
 }
 
+/** Creates an ajax (jQuery) 'scrollTop' command and adds to the output queue.
+ *
+ *  Only use in ajax handler. ( _defineroute 'type'=>'ajax' )
+ *  @package core */
+function ajax_add_scrolltop($selector)
+{
+    global $sys_data;
+    $sys_data->content->commands[] = ['scrolltop',$selector];
+}
+
 /** Returns the html code which placed a delayed ajax call to the page.
  *  @param string $ajax_url The url of the ajax call to be call. (Will be processed by url())
  *  @param mixed $msec The delay time in millisecundum after document.ready

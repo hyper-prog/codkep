@@ -917,6 +917,7 @@ function hook_user_nodetype()
                 "name" => "codkep_users",
                 "table" => $user_module_settings->sql_tablename,
                 "show" => "table",
+                "access_earlyblock" => true,
                 "color" => "#8888ff",
                 "before" => '<div style="display: flex; align-items: center; justify-content: center;">',
                 "after" => '</div>',

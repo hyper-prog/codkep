@@ -1,6 +1,9 @@
 This file describes the non fully compatible
 changes between the released versions
 
+1.246 -> 1.247
+ - Add access_earlyblock = true to user and page nodes.
+
 1.240 -> 1.241
  - Removed "created" and "creator" fields from page node type,
    because this information is redundant while stored in node table also.

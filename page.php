@@ -160,6 +160,7 @@ function hook_page_nodetype()
         "name" => "page",
         "table" => "page",
         "show" => "table",
+        "access_earlyblock" => true,
         "div_class" => "page_edit_area",
         "view_callback" => "page_page_view",
         "javascript_files" => [codkep_get_path('core','web') . '/ckeditor/ckeditor.js'],
