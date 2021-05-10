@@ -32,6 +32,7 @@ function hook_user_boot()
 
     $user_module_settings->enable_own_passwordchange   = true;
     $user_module_settings->enable_admin_passwordchange = false;
+    $user_module_settings->enable_default_usernodeaccess = true;
 
     $user_module_settings->password_scattered          = true;
     $user_module_settings->password_scatter_salt       = 'OiZ+o-*F4buC31Sw]80(=FeX~ge9D#t@';
@@ -1189,7 +1190,9 @@ function hook_user_required_sql_schema()
 function hook_user_node_access($node,$op,$acc)
 {
     global $user_module_settings;
-    if($node->node_type == 'user' && $user_module_settings->define_user_nodetype)
+    if($user_module_settings->enable_default_usernodeaccess &&
+       $node->node_type == 'user' &&
+       $user_module_settings->define_user_nodetype)
     {
         if($acc->role == ROLE_ADMIN)
             return NODE_ACCESS_ALLOW;

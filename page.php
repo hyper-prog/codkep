@@ -109,7 +109,7 @@ function hook_page_node_access(Node $node,$op,$acc)
         {
             if($acc->role == ROLE_ADMIN || $acc->role == ROLE_EDITOR)
                 return NODE_ACCESS_ALLOW;
-            return NODE_ACCESS_DENY;
+            return NODE_ACCESS_IGNORE;
         }
         return NODE_ACCESS_ALLOW;
     }
