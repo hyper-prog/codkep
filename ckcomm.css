@@ -194,4 +194,31 @@ a.onoffsw_lnk_mini_switch img{
 .page-internal-view-full .page-control-btns .btn-img {
     width: 25px;
 }
+
+table.darkstyledtable {
+    border-collapse: collapse;
+    font-size: 0.857em;
+}
+.darkstyledtable tr {
+    background: rgba(0, 0, 0, 0.063);
+}
+.darkstyledtable tr {
+    padding: 0;
+    margin: 0;
+    border: 0;
+}
+.darkstyledtable tr td,
+.darkstyledtable tr th {
+    padding: 4px 9px;
+    border: 1px solid #fff;
+    text-align: left;
+}
+.darkstyledtable th {
+    color: #ffffff;
+    background-color: #626262;
+}
+.darkstyledtable td {
+    background-color: #cccccc;
+}
+
 /* end css */

@@ -106,14 +106,33 @@ CKEDITOR.stylesSet.add( 'default', [
 			'border-collapse': 'collapse'
 		}
 	},
+	{
+		name: 'Compact Table Full Width',
+		element: 'table',
+		attributes: {
+			cellpadding: '5',
+			cellspacing: '0',
+			border: '1',
+			bordercolor: '#ccc'
+		},
+		styles: {
+			'border-collapse': 'collapse',
+			'width': '100%'
+		}
+	},
 
 	{ name: 'Borderless Table',		element: 'table',	styles: { 'border-style': 'hidden', 'background-color': '#E6E6FA' } },
+	{ name: 'Full Width Table',		element: 'table',	styles: { 'width': '100%' } },
+	{ name: 'Dark Styled Table',	element: 'table',	attributes: {'class': 'darkstyledtable'} },
+	{ name: 'Dark Styled Table Full Width',	element: 'table',	attributes: {'class': 'darkstyledtable'}, styles: { 'width': '100%' } },
+
 	{ name: 'Square Bulleted List',	element: 'ul',		styles: { 'list-style-type': 'square' } },
 
 	/* Widget styles */
 
 	{ name: 'Clean Image', type: 'widget', widget: 'image', attributes: { 'class': 'image-clean' } },
 	{ name: 'Grayscale Image', type: 'widget', widget: 'image', attributes: { 'class': 'image-grayscale' } },
+	{ name: 'Full Width Image', type: 'widget', widget: 'image', styles: { 'width': '100%' } },
 
 	{ name: 'Featured Snippet', type: 'widget', widget: 'codeSnippet', attributes: { 'class': 'code-featured' } },
 
