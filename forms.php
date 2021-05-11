@@ -90,6 +90,7 @@ class HtmlTable
             (isset($opts['style']) ? ' style="'.$opts['style'].'"':'').
             (isset($opts['align']) ? ' align="'.$opts['align'].'"':'') .
             (isset($opts['colspan']) ? ' colspan="'.$opts['colspan'].'"':'') .
+            (isset($opts['rowspan']) ? ' rowspan="'.$opts['rowspan'].'"':'') .
             '>'.$this->f($h).'</th>');
         return $this;
     }
@@ -113,6 +114,7 @@ class HtmlTable
             (isset($opts['style']) ? ' style="'.$opts['style'].'"':'') .
             (isset($opts['align']) ? ' align="'.$opts['align'].'"':'') .
             (isset($opts['colspan']) ? ' colspan="'.$opts['colspan'].'"':'') .
+            (isset($opts['rowspan']) ? ' rowspan="'.$opts['rowspan'].'"':'') .
             '>'.$this->f($c).'</td>');
         return $this;
     }
