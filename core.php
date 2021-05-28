@@ -25,6 +25,7 @@ function hook_core_boot()
 
     $site_config->startpage_location    = 'not_configured_startpage';
     $site_config->startpage_location_byhost = [];
+    $site_config->disable_ck_startpage  = false;
     $site_config->default_theme_name    = 'flex';
     $site_config->site_icon             = '/sys/images/cklogo.ico';
     $site_config->notfound_location     = 'notfound';
@@ -1310,8 +1311,12 @@ function hook_core_before_start()
 /** @ignore system defined hook */
 function hook_core_defineroute()
 {
+    global $site_config;
     $r = [];
-    $r[] = ["path" => "not_configured_startpage", "callback" => "core_notconfigured_startpage"   ];
+
+    if(!$site_config->disable_ck_startpage)
+        $r[] = ["path" => "not_configured_startpage", "callback" => "core_notconfigured_startpage"];
+
     $r[] = ["path" => "emptycache",               "callback" => "pc_core_emptycache"             ];
 
     $r[] = ["path" => "notfound",                 "callback" => "core_notfound_page",
