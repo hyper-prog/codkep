@@ -11,7 +11,6 @@ the CodKep does not contains or use any codes from Drupal, it's built on own cod
 It's designed to build very database active sites,
 so it has a rich set of form generation tools.
 
-- Written by Peter Deak (C) hyper80@gmail.com , License GPLv2
 - Webpage:            http://hyperprog.com/codkep
 - Documentation:      http://hyperprog.com/codkep/doc
 - Modules for codkep: https://github.com/hyper-prog/codkepmodules
@@ -28,7 +27,7 @@ Install on bare machine
 
     #Step 1: The CodKep needs a php enabled webserver to run.
 
-    $ sudo apt-get install -y apache2 libapache2-mod-php php-gd php-mysql php-pgsql php-apcu
+    $ sudo apt-get install -y apache2 libapache2-mod-php php-gd php-mysql php-pgsql php-apcu 
     $ sudo a2enmod rewrite 
     $ cd /var/www/html
 
@@ -132,3 +131,8 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.php [L]
 ```
+
+Author
+-------
+The CodKep is written by Peter Deak (C) hyper80@gmail.com , License GPLv2
+
