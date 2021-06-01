@@ -457,8 +457,9 @@ server {
 <VirtualHost *:80>
     ServerAdmin webmaster@localhost
     ServerName sandbox.example.com
-    DocumentRoot /var/www/mypage
+    DocumentRoot /var/www/html
     <Directory /var/www/mypage/>
+        DirectoryIndex index.php
         Options -Indexes +FollowSymLinks
         AllowOverride None
 .
@@ -474,6 +475,32 @@ server {
         RewriteCond %{REQUEST_FILENAME} !-d
         RewriteRule ^(.*)$ index.php [L]
     </Directory>
+
+    <Directory /var/www/html/sys>
+        RewriteEngine on
+        RewriteCond %{REQUEST_URI} !\.(?:css|js|png|jpg|jpeg|gif|ico|html)$ [NC]
+        RewriteRule ^ - [L,F]
+    </Directory>
+    
+    <Directory /var/www/html/site>
+        RewriteEngine on
+        RewriteCond %{REQUEST_URI} !\.(?:css|js|png|jpg|jpeg|gif|ico|html)$ [NC]
+        RewriteRule ^ - [L,F]
+    </Directory>
+
+    <Directory /var/www/html/data>
+        Options None
+        Options +FollowSymLinks
+        php_flag engine off
+    </Directory>
+    
+    <Directory /var/www/html/data/secure>
+        Deny from all
+        Options None
+        Options +FollowSymLinks
+        php_flag engine off
+    </Directory>
+      
     ErrorLog ${APACHE_LOG_DIR}/error.log
     LogLevel warn
     CustomLog ${APACHE_LOG_DIR}/access.log combined
