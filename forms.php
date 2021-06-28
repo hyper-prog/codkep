@@ -2390,6 +2390,8 @@ function sfh_file_lpar_deferred($field_def,$tablename)
         //File type validations done in sfh_file_lpar()
 
         $f = new File(isset($field_def['container']) ? $field_def['container'] : 'public');
+        if(isset($field_def['grantaccess']) && $field_def['grantaccess'])
+            $f->grantaccess = true;
         $f->addFromTemp($_FILES[$htmlname]['name'],
                         $_FILES[$htmlname]["tmp_name"],
                         (isset($field_def['subdir']) ? $field_def['subdir'] : ''),
@@ -2798,6 +2800,9 @@ class SpeedForm
             if($ufi != '')
             {
                 $file_object = new File('public');
+                $field_def = $this->get_field($fsql);
+                if(isset($field_def['grantaccess']) && $field_def['grantaccess'])
+                    $file_object->grantaccess = true;
                 if($file_object->load($ufi,true) != NULL)
                     $file_object->remove();
             }
@@ -2812,6 +2817,8 @@ class SpeedForm
                 if($this->values[$f['sql']] != '')
                 {
                     $file_object = new File('');
+                    if(isset($f['grantaccess']) && $f['grantaccess'])
+                        $file_object->grantaccess = true;
                     if($file_object->load($this->values[$f['sql']],true) != NULL)
                         $file_object->remove();
                 }

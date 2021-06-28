@@ -120,6 +120,8 @@ class File
     public $uploaded;
     public $uploader;
 
+    public $grantaccess;
+
     public function __construct($type)
     {
         if(!in_array($type,['public','secure','']))
@@ -133,6 +135,7 @@ class File
         $this->mime = '';
         $this->uploader = '';
         $this->uploaded = '';
+        $this->grantaccess = false;
     }
 
     public function basePath($t_url_f_path = false,$create = false)
@@ -460,6 +463,9 @@ function file_access(File $file,$op,$account)
     if(in_array(FILE_ACCESS_DENY,$far))
         return FILE_ACCESS_DENY;
     if(in_array(FILE_ACCESS_ALLOW,$far))
+        return FILE_ACCESS_ALLOW;
+
+    if($file->grantaccess)
         return FILE_ACCESS_ALLOW;
 
     //Default file permissions:

@@ -1923,6 +1923,7 @@ Attributes of the field
 | ***filetypes*** | Optional |(background-color: #ffff33;) The allowed mime types of file separated by ; sign. | string |
 | ***container*** | Mandatory |(background-color: #ff7777;) Specify the container type of the uploaded file. Read [this|url:doc/codkep/file#filestoretype] for details. |"***public***" or "***secure***" |
 | ***subdir***    | Optional |(background-color: #ffbb55;) Specify a subdirectory where the file is uploaded | string |
+| ***grantaccess*** | Optional |(background-color: #ffbb55;) If you define and set this attribute to ***true*** you don't have to enable file permissions by HOOK_file_access. In case this attribute is set, the file operations automatically granted when the file operation is done within a field of a node or form. Otherwise you have to explicit set of the permission to handle the file class by HOOK_file_access. | ***true*** or ***false** |
 | ***ondelete***  | Optional |(background-color: #ffbb55;) You can set the CodKep should keep the file even if unselected/deleted in this field. | "keep" |
 You **can use more attributes here** which are [common and usable in all field definitions|url:#commonattributes].
 .
