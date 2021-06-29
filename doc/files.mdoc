@@ -99,6 +99,7 @@ Every File object has same built-in properties which are available in any kind o
  - The url of the file to put a link to the html code. In case this file is an image file with an available size class
  \ according to the ***register_image_sizeclass*** function and ***HOOK_file_image_sizeclass*** hook this url will
  \ automatically referenced a scaled version of the image. See the [size class chapter|url:#sizeclasses] for details.
+ - The function checks for the required permissions. (HOOK_file_access)
 - @@@addFromTemp($name, $from, $subdir = '', array $context = [])@@@
  - This function can create a new (managed) File object from an uploaded or a temporary file.
   - The parameter ***$name*** tells the original filename. This can differs from the filesystem filename.
@@ -111,6 +112,7 @@ Every File object has same built-in properties which are available in any kind o
     - If the ***$context*** array has ***'noupload' => true*** value, the ***addFromTemp*** method
     \ will use a simple file moving instead of ***move_uploaded_file()***.
     \ (You have to specify if the file is not received by standard php upload)
+ - The function checks for the required permissions. (HOOK_file_access)
 - @@@load($ufi,$disable_show_error = false)@@@
  - Loads the file object according to the ***$ufi*** parameter.
   - If the ***$disable_show_error*** parameter is ***true*** the load() method won't do an automatic redirection
@@ -122,8 +124,10 @@ Every File object has same built-in properties which are available in any kind o
 - @@@remove()@@@
  - Removes the file object from the system, which means the removing both of the database record
  \ and the referenced file from the filesystem.
+ - The function checks for the required permissions. (HOOK_file_access)
 - @@@getContent()@@@
  - Returns the content of the referenced file.
+ - The function checks for the required permissions. (HOOK_file_access)
 
 
 #filehelpers#

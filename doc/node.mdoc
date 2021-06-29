@@ -96,13 +96,35 @@ Static methods:
 Methods:
 - @@@save($skip_transaction = false)@@@
  - Save the node to the database.
+ - This method **does not check the permissions** to do the desired operation.
+ \ I does the operation regardless of node or caller permissions.
+ - If the ***$skip_transaction*** parameter is true the method does not start and commits a new sql transaction.<sup>1</sup>
+- @@@save_checked($skip_transaction = false)@@@
+ - Save the node to the database.
+ - This method **check if the caller have the required permission** to do the desired operation on a node.
+ \ If not, an error raised and the appropriate hook activated.
  - If the ***$skip_transaction*** parameter is true the method does not start and commits a new sql transaction.<sup>1</sup>
 - @@@insert($skip_transaction = false)@@@
  - Insert this node to the database.
  - Returns the NID of the created node.
+ - This method **does not check the permissions** to do the desired operation.
+ \ I does the operation regardless of node or caller permissions.
+ - If the ***$skip_transaction*** parameter is true the method does not start and commits a new sql transaction.<sup>1</sup>
+- @@@insert_checked($skip_transaction = false)@@@
+ - Insert this node to the database.
+ - Returns the NID of the created node.
+ - This method **check if the caller have the required permission** to do the desired operation on a node.
+ \ If not, an error raised and the appropriate hook activated.
  - If the ***$skip_transaction*** parameter is true the method does not start and commits a new sql transaction.<sup>1</sup>
 - @@@remove($skip_transaction = false)@@@
  - Remove the node from the database.
+ - This method **does not check the permissions** to do the desired operation.
+ \ I does the operation regardless of node or caller permissions.
+ - If the ***$skip_transaction*** parameter is true the method does not start and commits a new sql transaction.<sup>1</sup>
+- @@@remove_checked($skip_transaction = false)@@@
+ - Remove the node from the database.
+ - This method **check if the caller have the required permission** to do the desired operation on a node.
+ \ If not, an error raised and the appropriate hook activated.
  - If the ***$skip_transaction*** parameter is true the method does not start and commits a new sql transaction.<sup>1</sup>
 - @@@getform($mode = 'all')@@@
  - Generate a HtmlFrom object

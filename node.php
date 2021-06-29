@@ -515,6 +515,21 @@ class Node
         return array_keys($this->dataspeedform->values);
     }
 
+    public function insert_checked($skip_transaction = false)
+    {
+        global $site_config;
+        global $user;
+        if(NODE_ACCESS_ALLOW != node_access($this,'create',$user))
+        {
+            if(!$user->auth && $site_config->node_unauth_triggers_login)
+                require_auth();
+            run_hook("node_operation_not_permitted",$this,'create',$user);
+            load_loc('error',t('You don\'t have the required permission to create this node'),t('Permission denied'));
+            return;
+        }
+        $this->insert($skip_transaction);
+    }
+
     public function insert($skip_transaction = false)
     {
         if($this->dataspeedform === NULL || $this->type == NULL)
@@ -678,6 +693,21 @@ class Node
         return new $classname($type);
     }
 
+    public function save_checked($skip_transaction = false)
+    {
+        global $site_config;
+        global $user;
+        if(NODE_ACCESS_ALLOW != node_access($this,'update',$user))
+        {
+            if(!$user->auth && $site_config->node_unauth_triggers_login)
+                require_auth();
+            run_hook("node_operation_not_permitted",$this,'update',$user);
+            load_loc('error', t('You don\'t have the required permission to access this node'), t('Permission denied'));
+            return;
+        }
+        $this->save($skip_transaction);
+    }
+
     public function save($skip_transaction = false)
     {
         if($this->dataspeedform === NULL)
@@ -709,6 +739,22 @@ class Node
     {
         $this->dataspeedform->set_key($this->join_id);
         $this->dataspeedform->do_update();
+    }
+
+    public function remove_checked($skip_transaction = false)
+    {
+        global $site_config;
+        global $user;
+        if(NODE_ACCESS_ALLOW != node_access($this,'delete', $user))
+        {
+            if(!$user->auth && $site_config->node_unauth_triggers_login)
+                require_auth();
+            run_hook("node_operation_not_permitted",$this,'delete',$user);
+            load_loc('error', t('You don\'t have the required permission to delete this node'), t('Permission denied'));
+            return;
+        }
+
+        $this->remove($skip_transaction);
     }
 
     public function remove($skip_transaction = false)
