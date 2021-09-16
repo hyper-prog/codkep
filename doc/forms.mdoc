@@ -620,6 +620,9 @@ $def =
    - ***"update"*** - An update/save operation is in progress
    - ***"delete"*** - A delete operation is in progress
    - ***"select"*** - A select/query operation is in progress
+- @@@function in_dryaction($action = 'submit')@@@
+ - Determines if the current page load have POST/GET parameters submitted by this form previously and the submitted field has a dryaction option set to "yes".
+ \ If both condition exists it returns ***true*** otherwise ***false***.
 - @@@in_specified_action($sql)@@@
  - Determines if the current page load have the specified POST/GET parameter submitted by this form previously.
   - Parameter ***$sql*** the sql name of the field to test.
@@ -1961,6 +1964,7 @@ Attributes of the field
 | ***sql***       | Mandatory |(background-color: #ff7777;) The name of the sql row holds this data field + The identifier of the data field | string |
 | ***default***   | Optional |(background-color: #ffbb55;) The default value of this field | string |
 | ***in_mode***   | Optional |(background-color: #ffbb55;) Restrict the appearance of the field for specified typed function (It's only works for ***submit*** typed fields) | "insert" or "update" or "delete" or "select" |
+| ***dryaction*** | Optional |(background-color: #ffbb55;) If this value is set to "yes" the button will submit the form but does not do the desired operation. Can be used to do a preview functionality. | ""(default) or "yes" |
 You **can use more attributes here** which are [common and usable in all field definitions|url:#commonattributes].
 .
 A sample definition of this kind of field:

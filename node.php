@@ -1036,11 +1036,14 @@ function sys_node_edit_uni($node)
     {
         if(!$node->get_access_property("lparbeforupdate"))
             $node->get_speedform_object()->load_parameters();
-        run_hook("node_will_update",$node);
-        $node->save();
-        run_hook("node_operation_done",$node->node_type,$op,$node->node_nid);
-        load_loc("node/".$node->node_nid);
-        return;
+        if(!$node->get_speedform_object()->in_dryaction('update'))
+        {
+            run_hook("node_will_update",$node);
+            $node->save();
+            run_hook("node_operation_done",$node->node_type,$op,$node->node_nid);
+            load_loc("node/".$node->node_nid);
+            return;
+        }
     }
     run_hook('node_before_action',$node,$op,$user);
     $form = $node->getform('update');
@@ -1087,11 +1090,14 @@ function sys_node_delete_uni($node)
 
     if($node->get_speedform_object()->in_action('delete'))
     {
-        run_hook("node_will_delete",$node);
-        $node->remove();
-        run_hook("node_operation_done",$type,$op,'0');
-        load_loc(get_startpage());
-        return;
+        if(!$node->get_speedform_object()->in_dryaction('delete'))
+        {
+            run_hook("node_will_delete",$node);
+            $node->remove();
+            run_hook("node_operation_done",$type,$op,'0');
+            load_loc(get_startpage());
+            return;
+        }
     }
     run_hook('node_before_action',$node,$op,$user);
     $form = $node->getform('delete');
@@ -1138,11 +1144,14 @@ function sys_node_create_callback()
     {
         if(!$node->get_access_property("lparbeforecreate"))
             $node->get_speedform_object()->load_parameters();
-        run_hook("node_will_create",$node);
-        $nid = $node->insert();
-        run_hook("node_operation_done",$node->node_type,$op,$node->node_nid);
-        goto_loc("node/$nid");
-        return;
+        if(!$node->get_speedform_object()->in_dryaction('insert'))
+        {
+            run_hook("node_will_create",$node);
+            $nid = $node->insert();
+            run_hook("node_operation_done",$node->node_type,$op,$node->node_nid);
+            goto_loc("node/$nid");
+            return;
+        }
     }
     run_hook('node_before_action',$node,$op,$user);
     $form = $node->getform('insert');

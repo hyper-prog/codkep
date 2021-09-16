@@ -249,6 +249,8 @@ function pc_speedform_builder()
 
     p_gral_item(2,'in_mode'      ,BTYPE_SEL ,BSEC_FUNC,['types' => ['submit'],'values' => ['insert','update','delete','select']],
                                                                             'Restrict the rendering of the submit typed fields to a specific action.');
+    p_gral_item(2,'dryaction'    ,BTYPE_SEL ,BSEC_FUNC,['types' => ['submit'],'values' => ['no','yes']],
+                                                                            'If this value is set to yes, the button does not really do the desired operation.');
 
     p_gral_item(2,'row'          ,BTYPE_INT ,BSEC_FUNC,['types' => ['largetext']]);
     p_gral_item(2,'col'          ,BTYPE_INT ,BSEC_FUNC,['types' => ['largetext']]);

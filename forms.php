@@ -2628,7 +2628,34 @@ class SpeedForm
                 if( ($action == 'submit' || !isset($f['in_mode']) || $action == $f['in_mode']) &&
                     par_is($htmlname,$f['default'])
                   )
+                  {
                     return true;
+                  }
+            }
+        }
+        return false;
+    }
+
+    /** Check post parameters if any action in progress with the dryaction option enabled
+     *  @param string $action Action to test. Values can be: "submit" "insert" "update" "delete" "select" */
+    public function in_dryaction($action = 'submit')
+    {
+        foreach($this->def['fields'] as $idx => $f)
+        {
+            if($f['type'] == 'submit')
+            {
+                $htmlname = $f['sql'];
+                if(isset($f['htmlname']) && $f['htmlname'] != '')
+                    $htmlname = $f['htmlname'];
+
+                par_def($htmlname,'text5');
+                if( ($action == 'submit' || !isset($f['in_mode']) || $action == $f['in_mode']) &&
+                    par_is($htmlname,$f['default'])
+                  )
+                  {
+                    if(isset($f['dryaction']) && $f['dryaction'] == "yes")
+                        return true;
+                  }
             }
         }
         return false;
