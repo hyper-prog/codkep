@@ -268,7 +268,7 @@ function flex_body($content,$route)
     }
 
     print $content->pageparts['last_in_page'];
-    print "</div> <!-- /#page,  -->\n";
+    print "</div> <!-- #page  -->\n";
     print $content->pageparts['after_page'];
 
     if($flex->mainmenu_stay_fixed_scrolldown > 0)

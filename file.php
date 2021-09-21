@@ -650,3 +650,5 @@ function _HOOK_file_loaded() {}
  * Runs before a file is removed
  * @package file */
 function _HOOK_file_will_delete() {}
+
+//end.

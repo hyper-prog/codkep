@@ -329,3 +329,5 @@ function _HOOK_pageview_before() {}
 /** It runs after the page will show, it receives the page node. The return will append after the page content.
  *  @package page */
 function _HOOK_pageview_after() {}
+
+//end.

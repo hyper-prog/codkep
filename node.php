@@ -1884,4 +1884,4 @@ function _HOOK_node_will_create() {}
  * @package node */
 function _HOOK_node_rest_action_before() {}
 
-// end.
+//end.
