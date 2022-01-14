@@ -2462,6 +2462,16 @@ function sfh_default_datetype($field_def,$default_value)
 {
     if($default_value == 'now')
         return date('Y-m-d');
+
+    if($default_value == 'first_day_of_this_month')
+        return date('Y-m-01');
+
+    if($default_value == 'last_day_of_last_month')
+    {
+        $ut = mktime(0,0,0,intval(date('m')),1,intval(date('Y'))) - 86400;
+        return date('Y-m-d',$ut);
+    }
+
     return $default_value;
 }
 

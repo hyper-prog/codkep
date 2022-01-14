@@ -1620,7 +1620,7 @@ Attributes of the field
 | ***type***      | Mandatory |(background-color: #ff7777;) The type specification string | "***date***" |
 | ***sql***       | Mandatory |(background-color: #ff7777;) The name of the sql row holds this data field + The identifier of the data field | string |
 | ***text***      | Optional |(background-color: #ffbb55;) The describe text of the field. This will be displayed to the user in forms| string |
-| ***default***   | Optional |(background-color: #ffbb55;) The default value of this field | An isodate string to set an exact date.<br/>Give "now" for set the current date.<br/>Example: "2016-10-27" |
+| ***default***   | Optional |(background-color: #ffbb55;) The default value of this field | An isodate string to set an exact date.<br/>Give "now" for set the current date. You can also set "last_day_of_last_month" and "first_day_of_this_month" to set special dates as default. <br/>A simple example: "2016-10-27" |
 You **can use more attributes here** which are [common and usable in all field definitions|url:#commonattributes].
 .
 A sample definition of this kind of field:
