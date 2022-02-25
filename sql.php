@@ -47,6 +47,8 @@ function hook_sql_boot()
         'current_timestamp' => ['mysql' => 'CURRENT_TIMESTAMP',     'pgsql' => 'now()'    , ],
         'longtext_type'     => ['mysql' => 'LONGTEXT'         ,     'pgsql' => 'TEXT'     , ],
         'regex'             => ['mysql' => 'REGEXP'           ,     'pgsql' => '~'        , ],
+        'datetype_null'     => ['mysql' => 'NULL'             ,     'pgsql' => 'NULL'     , ],
+        'numeric_null'      => ['mysql' => 'NULL'             ,     'pgsql' => 'NULL'     , ],
     ];
 }
 
