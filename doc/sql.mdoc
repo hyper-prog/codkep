@@ -59,6 +59,9 @@ Optional settings
  - ***$db->sqlencoding***
   - Runs ***SET NAMES sqlencoding;*** sql command to set the connection encoding immediately after database connect.
   - If not set the default is empty string, which bypass running of ***SET NAMES***.
+ - ***$db->set_timezone_to***
+  - Runs ***SET TIMEZONE TO timezone_set_here*** sql command to set the time zone immediately after database connect.
+  - If not set the default is empty string, which bypass running of ***SET TIMEZONE***.
  - ***$db->schema_editor_password***
   - Specifies a password for the [schema editor page|url:#schemeedit].
   \ Empty string will disable of accessing this page with password. (See next setting)

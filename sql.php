@@ -26,6 +26,7 @@ function hook_sql_boot()
     $db->user = "";
     $db->password = "";
     $db->sqlencoding = "";
+    $db->set_timezone_to = "";
     $db->sql = NULL;
     $db->lastsql = "";
     $db->auto_error_page = true;
@@ -108,9 +109,14 @@ function sql_connect()
             load_loc($db->error_locations['connection_error']);
         return;
     }
+
     $encoding = $db->sqlencoding;
     if($encoding != '')
         sql_exec_noredirect("SET NAMES '$encoding';");
+
+    $sqltz = $db->set_timezone_to;
+    if($sqltz != '')
+        sql_exec_noredirect("SET TIMEZONE TO '$sqltz';");
 
     run_hook('sql_connected');
 }
