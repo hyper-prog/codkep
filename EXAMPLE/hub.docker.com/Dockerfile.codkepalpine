@@ -8,7 +8,7 @@
 FROM alpine
 LABEL maintainer="hyper80@gmail.com" Description="Codkep web framework on Apline linux with apache webserver"
 
-RUN apk update && apk add php7-apache2 php7-pdo_mysql php7-pdo_pgsql php7-apcu php7-ctype php7-json php7-gd php-sockets
+RUN apk update && apk add php8-apache2 php8-pdo_mysql php8-pdo_pgsql php8-apcu php8-ctype php8-json php8-gd php-sockets
 RUN mkdir -p /run/apache2 \
     && cp /etc/apache2/httpd.conf /etc/apache2/httpd.conf_orig \
     && cat /etc/apache2/httpd.conf_orig | sed 's/#LoadModule rewrite_module modules\/mod_rewrite.so/LoadModule rewrite_module modules\/mod_rewrite.so/' > /etc/apache2/httpd.conf \
