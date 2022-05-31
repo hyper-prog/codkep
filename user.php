@@ -54,6 +54,7 @@ function hook_user_boot()
     $user_module_settings->sql_name_column      = 'name';
     $user_module_settings->sql_role_column      = 'role';
     $user_module_settings->sql_lastlogin_column = 'lastlogin';
+    $user_module_settings->sql_lastapilogin_column = 'lastapilogin';
     $user_module_settings->sql_password_column  = 'password';
     $user_module_settings->sql_logindisabled_column = 'lindis';
 
@@ -177,8 +178,8 @@ function user_init_local()
 
     $r = sql_exec_noredirect('SELECT uid,created,access,chkname,chkval,changed,ip,fsalt,cksess
                               FROM authsess WHERE authsessval=:authsessvalue;',
-        [':authsessvalue' => $cookie_value]
-    );
+                             [':authsessvalue' => $cookie_value]
+         );
 
     if($r == NULL)
         return;
@@ -270,10 +271,12 @@ function user_garbage_collection_local()
     global $user_module_settings;
     sql_exec_noredirect("DELETE FROM authsess WHERE access < :ltime;",
         [':ltime' => $sys_data->request_time - $user_module_settings->login_garbagecoll]);
+    sql_exec_noredirect("DELETE FROM authapisess WHERE access < :ltime;",
+        [':ltime' => $sys_data->request_time - $user_module_settings->login_garbagecoll]);
 }
 
 /** Load an user as current user according to "uid" or "login" */
-function user_load($identifier,$type)
+function user_load($identifier,$type,$apitoken = '')
 {
     global $user;
     global $user_module_settings;
@@ -313,6 +316,12 @@ function user_load($identifier,$type)
         $user->name  = $row[$user_module_settings->sql_name_column ];
         $user->role  = $row[$user_module_settings->sql_role_column ];
         $user->login_disabled = $row[$user_module_settings->sql_logindisabled_column ];
+        $user->client = 'browser';
+        if($apitoken != '')
+        {
+           $user->client = 'api';
+           $user->apitoken = $apitoken;
+        }
         run_hook('user_identified');
         return true;
     }
@@ -562,6 +571,232 @@ function codkepsession_store_local()
     return 1;
 }
 
+function user_init_api($apitoken,$chkval)
+{
+    global $db;
+    global $sys_data;
+    global $user_module_settings;
+    global $formsalt;
+
+    $rval = [];
+    $rval['authstatus'] = 'failed';
+    $rval['action'] = '';
+    $rval['chkval'] = '';
+
+    if(!$db->open || $apitoken == '')
+    {
+        return $rval; //Leaved $user object in unauthenticated state
+    }
+
+    $apitoken = substr($apitoken,0,512);
+    if(preg_match("/^[a-zA-Z0-9]+$/",$apitoken) !== 1)
+    {
+        return $rval;
+    }
+
+    $r = sql_exec_noredirect('SELECT uid,chkval,created,access,changed,ip
+                              FROM authapisess WHERE apitoken=:apitokenvalue;',
+                             [':apitokenvalue' => $apitoken]
+         );
+
+    if($r == NULL)
+        return $rval;
+    $rows=$r->fetchAll();
+    foreach($rows as $row)
+    {
+        if($row['ip'] != get_remote_address())
+            return $rval;
+
+        //Check login and session timeouts
+        if(($user_module_settings->session_timeout_sec > 0 &&
+                $sys_data->request_time - $row['access'] > $user_module_settings->session_timeout_sec) ||
+            ($user_module_settings->login_timeout_sec > 0 &&
+                $sys_data->request_time - $row['created'] > $user_module_settings->login_timeout_sec))
+        {
+            sql_exec_noredirect('DELETE FROM authapisess WHERE apitoken=:apitokenvalue;',
+                                [':apitokenvalue' => $apitoken]
+            );
+            return $rval;
+        }
+
+        //Check if this session is blocked
+        //Possible because the check-key was different before. The timeout will solve this.
+        if($row['chkval'] == 'blocked')
+            return $rval; //This session is blocked
+
+        //Check the second (control) value, set the session blocked if not success
+        //If failed will stay unauthenticated and marked this session to block.
+        if(substr($chkval,0,512) != $row['chkval'])
+        {
+            sql_exec_noredirect('UPDATE authapisess SET chkval=\'blocked\' WHERE apitoken=:apitokenvalue;',
+                                [':apitokenvalue' => $apitoken]
+            );
+            return $rval;
+        }
+
+        //Authentication success
+
+        //In case we reached keychange interval, do a keychange
+        if($user_module_settings->keychange_interval_sec > 0 &&
+                $sys_data->request_time - $row['changed'] > $user_module_settings->keychange_interval_sec)
+        {
+            generateRandomString(32);
+            $nchkval = generateRandomString(64) .
+                       encOneway62(hash('sha256',generateRandomString(128),true),32) .
+                       generateRandomString(64);
+
+            sql_exec_noredirect('UPDATE authapisess SET chkval=:chkval,changed=:changed
+                                 WHERE apitoken=:apitokenvalue;',
+                                [':chkval'        => $nchkval,
+                                 ':changed'       => $sys_data->request_time,
+                                 ':apitokenvalue' => $apitoken]
+            );
+
+            $rval['action'] = 'keychange';
+            $rval['chkval'] = $nchkval;
+        }
+
+        //Set lastlog
+        sql_exec_noredirect('UPDATE authapisess SET access=:acctime WHERE
+                             apitoken=:apitokenvalue;',
+                            [':apitokenvalue' => $apitoken,
+                             ':acctime'       => $sys_data->request_time ]
+        );
+
+        //Loads the user determined by sessions
+        user_load($row['uid'],'uid',$apitoken);
+        $rval['authstatus'] = 'success';
+        return $rval;
+    }
+    return $rval;
+}
+
+/** Try to login an user with the passed credentials (With api in algorithm)
+ *  @package user */
+function user_login_api($login,$password)
+{
+    global $sys_data;
+    global $user_module_settings;
+    global $formsalt;
+
+    $rval = [];
+    $rval['authstatus'] = 'failed';
+
+    if(userblocking_check())
+    {
+        run_hook('blocked_client_api_rejected',"Login-API-Failed, disabled remote client");
+        return $rval;
+    }
+
+    if(strlen($login) > 128 ||
+       strlen($password) > 128 ||
+       !check_str($login,'text3ns') ||
+       !check_str($password,'text3ns'))
+        return $rval;
+
+    $r = sql_exec('SELECT uid,'.$user_module_settings->sql_login_column.','
+                               .$user_module_settings->sql_password_column.','
+                               .$user_module_settings->sql_logindisabled_column.
+                  ' FROM '.$user_module_settings->sql_tablename.
+                  ' WHERE '.$user_module_settings->sql_login_column.' = :f_login;',
+                  [':f_login' => $login ]);
+    $rows=$r->fetchAll();
+    foreach($rows as $row)
+    {
+        if($row[$user_module_settings->sql_logindisabled_column] == true)
+        {
+            userblocking_set("Login-API-Failed: Disabled user");
+            run_hook('user_failed_api_login',$login,"Login-API-Failed: Disabled user");
+            return $rval;
+        }
+        $cs = substr($row[$user_module_settings->sql_password_column],0,8);
+        if(hash_equals($row[$user_module_settings->sql_password_column],scatter_string_local($password,$cs)))
+        {
+            //success
+            return user_login_api_granted($row['uid'],$login);
+        }
+        else
+        {
+            userblocking_set("Login-API-Failed: Bad password");
+            run_hook('user_failed_api_login',$login,"Login-API-Failed: Bad password");
+            return $rval;
+        }
+   }
+   userblocking_set("Login-API-Failed: Unknown user");
+   run_hook('user_failed_api_login',$login,"Login-API-Failed: Unknown user");
+   return 0;
+}
+
+function user_login_api_granted($uid,$login)
+{
+    global $sys_data;
+    global $user_module_settings;
+    global $formsalt;
+
+    $apitoken =
+        substr(
+            generateRandomString(128) .
+            encOneway62(hash('sha256',generateRandomString(64).'_'.$login.'_'.get_remote_address(),true),32) .
+            generateRandomString(64) .
+            encOneway62(hash('sha256',generateRandomString(64).'_'.base_convert(strval(time()),10,36).'_'.get_remote_address(),true),32) .
+            generateRandomString(64) .
+            encOneway62(hash('sha256',$login.'_'.generateRandomString(256).'_'.get_remote_address(),true),32) .
+            generateRandomString(128)
+          ,0,512);
+
+    generateRandomString(32);
+    $chkval = generateRandomString(64) .
+              encOneway62(hash('sha256',generateRandomString(128),true),32) .
+              generateRandomString(64);
+
+    sql_exec('INSERT INTO authapisess(uid,apitoken,chkval,changed,created,access,ip)
+                      VALUES(:uid,:apitokenval,:chkval,:changed,:timec,:timea,:ip);',
+             [':uid'         => $uid,
+              ':apitokenval' => $apitoken,
+              ':chkval'      => $chkval,
+              ':changed'     => $sys_data->request_time,
+              ':timec'       => $sys_data->request_time,
+              ':timea'       => $sys_data->request_time,
+              ':ip'          => get_remote_address(),
+             ]);
+
+    sql_exec('UPDATE '.$user_module_settings->sql_tablename.' SET '.
+                $user_module_settings->sql_lastapilogin_column . '='.sql_t('current_timestamp').
+             ' WHERE '.$user_module_settings->sql_login_column.' = :f_login;',
+             [':f_login' => $login ]
+    );
+
+    user_load($uid,'uid',$apitoken);
+    userblocking_clear();
+    run_hook('user_logged_in');
+    return [
+       'authstatus' => 'success',
+       'login'      => $login,
+       'apitoken'   => $apitoken,
+       'chkval'     => $chkval,
+    ];
+}
+
+/** Logouts the current logged user (With built in algorithm)
+ *  @package user */
+function user_logout_api($apitoken)
+{
+    global $db;
+    global $user;
+    if($user->auth)
+    {
+        run_hook('user_logout');
+        user_unload();
+        sql_exec_noredirect('DELETE FROM authapisess WHERE apitoken = :apitokenval;',
+                            [ ':apitokenval' => $apitoken ]
+        );
+        if($db->error)
+            return 0;
+        return 1;
+    }
+    return 0;
+}
+
 function scatter_string_local($string,$with_salt = '')
 {
     global $user_module_settings;
@@ -634,7 +869,6 @@ function complexity_check_local($string,$fbl)
     if($user_module_settings->password_complexity_cplx && (strlen($string) > strlen(gzcompress($string,9))))
         load_loc('error',t('The complexity of the password is too low!'),t('Password security warning'));
 }
-
 
 function userblocking_check()
 {
@@ -1000,6 +1234,13 @@ function hook_user_nodetype()
                         "text" => t('Last login'),
                         "readonly" => true,
                     ],
+                    90 => [
+                        "sql" => "lastapilogin",
+                        "type" => "timestamp_create",
+                        "text" => t('Last API login'),
+                        "readonly" => true,
+                    ],
+
                     500 => [
                         "sql" => "submit_add",
                         "type" => "submit",
@@ -1169,6 +1410,20 @@ function hook_user_required_sql_schema()
                 'ip'          => 'VARCHAR(48)',
                 'fsalt'       => 'VARCHAR(32)',
                 'cksess'      => sql_t('longtext_type'),
+            ],
+        ];
+
+    $t['user_module_authapisess_table'] =
+        [
+            "tablename" => 'authapisess',
+            "columns" => [
+                'uid'         => 'BIGINT NOT NULL',
+                'apitoken'    => 'VARCHAR(512)',
+                'chkval'      => 'VARCHAR(512)',
+                'changed'     => 'BIGINT',
+                'created'     => 'BIGINT',
+                'access'      => 'BIGINT',
+                'ip'          => 'VARCHAR(48)',
             ],
         ];
 

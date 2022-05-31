@@ -33,6 +33,8 @@ You can use this object anywhere in your codes by declare ***global $user***.
    - ***ROLE_USER*** Role of a normal authenticated user.
  - ***$user->login_disabled***
   - If this field is true the user cannot login into the site.
+ - ***$user->client***
+  - The client can be "browser" or "api"
 .
 Example of using $user:
 ~~~php
@@ -107,6 +109,26 @@ can be ***"uid"*** or ***"login"***.
 <br/>
 Unloads the current logged user.
 This won't logout the current user just restore the ***$user*** object to unauthenticated state.
+.
+@@@user_login_api($login,$password)@@@
+<br/>
+Try to login the user in api session. It returns an array with the token values if the user is success logged in.
+<br/>
+*Note: The api session are separated from ordinary browser sessions.*
+.
+@@@user_init_api($apitoken,$chkval)@@@
+<br/>
+Try to authenticate the user according to the received tokens. (Where the tokens came from an api comminucation channel)
+If success the user object is loaded. (Check $user->auth value)
+<br/>
+*Note: The api session are separated from ordinary browser sessions.*
+.
+@@@user_logout_api($apitoken)@@@
+<br/>
+Logs out the current user from api session. (The $apitoken is load into $user->apitoken if api authentication success)
+<br/>
+*Note: The api session are separated from ordinary browser sessions.*
+
 .
 **Notes about login and logout**<br/>
 No matter what kind of login or logout is used there is some common features:
