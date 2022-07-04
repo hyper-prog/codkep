@@ -382,6 +382,11 @@ class File
         return ob_get_clean();
     }
 
+    public function getContentBase64()
+    {
+        return base64_encode($this->getContent());
+    }
+
     public function serveFile($name_in_url)
     {
         global $user;
