@@ -330,6 +330,7 @@ The user module have some settings which can set [in site settings|url:doc/codke
 |<small> ***$user_module_settings->password_scattered***           </small>|<small> true                </small>| Whether CodKep store plaintext or scattered passwords in the database. (false:plaintext)|
 |<small> ***$user_module_settings->password_scatter_salt***        </small>|<small> random string       </small>| You can define a custom salt to scatter passwords. Warning: The stored passwords will corrupt if changed. |
 |<small> ***$user_module_settings->password_scatter_log2i***       </small>|<small> 14                  </small>| The complexity of password scattering. Larger is more complex.|
+|<small> ***$user_module_settings->block_api_auth_on_ip_change***  </small>|<small> true                </small>| Block the API access authentication if the client IP is changed.|
 |<small> ***$user_module_settings->form_salt***                    </small>|<small> random string       </small>| You can define a custom salt to login form check. Recommended to change the default value in production environments.|
 |<small> ***$user_module_settings->define_user_nodetype***         </small>|<small> true                </small>| Whether the user module should define the user node type. Disable this, if you have custom user tables.|
 |<small> ***$user_module_settings->login_title***                  </small>|<small> 'Login to the site' </small>| The welcome message of the user/login page. |

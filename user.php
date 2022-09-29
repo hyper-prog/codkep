@@ -29,6 +29,7 @@ function hook_user_boot()
     $user_module_settings->disable_remote_blocking     = false;
     $user_module_settings->faillogin_block_count       = 3;
     $user_module_settings->faillogin_block_exipire_sec = 3600; //1 hour
+    $user_module_settings->block_api_auth_on_ip_change = true;
 
     $user_module_settings->enable_own_passwordchange   = true;
     $user_module_settings->enable_admin_passwordchange = false;
@@ -604,7 +605,7 @@ function user_init_api($apitoken,$chkval)
     $rows=$r->fetchAll();
     foreach($rows as $row)
     {
-        if($row['ip'] != get_remote_address())
+        if($row['ip'] != get_remote_address() && $user_module_settings->block_api_auth_on_ip_change)
             return $rval;
 
         //Check login and session timeouts
@@ -657,9 +658,10 @@ function user_init_api($apitoken,$chkval)
         }
 
         //Set lastlog
-        sql_exec_noredirect('UPDATE authapisess SET access=:acctime WHERE
+        sql_exec_noredirect('UPDATE authapisess SET access=:acctime,ip=:farip WHERE
                              apitoken=:apitokenvalue;',
                             [':apitokenvalue' => $apitoken,
+                             ':farip'         => get_remote_address(),
                              ':acctime'       => $sys_data->request_time ]
         );
 
