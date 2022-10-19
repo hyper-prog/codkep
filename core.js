@@ -420,8 +420,11 @@ function codkep_set_autofill(element)
             cval = cval.replace(/[^a-zA-Z0-9]/g,"-");
         if(mtype.includes('d'))
         {
-            var d = new Date();
-            cval += '-' + d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
+            let d = new Date();
+            let year = d.getFullYear();
+            let month = d.getMonth() + 1;
+            let day = d.getDate();
+            cval += '-' + year + '-' + month + '-' + day;
         }
         affrom.val(cval);
     });
