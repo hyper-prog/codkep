@@ -405,6 +405,8 @@ class ExcelXmlDocument
                             $c = str_replace(',','.',$c);
                         if($comma_cnt > 1)
                             $c = str_replace(',','',$c);
+                        if(trim($c) == '') //Excel 2019 crash when received space in number typed cell
+                            $c = '0';
                     }
                     if($opts['t'] == 'dat')
                         $type = 'DateTime';
