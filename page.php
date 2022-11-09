@@ -300,7 +300,7 @@ function hook_page_introducer()
         $eps[] = l($rr['title'],'nodeintype/page/' . $rr['pid'] . '/edit');
     }
     if(count($ps) > 0)
-        $html .= '<br> View: '.implode(', ',$ps) . '<br> Edit: '.implode(', ',$eps);
+        $html .= '<br/> View: '.implode(', ',$ps) . '<br/> Edit: '.implode(', ',$eps);
     return ['Page' => $html];
 }
 
