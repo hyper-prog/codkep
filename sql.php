@@ -1291,12 +1291,18 @@ class DatabaseQuerySql extends DatabaseQuery
                     $np .= $set['name'];
 
                     if(isset($set['opts']['function']) && $set['opts']['function'] != '')
+                    {
                         $vp .= $set['opts']['function'] . '(';
+                        if(isset($set['opts']['more_args_before']) && $set['opts']['more_args_before'] != '')
+                            $vp .= $set['opts']['more_args_before'].',';
+                    }
                     $vp .= ':phi_'.$this->phidx;
                     if(isset($set['opts']['function']) && $set['opts']['function'] != '')
                     {
                         if(isset($set['opts']['more_args']) && $set['opts']['more_args'] != '')
                             $vp .= ','.$set['opts']['more_args'];
+                        if(isset($set['opts']['more_args_after']) && $set['opts']['more_args_after'] != '')
+                            $vp .= ','.$set['opts']['more_args_after'];
                         $vp .= ')';
                     }
 
@@ -1308,12 +1314,18 @@ class DatabaseQuerySql extends DatabaseQuery
                     $np .= $set['name'];
 
                     if(isset($set['opts']['function']) && $set['opts']['function'] != '')
+                    {
                         $vp .= $set['opts']['function'] . '(';
+                        if(isset($set['opts']['more_args_before']) && $set['opts']['more_args_before'] != '')
+                            $vp .= $set['opts']['more_args_before'].',';
+                    }
                     $vp .= $set['value'];
                     if(isset($set['opts']['function']) && $set['opts']['function'] != '')
                     {
                         if(isset($set['opts']['more_args']) && $set['opts']['more_args'] != '')
                             $vp .= ','.$set['opts']['more_args'];
+                        if(isset($set['opts']['more_args_after']) && $set['opts']['more_args_after'] != '')
+                            $vp .= ','.$set['opts']['more_args_after'];
                         $vp .= ')';
                     }
                 }
@@ -1329,7 +1341,11 @@ class DatabaseQuerySql extends DatabaseQuery
                     $this->calculated_query .= ',';
                 ++$fc;
                 if(isset($field['opts']['function']) && $field['opts']['function'] != '')
+                {
                     $this->calculated_query .= $field['opts']['function'].'(';
+                    if(isset($field['opts']['more_args_before']) && $field['opts']['more_args_before'] != '')
+                        $this->calculated_query .= $field['opts']['more_args_before'].',';
+                }
                 if($field['cont'] != '')
                     $this->calculated_query .= $field['cont'].'.';
                 $this->calculated_query .= $field['name'];
@@ -1337,6 +1353,8 @@ class DatabaseQuerySql extends DatabaseQuery
                 {
                     if(isset($field['opts']['more_args']) && $field['opts']['more_args'] != '')
                         $this->calculated_query .= ','.$field['opts']['more_args'];
+                    if(isset($field['opts']['more_args_after']) && $field['opts']['more_args_after'] != '')
+                        $this->calculated_query .= ','.$field['opts']['more_args_after'];
                     $this->calculated_query .= ')';
                 }
                 if($field['alias'] != '')
@@ -1375,12 +1393,18 @@ class DatabaseQuerySql extends DatabaseQuery
                     $this->calculated_query .= $set['name'] . '=';
 
                     if(isset($set['opts']['function']) && $set['opts']['function'] != '')
+                    {
                         $this->calculated_query .= $set['opts']['function'] . '(';
+                        if(isset($set['opts']['more_args_before']) && $set['opts']['more_args_before'] != '')
+                            $this->calculated_query .= $set['opts']['more_args_before'].',';
+                    }
                     $this->calculated_query .= ':phi_'.$this->phidx;
                     if(isset($set['opts']['function']) && $set['opts']['function'] != '')
                     {
                         if(isset($set['opts']['more_args']) && $set['opts']['more_args'] != '')
                             $this->calculated_query .= ','.$set['opts']['more_args'];
+                        if(isset($set['opts']['more_args_after']) && $set['opts']['more_args_after'] != '')
+                            $this->calculated_query .= ','.$set['opts']['more_args_after'];
                         $this->calculated_query .= ')';
                     }
 
@@ -1391,12 +1415,18 @@ class DatabaseQuerySql extends DatabaseQuery
                 {
                     $this->calculated_query .= $set['name'] . '=';
                     if(isset($set['opts']['function']) && $set['opts']['function'] != '')
+                    {
                         $this->calculated_query .= $set['opts']['function'] . '(';
+                        if(isset($set['opts']['more_args_before']) && $set['opts']['more_args_before'] != '')
+                            $this->calculated_query .= $set['opts']['more_args_before'].',';
+                    }
                     $this->calculated_query .= $set['value'];
                     if(isset($set['opts']['function']) && $set['opts']['function'] != '')
                     {
                         if(isset($set['opts']['more_args']) && $set['opts']['more_args'] != '')
                             $this->calculated_query .= ','.$set['opts']['more_args'];
+                        if(isset($set['opts']['more_args_after']) && $set['opts']['more_args_after'] != '')
+                            $this->calculated_query .= ','.$set['opts']['more_args_after'];
                         $this->calculated_query .= ')';
                     }
                 }
@@ -1426,7 +1456,11 @@ class DatabaseQuerySql extends DatabaseQuery
                     $this->calculated_query .= ',';
 
                 if(isset($sort['opts']['function']) && $sort['opts']['function'] != '')
+                {
                     $this->calculated_query .= $sort['opts']['function'] . '(';
+                    if(isset($sort['opts']['more_args_before']) && $sort['opts']['more_args_before'] != '')
+                        $this->calculated_query .= $sort['opts']['more_args_before'].',';
+                }
 
                 if(is_array($sort['field']))
                     $this->calculated_query .= $sort['field'][0] . '.' . $sort['field'][1];
@@ -1437,6 +1471,8 @@ class DatabaseQuerySql extends DatabaseQuery
                 {
                     if(isset($sort['opts']['more_args']) && $sort['opts']['more_args'] != '')
                         $this->calculated_query .= ','.$sort['opts']['more_args'];
+                    if(isset($sort['opts']['more_args_after']) && $sort['opts']['more_args_after'] != '')
+                        $this->calculated_query .= ','.$sort['opts']['more_args_after'];
                     $this->calculated_query .= ')';
                 }
 
