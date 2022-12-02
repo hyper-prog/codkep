@@ -1206,6 +1206,11 @@ class DatabaseCond
     public function __construct($logic,$not = false)
     {
         $this->not = $not;
+        if(substr($logic,0,1) == 'n')
+        {
+            $this->not = !$this->not;
+            $logic = substr($logic,1);
+        }
         $this->logic = $logic;
         $this->conds = [];
     }
@@ -1217,6 +1222,11 @@ class DatabaseCond
     public function add(DatabaseCond $cond)
     {
         $this->conds[] = $cond;
+        return $this;
+    }
+    public function not()
+    {
+        $this->not = !$this->not;
         return $this;
     }
     public function ff($fieldspec1,$fieldspec2,$op,array $options = [])

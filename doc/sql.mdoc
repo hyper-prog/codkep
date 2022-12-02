@@ -490,6 +490,8 @@ The recommended way to create new a condition object (which can be add to the Da
  - The ***$mainconn*** can be
   - ***"and"*** - Set the AND logical connection between the sub conditions added here.
   - ***"or"*** - Set the OR logical connection between the sub conditions added here.
+  - ***"nand"*** - Set a whole neagted AND logical connection between the sub conditions added here.
+  - ***"nor"*** - Set a whole neagted OR logical connection between the sub conditions added here.
 - @@@not_cond($mainconn)@@@
  - Create a denial (opposite) condition branch
  - The ***$mainconn*** can be
@@ -504,6 +506,8 @@ DatabaseCond. This sub conditions can be stacked with the ***cond()*** method wh
 - @@@cond(DatabaseCond $cond)@@@
 - @@@add(DatabaseCond $cond)@@@
  - Adds a (different) completely new sub condition object to the current list.
+- @@@not()@@@
+ - Negate the whole condition spec.
 - @@@ff($fieldspec1,$fieldspec2,$op,array $options = [])@@@
  - Adds a **F**ield to **F**ield type condition to the condition list.
  - Use this method when a field is compared to an another field. You can specify wrapping methods or more operations
