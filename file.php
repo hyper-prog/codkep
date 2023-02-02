@@ -596,7 +596,7 @@ function hook_file_required_sql_schema()
                 'name'      => 'VARCHAR(128)',
                 'sub'       => 'VARCHAR(32)',
                 'fsname'    => 'VARCHAR(128)',
-                'mime'      => 'VARCHAR(64)',
+                'mime'      => 'VARCHAR(128)',
                 'uploader'  => 'VARCHAR(32)',
                 'uploaded'  => sql_t('timestamp_noupd'),
         ],
