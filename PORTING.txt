@@ -1,6 +1,11 @@
 This file describes the non fully compatible
 changes between the released versions
 
+
+1.281 -> 1.282
+ - The $user_module_settings->keychange_interval_sec moved to
+   $user_module_settings->keychange_api_interval_sec
+
 1.246 -> 1.247
  - Add access_earlyblock = true to user and page nodes.
 

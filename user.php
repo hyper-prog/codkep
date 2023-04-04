@@ -26,6 +26,7 @@ function hook_user_boot()
     $user_module_settings->login_timeout_sec           = 0;
     $user_module_settings->login_garbagecoll           = 28800; //8 hour
     $user_module_settings->keychange_interval_sec      = 300; //5 min
+    $user_module_settings->keychange_api_interval_sec  = 900; //15 min
     $user_module_settings->disable_remote_blocking     = false;
     $user_module_settings->faillogin_block_count       = 3;
     $user_module_settings->faillogin_block_exipire_sec = 3600; //1 hour
@@ -638,8 +639,8 @@ function user_init_api($apitoken,$chkval)
         //Authentication success
 
         //In case we reached keychange interval, do a keychange
-        if($user_module_settings->keychange_interval_sec > 0 &&
-                $sys_data->request_time - $row['changed'] > $user_module_settings->keychange_interval_sec)
+        if($user_module_settings->keychange_api_interval_sec > 0 &&
+                $sys_data->request_time - $row['changed'] > $user_module_settings->keychange_api_interval_sec)
         {
             generateRandomString(32);
             $nchkval = generateRandomString(64) .
