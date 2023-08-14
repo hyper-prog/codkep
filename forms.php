@@ -1405,11 +1405,16 @@ class HtmlForm
         }
 
         if($dta['type'] == 'text' ||
-           $dta['type'] == 'textarea' ||
            $dta['type'] == 'number' ||
            $dta['type'] == 'float' )
         {
             print $this->formatter->item($dta['before'].$dta['value'].$dta['after'],$dta['name']);
+        }
+
+        if($dta['type'] == 'textarea')
+        {
+            $showvalue = str_replace("\n","<br/>",$dta['value']);
+            print $this->formatter->item($dta['before'].$showvalue.$dta['after'],$dta['name']);
         }
 
         if($dta['type'] == 'upload')

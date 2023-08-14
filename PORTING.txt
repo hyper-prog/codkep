@@ -1,6 +1,10 @@
 This file describes the non fully compatible
 changes between the released versions
 
+1.282 -> 1.283
+ - When a SpeedForm shows a largetext item in readonly mode the line ends are
+   converted to <br/>.
+   (The old codes does not convert anything so the browsers did not show it)
 
 1.281 -> 1.282
  - The $user_module_settings->keychange_interval_sec moved to
