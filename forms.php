@@ -2629,6 +2629,16 @@ class SpeedForm
         return NULL;
     }
 
+    public function get_text($sql)
+    {
+        foreach($this->def['fields'] as $idx => $f)
+        {
+            if($f['sql'] == $sql)
+                return $this->def['fields'][$idx]['text'];
+        }
+        return '';
+    }
+
     /** Check post parameters if any action in progress
      *  @param string $action Action to test. Values can be: "submit" "insert" "update" "delete" "select" */
     public function in_action($action = 'submit')
