@@ -335,6 +335,7 @@ The user module have some settings which can set [in site settings|url:doc/codke
 |<small> ***$user_module_settings->form_salt***                    </small>|<small> random string       </small>| You can define a custom salt to login form check. Recommended to change the default value in production environments.|
 |<small> ***$user_module_settings->define_user_nodetype***         </small>|<small> true                </small>| Whether the user module should define the user node type. Disable this, if you have custom user tables.|
 |<small> ***$user_module_settings->login_title***                  </small>|<small> 'Login to the site' </small>| The welcome message of the user/login page. |
+|<small> ***$user_module_settings->enable_loginform_autocomplete***</small>|<small> false               </small>| Enable or disable (browser) autocomplete of login form fields. |
 |<small> ***$user_module_settings->login_location***               </small>|<small> 'user/login'        </small>| The ***require_auth()*** function will redirect unauthenticated users here. |
 |<small> ***$user_module_settings->user_login_callback***     </small>|<small> NULL </small>| You can set custom login mechanism by set this callback. Default is NULL which means the built in code. |
 |<small> ***$user_module_settings->user_logout_callback***    </small>|<small> NULL </small>| You can set custom logout mechanism by set this callback. Default is NULL which means the built in code.|

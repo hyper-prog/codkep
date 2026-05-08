@@ -62,6 +62,7 @@ function hook_user_boot()
 
     $user_module_settings->login_title          = 'Login to the site';
     $user_module_settings->login_location       = 'user/login';
+    $user_module_settings->enable_loginform_autocomplete = false;
 
     $user_module_settings->user_login_callback  = NULL;
     $user_module_settings->user_logout_callback = NULL;
@@ -995,11 +996,15 @@ function user_login_page()
     print '<tr>';
     print '<td>'.t('Username').'</td>';
     print '<td><input type="text" name="login" value="" maxlength="128" id="ulitid"
-                   autocorrect="none" spellcheck="false" required="required" aria-required="true"/></td>';
+                   autocorrect="none" spellcheck="false" required="required"
+                   aria-required="true" autocomplete="' .
+                   ($user_module_settings->enable_loginform_autocomplete ? 'username' : 'off') .
+                   '"/></td>';
     print '</tr>';
     print '<tr>';
     print '<td>'.t('Password').'</td>';
-    print '<td><input type="password" name="password" value="" maxlength="128" autocomplete="off"
+    print '<td><input type="password" name="password" value="" maxlength="128" autocomplete="' .
+                   ($user_module_settings->enable_loginform_autocomplete ? 'current-password' : 'off') . '"
                    autocorrect="none" spellcheck="false" required="required" aria-required="true"/></td>';
     print '</tr>';
     print '<tr><td colspan="2" align="center">';
